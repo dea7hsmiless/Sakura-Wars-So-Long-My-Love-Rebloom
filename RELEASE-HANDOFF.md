@@ -7,28 +7,40 @@ Prepared 2026-11-23; mobile builds refreshed 2026-11-24. **Published on GitHub:*
 | Asset | Path | Size |
 |---|---|---|
 | Release folder | `Desktop\Rebloom-0.1-release\` | — |
-| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 42,912,038 B |
+| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 36,481,838 B |
 | Extracted Windows tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | ~150 MB |
-| Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,609,963 B |
-| Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,811,512 B |
+| Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,593,785 B |
+| Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,815,608 B |
 | Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 50,034,100 B |
 | iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,969,301 B |
 
 Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that is present.
 
-- Windows: `bd92776051fd1e54c481e781b6ed0054fb0786bad844f80854fca7790693d1f2`
-- Linux: `d7dd7b7688c0ca135a555b30f7dab2dbed6c1a30a2f2f3e076d761d9b1d27d69`
-- AppImage: `7f6466b52d0a1f486d6169df3cac563155dbc7420668bee1965161a3d91bb199`
+- Windows: `f03adf533f56e90733ba0547e23f862847770b8710b24b93b117377f374f9a35`
+- Linux: `e1d2b57dcfdd269043efb5e9d4134232d90dc4da4f4df8b0e313726439225e06`
+- AppImage: `b3b2ec9ad4b054d0c54d3aa6c9771cf3ac78f1dda60ad2d62e71dff6720d6fbb`
 - Android: `33606b015243fed6292971ec39172f3c0e0c0506bec9948ce0d7d9787ea417ee`
 - iOS: `0f8f178eb5fc189817d24a922671cc22bf3bcfbc55cd71bd05aea683d4db7344`
 
 ## What was verified for this package
 
+### RecompLauncher
+
+- **`recomplauncher.json` is in the Windows zip, the Linux tar and the AppImage root.** It
+  declares Disc 1 and optional Disc 2 with ISO 9660 checks for `SLUS_219.27` and `SLUS_219.30`,
+  starts the launcher headlessly with both discs, and exposes voices, resolution, window, aspect,
+  V-Sync and de-dither on the game page. The file validates against the published schema.
+- **Direct start was exercised on Windows and Linux with a deliberately invalid ISO and with a
+  missing disc.** The launcher started the runner without a window, waited for it, and passed the
+  runner's exit code back (1 for the bad image, 2 for the missing disc). The normal no-argument
+  launch still opens the five-page launcher.
+
 ### Windows
 
-- **The zip was extracted to a clean folder (529 files, no ISO) and the launcher opened** with
+- **The player zip extracts to 21 files (no ISO) and the launcher opens** with
   its normal title. The packaged `game\data\keys.ini` and `gamepad.ini` load with zero problems,
-  and the packaged game boots two frames with the temporal shader.
+  and the packaged game boots two frames with the temporal shader. `recomplauncher.json` sits at
+  the top of the zip.
 - **Keyboard controls were fixed and tested through the real launcher.** Settings → Controls →
   Keyboard controls → Change → Left now captures `Left`; Right, Up, Down, Tab, Enter and letters
   also capture. The earlier bug was Windows sending arrows/Tab/Enter as dialog navigation, which

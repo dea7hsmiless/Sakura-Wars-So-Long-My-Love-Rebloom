@@ -17,7 +17,7 @@ disc reads and module loading are answered by the runtime.
 
 | File | Size | Requirements |
 | --- | --- | --- |
-| Rebloom-0.1-Windows-x86_64.zip | 42.9 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
+| Rebloom-0.1-Windows-x86_64.zip | 36.5 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
 | Rebloom-0.1-Linux-x86_64.tar.gz | 33.6 MB | Linux x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland |
 | Rebloom-0.1-x86_64.AppImage | 32.8 MB | Linux x86-64, FUSE 2 (or `--appimage-extract-and-run`), Vulkan 1.1 |
 | Rebloom-0.1-android-arm64.apk | 50.0 MB | Android 9+ arm64, Vulkan GPU with 7+ storage buffers; debug-signed sideload |
@@ -26,14 +26,14 @@ disc reads and module loading are answered by the runtime.
 SHA-256:
 
 ```
-bd92776051fd1e54c481e781b6ed0054fb0786bad844f80854fca7790693d1f2  Rebloom-0.1-Windows-x86_64.zip
-d7dd7b7688c0ca135a555b30f7dab2dbed6c1a30a2f2f3e076d761d9b1d27d69  Rebloom-0.1-Linux-x86_64.tar.gz
-7f6466b52d0a1f486d6169df3cac563155dbc7420668bee1965161a3d91bb199  Rebloom-0.1-x86_64.AppImage
+f03adf533f56e90733ba0547e23f862847770b8710b24b93b117377f374f9a35  Rebloom-0.1-Windows-x86_64.zip
+e1d2b57dcfdd269043efb5e9d4134232d90dc4da4f4df8b0e313726439225e06  Rebloom-0.1-Linux-x86_64.tar.gz
+b3b2ec9ad4b054d0c54d3aa6c9771cf3ac78f1dda60ad2d62e71dff6720d6fbb  Rebloom-0.1-x86_64.AppImage
 33606b015243fed6292971ec39172f3c0e0c0506bec9948ce0d7d9787ea417ee  Rebloom-0.1-android-arm64.apk
 0f8f178eb5fc189817d24a922671cc22bf3bcfbc55cd71bd05aea683d4db7344  Rebloom-0.1-ios-unsigned.ipa
 ```
 
-`SHA256SUMS.txt` and the launcher source inside the Windows zip are also in the release.
+`SHA256SUMS.txt` is attached to the release. The full source and rebuild notes are in the GitHub repository; the Windows zip is the player package.
 
 ## What works
 
