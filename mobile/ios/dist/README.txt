@@ -2,8 +2,8 @@ Rebloom 0.1 - iOS arm64 (unsigned)
 ==================================
 
 File:  Rebloom-0.1-ios-unsigned.ipa
-Size:  20,485,138 B
-SHA-256: 755873649884798dcb7317fc3a62240c12bf8089d4aad5d257ff526c2307e4a6
+Size:  22,286,180 B
+SHA-256: a3b63b5b32dee5b9c1c5fb9e0d564efc5ba9686a1cdaec508c91c73127c43248
 
 Requirements
 ------------
@@ -19,6 +19,11 @@ Install
 3. The on-screen pad is shown by default; Settings -> Controls can turn it off,
    and "Tap to advance" sends Cross on a short tap. A Bluetooth controller can
    be paired in iOS Settings > Bluetooth and works beside the pad.
+4. If an older Rebloom is installed, delete it before installing this build;
+   iOS can otherwise keep the old blank icon or cache.
+
+The launcher now shows the key-art banner and rail logo; the app icons are
+opaque RGB.
 
 This build has not been signed or run on a device. The previous device run
 aborted because Metal was capped at four storage buffers per stage; this build

@@ -18,19 +18,19 @@ disc reads and module loading are answered by the runtime.
 | File | Size | Requirements |
 | --- | --- | --- |
 | Rebloom-0.1-Windows-x86_64.zip | 44.8 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
-| Rebloom-0.1-Linux-x86_64.tar.gz | 33.1 MB | Linux x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland |
-| Rebloom-0.1-x86_64.AppImage | 32.3 MB | Linux x86-64, FUSE 2 (or `--appimage-extract-and-run`), Vulkan 1.1 |
+| Rebloom-0.1-Linux-x86_64.tar.gz | 33.6 MB | Linux x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland |
+| Rebloom-0.1-x86_64.AppImage | 32.8 MB | Linux x86-64, FUSE 2 (or `--appimage-extract-and-run`), Vulkan 1.1 |
 | Rebloom-0.1-android-arm64.apk | 49.3 MB | Android 9+ arm64, Vulkan GPU with 7+ storage buffers; debug-signed sideload |
-| Rebloom-0.1-ios-unsigned.ipa | 20.5 MB | iOS 16.4+ arm64; unsigned, needs your own signing |
+| Rebloom-0.1-ios-unsigned.ipa | 22.3 MB | iOS 16.4+ arm64; unsigned, needs your own signing |
 
 SHA-256:
 
 ```
 397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f  Rebloom-0.1-Windows-x86_64.zip
-e01930fb124fa41d2386d92aef432a7978192a02d4299543cd89cd7109f56dc0  Rebloom-0.1-Linux-x86_64.tar.gz
-4b538a6c224b410409d0d4242dc99e9afd4da03949538d8d1a89fc08c4941306  Rebloom-0.1-x86_64.AppImage
+cbf14569e28ea40cdbb4464c3cf34be23887b48f8230b17a55360198804c44e8  Rebloom-0.1-Linux-x86_64.tar.gz
+fa98a18db8412aa19ef3f81287f63a0fc169da0b3f1d4ef848f344cc8ffd1973  Rebloom-0.1-x86_64.AppImage
 098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832  Rebloom-0.1-android-arm64.apk
-755873649884798dcb7317fc3a62240c12bf8089d4aad5d257ff526c2307e4a6  Rebloom-0.1-ios-unsigned.ipa
+a3b63b5b32dee5b9c1c5fb9e0d564efc5ba9686a1cdaec508c91c73127c43248  Rebloom-0.1-ios-unsigned.ipa
 ```
 
 `SHA256SUMS.txt` and the launcher source inside the Windows zip are also in the release.
@@ -44,6 +44,8 @@ e01930fb124fa41d2386d92aef432a7978192a02d4299543cd89cd7109f56dc0  Rebloom-0.1-Li
 - 60 fps at 1080p on an RTX 3070 with about 14% CPU use
 - Keyboard and gamepad bindings edited in the launcher; both files are re-read within a second
 - Android/iOS: on-screen pad (d-pad/stick, four face buttons, shoulders, Start/Select), optional tap-to-advance, and Bluetooth controllers beside it
+- Linux: Windows-style 1200x800 launcher with the key-art hero banner and rail logo
+- iOS: the same hero banner and rail logo, with opaque app icons
 
 ## What is not done yet
 

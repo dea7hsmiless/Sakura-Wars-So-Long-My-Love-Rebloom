@@ -16,6 +16,18 @@ void ios_diagnostics_start(void) {
     fprintf(stderr, "[ios] Rebloom startup\n");
 }
 
+static void rebloom_exception(NSException *e) {
+    fprintf(stderr, "[ios] uncaught exception %s: %s\n", e.name.UTF8String, e.reason.UTF8String);
+}
+
+// Runs before UIApplicationMain: if the app dies before SDL's postFinishLaunch,
+// this still leaves an entry in Documents/rebloom.log.
+__attribute__((constructor)) static void rebloom_early_start(void) {
+    ios_diagnostics_start();
+    NSSetUncaughtExceptionHandler(rebloom_exception);
+    fprintf(stderr, "[ios] process start\n");
+}
+
 @interface RebloomLaunchPlaceholder : UIViewController
 @end
 @implementation RebloomLaunchPlaceholder

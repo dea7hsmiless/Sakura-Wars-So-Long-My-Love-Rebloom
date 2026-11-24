@@ -269,8 +269,16 @@ void ios_launcher_receive_url(void *nsurl) {
         [railStack.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor constant:-8],
     ]];
 
-    [railStack addArrangedSubview:[self label:@"REBLOOM" size:20 bold:YES color:RGB(0xE8C46A)]];
-    [railStack addArrangedSubview:[self label:@"SAKURA WARS V" size:7 bold:YES color:RGB(0xA99C8E)]];
+    UIImage *railLogo = [UIImage imageNamed:@"rail-logo"];
+    if (railLogo) {
+        UIImageView *logo = [[UIImageView alloc] initWithImage:railLogo];
+        logo.contentMode = UIViewContentModeScaleAspectFit;
+        [logo.heightAnchor constraintEqualToConstant:42].active = YES;
+        [railStack addArrangedSubview:logo];
+    } else {
+        [railStack addArrangedSubview:[self label:@"REBLOOM" size:20 bold:YES color:RGB(0xE8C46A)]];
+        [railStack addArrangedSubview:[self label:@"SAKURA WARS V" size:7 bold:YES color:RGB(0xA99C8E)]];
+    }
     UIView *gap = [UIView new];
     [gap.heightAnchor constraintEqualToConstant:8].active = YES;
     [railStack addArrangedSubview:gap];
@@ -400,6 +408,16 @@ void ios_launcher_receive_url(void *nsurl) {
 }
 
 - (void)pagePlay {
+    UIImage *bannerImage = [UIImage imageNamed:@"play-banner"];
+    if (bannerImage) {
+        UIImageView *banner = [[UIImageView alloc] initWithImage:bannerImage];
+        banner.contentMode = UIViewContentModeScaleAspectFill;
+        banner.clipsToBounds = YES;
+        banner.layer.cornerRadius = 10;
+        [banner.heightAnchor constraintEqualToAnchor:banner.widthAnchor
+                                          multiplier:bannerImage.size.height / bannerImage.size.width].active = YES;
+        [self.stack addArrangedSubview:banner];
+    }
     [self head:@"Play" subtitle:@"Your own discs, recompiled for this device. Nothing is uploaded."];
     UIView *discCard = [self card];
     UIStackView *disc = [self cardStack:discCard spacing:8];

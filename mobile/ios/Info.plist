@@ -106,8 +106,6 @@
                 <string>AppIcon83.5x83.5</string>
                 <string>AppIcon1024x1024</string>
             </array>
-            <key>CFBundleIconName</key>
-            <string>AppIcon</string>
         </dict>
     </dict>
     <key>GCSupportedGameControllers</key>

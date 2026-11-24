@@ -9,18 +9,18 @@ Prepared 2026-11-23. **Nothing has been published.**
 | Release folder | `Desktop\Rebloom-0.1-release\` | — |
 | Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,777,948 B |
 | Extracted Windows tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | ~150 MB |
-| Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,089,075 B |
-| Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,279,032 B |
+| Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,608,332 B |
+| Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,807,416 B |
 | Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,283,577 B |
-| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,485,138 B |
+| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 22,286,180 B |
 
 Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that is present.
 
 - Windows: `397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f`
-- Linux: `e01930fb124fa41d2386d92aef432a7978192a02d4299543cd89cd7109f56dc0`
-- AppImage: `4b538a6c224b410409d0d4242dc99e9afd4da03949538d8d1a89fc08c4941306`
+- Linux: `cbf14569e28ea40cdbb4464c3cf34be23887b48f8230b17a55360198804c44e8`
+- AppImage: `fa98a18db8412aa19ef3f81287f63a0fc169da0b3f1d4ef848f344cc8ffd1973`
 - Android: `098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832`
-- iOS: `755873649884798dcb7317fc3a62240c12bf8089d4aad5d257ff526c2307e4a6`
+- iOS: `a3b63b5b32dee5b9c1c5fb9e0d564efc5ba9686a1cdaec508c91c73127c43248`
 
 ## What was verified for this package
 
@@ -62,6 +62,10 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
   the new Controls editors.
 - Linux launcher editors were tested on a throwaway copy: keyboard capture stores `Left`,
   gamepad choices rewrite all twelve actions, and comments in `keys.ini` are preserved.
+- The launcher now uses the Windows key art: a 1200x800 window, the hero banner on Play, the
+  logo in the rail, the corrected first-run summary, and `--play` starts without a bypass setting.
+- Audio was captured from WSLg's RDP sink (29.4 s, non-zero samples); a cold WSLg start now waits
+  for the PulseAudio sink instead of falling back to silent ALSA.
 
 ### Android
 
@@ -87,15 +91,20 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
   thin arm64 Mach-O; `rebloom_touch_tap` and `rebloom_touch_install` are exported.
 - The launcher uses the same rail and five pages as Android/Windows, with touch controls and
   tap-to-advance under Settings.
-- IPA contains 14 entries and nine app icons; `GCSupportedGameControllers` and
+- IPA contains 16 entries and nine app icons; `GCSupportedGameControllers` and
   `GCSupportsControllerUserInteraction` are set for Bluetooth pads.
 - The rail uses 126 pt below 800 pt wide and 160 pt above, matching the Android launcher.
+- The launcher now carries the Windows hero banner on Play and the logo in the rail; the app
+  icons are opaque RGB so iOS can display them.
 - The first device log showed the crash: `wgpuDeviceCreateBindGroupLayout` rejected the GS pass
   because Metal was requested with four storage buffers per stage while the pass binds seven.
   The runtime now asks for eight storage buffers (capped at the adapter's limit) on Apple and logs
   both values (change in `C:\recomp\ps2-native-recomp\runtime\src\gs\gpu\gpu.cpp`). The IPA
   was rebuilt with that fix; a new device run must confirm it.
-- Unsigned, not signed or installed on a device; no iOS hardware test.
+- A constructor writes `[ios] process start` to `Documents/rebloom.log` before
+  UIApplicationMain, and uncaught exceptions are logged, for the current "does not open" report.
+- The previous signed build ran on an iPhone (A18 Pro); the current IPA is unsigned and has not
+  been retested.
 
 ## What is NOT verified
 

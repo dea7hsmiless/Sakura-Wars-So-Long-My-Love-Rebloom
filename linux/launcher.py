@@ -155,7 +155,7 @@ class Launcher:
 
         if import_path:
             self.root.after(250, lambda: self.import_from(import_path))
-        if auto_play and self.bypass():
+        if auto_play and "--launcher" not in sys.argv:
             self.root.after(350, self.play)
 
     # ---------------- paths and settings ----------------
@@ -497,8 +497,8 @@ class Launcher:
 
     def build(self) -> None:
         self.root.title(TITLE + " - Rebloom Launcher")
-        self.root.geometry("1000x660")
-        self.root.minsize(880, 600)
+        self.root.geometry("1200x800")
+        self.root.minsize(1150, 740)
         self.root.configure(bg=BG)
 
         self.rail = tk.Frame(self.root, bg=RAIL, width=224)
@@ -508,9 +508,18 @@ class Launcher:
         brand = tk.Frame(self.rail, bg=RAIL, height=150)
         brand.pack(fill="x")
         brand.pack_propagate(False)
-        tk.Label(brand, text="REBLOOM", bg=RAIL, fg=GOLD, font=("DejaVu Sans", 22, "bold")).pack(anchor="w", padx=24, pady=(28, 0))
-        tk.Label(brand, text="SAKURA WARS V", bg=RAIL, fg=MUTED, font=("DejaVu Sans", 8, "bold")).pack(anchor="w", padx=25)
-        tk.Label(brand, text="SO LONG, MY LOVE", bg=RAIL, fg=MUTED, font=("DejaVu Sans", 8)).pack(anchor="w", padx=25)
+        logo_path = self.resources / "art" / "rail-logo.png"
+        self.rail_logo_image = None
+        if logo_path.is_file():
+            try:
+                self.rail_logo_image = tk.PhotoImage(file=str(logo_path))
+                tk.Label(brand, image=self.rail_logo_image, bg=RAIL, bd=0).pack(anchor="w", padx=14, pady=(24, 0))
+            except tk.TclError:
+                self.rail_logo_image = None
+        if self.rail_logo_image is None:
+            tk.Label(brand, text="REBLOOM", bg=RAIL, fg=GOLD, font=("DejaVu Sans", 22, "bold")).pack(anchor="w", padx=24, pady=(28, 0))
+            tk.Label(brand, text="SAKURA WARS V", bg=RAIL, fg=MUTED, font=("DejaVu Sans", 8, "bold")).pack(anchor="w", padx=25)
+            tk.Label(brand, text="SO LONG, MY LOVE", bg=RAIL, fg=MUTED, font=("DejaVu Sans", 8)).pack(anchor="w", padx=25)
 
         for text, key in (("Play", "home"), ("Install", "install"), ("Settings", "settings"), ("Support", "support"), ("About", "about")):
             self.nav(text, key)
@@ -556,6 +565,14 @@ class Launcher:
         return frame
 
     def page_home(self) -> None:
+        banner_path = self.resources / "art" / "play-banner.png"
+        self.banner_image = None
+        if banner_path.is_file():
+            try:
+                self.banner_image = tk.PhotoImage(file=str(banner_path))
+                tk.Label(self.content, image=self.banner_image, bg=BG, bd=0).pack(padx=34, pady=(18, 0))
+            except tk.TclError:
+                self.banner_image = None
         self.heading("Play", "Your own discs, recompiled for this machine. Nothing is uploaded.")
         disc = self.disc_for()
         card = self.card()
@@ -591,11 +608,11 @@ class Launcher:
         tk.Label(stats, text="found" if self.runner.is_file() else "MISSING", bg=CARD,
                  fg=GOOD if self.runner.is_file() else BAD, font=("DejaVu Sans", 9)).grid(row=0, column=1, sticky="w", padx=12)
         tk.Label(stats, text="De-dither", bg=CARD, fg=MUTED, font=("DejaVu Sans", 8, "bold")).grid(row=1, column=0, sticky="w", pady=(4, 0))
-        tk.Label(stats, text="On (4×4 pattern-aware)" if self.get("dedither", "1") == "1" else "Off", bg=CARD,
+        tk.Label(stats, text="On (temporal 8×8)" if self.get("dedither", "1") == "1" else "Off", bg=CARD,
                  fg=INK, font=("DejaVu Sans", 9)).grid(row=1, column=1, sticky="w", padx=12, pady=(4, 0))
         tk.Label(stats, text="Settings", bg=CARD, fg=MUTED, font=("DejaVu Sans", 8, "bold")).grid(row=2, column=0, sticky="w", pady=(4, 0))
-        tk.Label(stats, text=f"{self.get('aspect', '4:3')}  ·  look {self.get('look', '5')}  ·  "
-                             f"{'fullscreen' if self.get('fullscreen', '0') == '1' else 'window'}",
+        tk.Label(stats, text=f"{self.get('aspect', '16:9')}  ·  look {self.get('look', '1')}  ·  "
+                             f"{'fullscreen' if self.get('fullscreen', '1') == '1' else 'window'}",
                  bg=CARD, fg=INK, font=("DejaVu Sans", 9)).grid(row=2, column=1, sticky="w", padx=12, pady=(4, 0))
 
     def set_language(self, lang: str) -> None:
@@ -850,7 +867,7 @@ class Launcher:
         inner.pack(fill="x", padx=22, pady=14)
         tk.Label(inner, text="Advanced", bg=CARD, fg=GOLD, font=("DejaVu Sans", 10, "bold")).grid(row=0, column=0, columnspan=3, sticky="w", pady=(0, 4))
         self.stepper(inner, 1, "De-dither", "dedither", [("On (soften fades)", "1"), ("Off", "0")], "1",
-                     "4×4 pattern-aware; smoother fades and video, lighter at edges.")
+                     "Temporal 8×8 pattern-aware; smoother fades and video, lighter at edges.")
         self.stepper(inner, 2, "When opened", "bypass", [("Show the launcher", "0"), ("Play immediately", "1")], "0")
         row = tk.Frame(inner, bg=CARD)
         row.grid(row=3, column=0, columnspan=3, sticky="w", pady=(10, 0))
