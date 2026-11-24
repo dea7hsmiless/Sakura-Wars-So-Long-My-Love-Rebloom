@@ -591,10 +591,17 @@ class Launcher:
         if banner_path.is_file():
             try:
                 self.banner_image = tk.PhotoImage(file=str(banner_path))
-                tk.Label(self.content, image=self.banner_image, bg=BG, bd=0).pack(padx=34, pady=(18, 0))
+                tk.Label(self.content, image=self.banner_image, bg=BG, bd=0).pack(anchor="w", padx=34, pady=(18, 0))
             except tk.TclError:
                 self.banner_image = None
-        self.heading("Play", "Your own discs, recompiled for this machine. Nothing is uploaded.")
+        aspect = self.get("aspect", "16:9")
+        scale = self.get("scale", "")
+        window = "fullscreen" if self.get("fullscreen", "1") == "1" else "window"
+        dedither = "de-dither on" if self.get("dedither", "1") == "1" else "de-dither off"
+        display = f"{aspect}  \u00b7  {(scale + 'x') if scale else 'game resolution'}  \u00b7  {window}  \u00b7  {dedither}"
+        if not self.runner.is_file():
+            display += "  \u00b7  game runner missing"
+        self.heading("Play", "Your own discs, recompiled for this machine. Nothing is uploaded.\n" + display)
         disc = self.disc_for()
         card = self.card()
         inner = tk.Frame(card, bg=CARD)
@@ -621,20 +628,6 @@ class Launcher:
                         lambda l=lang: self.set_language(l), width=20).pack(side="left", padx=(0, 8))
         tk.Label(inner, text="Japanese voices require importing Disc 2. Import both discs to switch freely.",
                  bg=CARD, fg=MUTED, font=("DejaVu Sans", 8)).pack(anchor="w", pady=(8, 0))
-
-        card = self.card()
-        stats = tk.Frame(card, bg=CARD)
-        stats.pack(fill="x", padx=22, pady=12)
-        tk.Label(stats, text="Runner", bg=CARD, fg=MUTED, font=("DejaVu Sans", 8, "bold")).grid(row=0, column=0, sticky="w")
-        tk.Label(stats, text="found" if self.runner.is_file() else "MISSING", bg=CARD,
-                 fg=GOOD if self.runner.is_file() else BAD, font=("DejaVu Sans", 9)).grid(row=0, column=1, sticky="w", padx=12)
-        tk.Label(stats, text="De-dither", bg=CARD, fg=MUTED, font=("DejaVu Sans", 8, "bold")).grid(row=1, column=0, sticky="w", pady=(4, 0))
-        tk.Label(stats, text="On (temporal 8×8)" if self.get("dedither", "1") == "1" else "Off", bg=CARD,
-                 fg=INK, font=("DejaVu Sans", 9)).grid(row=1, column=1, sticky="w", padx=12, pady=(4, 0))
-        tk.Label(stats, text="Settings", bg=CARD, fg=MUTED, font=("DejaVu Sans", 8, "bold")).grid(row=2, column=0, sticky="w", pady=(4, 0))
-        tk.Label(stats, text=f"{self.get('aspect', '16:9')}  ·  look {self.get('look', '1')}  ·  "
-                             f"{'fullscreen' if self.get('fullscreen', '1') == '1' else 'window'}",
-                 bg=CARD, fg=INK, font=("DejaVu Sans", 9)).grid(row=2, column=1, sticky="w", padx=12, pady=(4, 0))
 
     def set_language(self, lang: str) -> None:
         self.set("language", lang)
