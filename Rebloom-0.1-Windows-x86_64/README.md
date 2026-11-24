@@ -60,8 +60,8 @@ default **Blend** joins two fields, which is smooth but softens motion. **Off** 
 (sharper, but can show comb edges).
 
 **De-dither:** Settings → Advanced → **De-dither**. The game dithers alpha fades and some video;
-this optional 3×3 average softens that pattern, at the cost of a little detail. Leave it off for
-the sharpest text.
+this 3×3 average softens that pattern and is **on by default**. Turn it off if you prefer the
+sharpest text.
 
 ## Controls
 

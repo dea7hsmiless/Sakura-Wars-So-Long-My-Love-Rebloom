@@ -7,11 +7,11 @@ Prepared 2026-11-23. **Nothing has been published.**
 | Asset | Path | Size |
 |---|---|---|
 | Release folder | `Desktop\Rebloom-0.1-release\` | — |
-| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,735,493 B |
+| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,735,509 B |
 | Extracted tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | 150.7 MB |
 | Source drop (working copy) | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\source\` | — |
 
-Zip SHA-256: `d918abe6bdbe59076273a16b8c2482a012d9c07c0e7d6ced05d5ff8c70208bdd`
+Zip SHA-256: `8900828692af0487c4f30a0ba1edc2a0d5ad2b4a46aff6d1639132bc5f80d6cd`
 
 ## What was verified for this package
 
@@ -35,7 +35,7 @@ Zip SHA-256: `d918abe6bdbe59076273a16b8c2482a012d9c07c0e7d6ced05d5ff8c70208bdd`
   RTX 3070 and logs `[window] exclusive fullscreen 1920x1080`.
 - **Picture look** exposes the runtime's Crisp/Soft/Sharp scaling with optional smooth-edge AA;
   **HD textures** points at an optional folder of PNG overrides. No texture pack is included.
-- **De-dither** is available for the game's dithered alpha fades; it loads
+- **De-dither** is on by default for the game's dithered alpha fades; it loads
   `game\blit-dedither.wgsl` through `PS2_BLIT_SHADER` and was boot-tested.
 - Support reports the code/VU cache size and can clear or open it without touching saves.
 - An ISO can be dragged onto the launcher to import it.

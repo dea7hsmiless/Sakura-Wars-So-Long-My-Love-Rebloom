@@ -38,8 +38,8 @@ running as guest code.
   **Exclusive** (changes the display mode). F11 toggles full screen.
 - **Deinterlace.** Settings -> Display can blend the two fields of 480i film and scenes (default,
   smooth) or show one field (`PS2_NO_DEINTERLACE=1`, sharper but may comb).
-- **De-dither.** Settings -> Advanced can soften the game's dithered alpha fades/video with a
-  light 3x3 average (`game\blit-dedither.wgsl`), at the cost of some text sharpness.
+- **De-dither.** Settings -> Advanced softens the game's dithered alpha fades/video with a light
+  3x3 average (`game\blit-dedither.wgsl`). It is **on by default**; turn it off for sharper text.
 - **Support -> Clear cache** removes the translated-code/VU caches without touching saves or replays.
 - **Rebloom Launcher** is the app's name, with the key art as its window and file icon. The game
   window title is just the game name, and its title bar and taskbar use the same art.

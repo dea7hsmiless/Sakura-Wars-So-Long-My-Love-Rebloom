@@ -1333,9 +1333,9 @@ namespace SakuraLauncher
             else
             {
                 int y2 = 150;
-                ButtonAt(card, "De-dither: " + (Get("dedither", "0") == "1" ? "On (soften)" : "Off"), 24, 24, 260, delegate
+                ButtonAt(card, "De-dither: " + (Get("dedither", "1") == "1" ? "On (soften)" : "Off"), 24, 24, 260, delegate
                 {
-                    Set("dedither", Get("dedither", "0") == "1" ? "0" : "1");
+                    Set("dedither", Get("dedither", "1") == "1" ? "0" : "1");
                     ShowSettingsFor("Advanced");
                 }, false);
                 Label note = LabelAt("The runner is started with the settings above. If the game will not start, use " +
@@ -1623,7 +1623,7 @@ namespace SakuraLauncher
             psi.EnvironmentVariables["PS2_ASPECT"] = Get("aspect", "4:3");
             psi.EnvironmentVariables["PS2_EXCLUSIVE_FULLSCREEN"] = Get("fs_mode", "borderless") == "exclusive" ? "1" : "0";
             if (Get("deinterlace", "blend") == "off") psi.EnvironmentVariables["PS2_NO_DEINTERLACE"] = "1";
-            if (Get("dedither", "0") == "1")
+            if (Get("dedither", "1") == "1")
             {
                 string shader = Path.Combine(baseDir, @"game\blit-dedither.wgsl");
                 if (File.Exists(shader)) psi.EnvironmentVariables["PS2_BLIT_SHADER"] = shader;
