@@ -1,4 +1,4 @@
-A native build of **Sakura Wars V: So Long, My Love** (PlayStation 2), made by static
+A native build of **Sakura Wars: So Long, My Love** (PlayStation 2), made by static
 recompilation, for Windows, Linux, Android and iOS. This package contains the port only;
 **you need your own discs.**
 
@@ -11,7 +11,7 @@ disc reads and module loading are answered by the runtime.
 
 ![Rebloom Launcher](screenshots/launcher.png)
 
-![Sakura Wars V running](screenshots/game.png)
+![Sakura Wars: So Long, My Love running](screenshots/game.png)
 
 ## Downloads
 

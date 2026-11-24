@@ -49,4 +49,4 @@ Inside the Windows zip:
 
 No disc image and no extracted disc files are in this package. The game executable and the
 translated sources are derived from the owner's own disc; both are useless without the
-matching disc. Published on GitHub: https://github.com/dea7hsmiless/Sakura-Wars-V-Rebloom
+matching disc. Published on GitHub: https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom

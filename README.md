@@ -1,14 +1,14 @@
-<p align="center"><img src="Rebloom-0.1-Windows-x86_64/art/hero.jpg" alt="Sakura Wars V: So Long, My Love key art" width="1200"></p>
-<p align="center"><img src="Rebloom-0.1-Windows-x86_64/art/logo.png" alt="Sakura Wars V: So Long, My Love — Rebloom" width="560"></p>
+<p align="center"><img src="Rebloom-0.1-Windows-x86_64/art/hero.jpg" alt="Sakura Wars: So Long, My Love key art" width="1200"></p>
+<p align="center"><img src="Rebloom-0.1-Windows-x86_64/art/logo.png" alt="Sakura Wars: So Long, My Love — Rebloom" width="560"></p>
 
-<p align="center"><strong>Sakura Wars V: So Long, My Love, rebuilt to run natively on PC and mobile.</strong><br>
+<p align="center"><strong>Sakura Wars: So Long, My Love, rebuilt to run natively on PC and mobile.</strong><br>
 PlayStation 2 code translated to native C++ — no emulator, no BIOS — for Windows, Linux, Android and iOS.</p>
 
-<p align="center"><a href="https://github.com/dea7hsmiless/Sakura-Wars-V-Rebloom/releases">Releases</a> · <a href="RELEASE-HANDOFF.md">Test notes</a> · <a href="#build-from-source">Build from source</a></p>
+<p align="center"><a href="https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases">Releases</a> · <a href="RELEASE-HANDOFF.md">Test notes</a> · <a href="#build-from-source">Build from source</a></p>
 
-# Sakura Wars V: Rebloom
+# Sakura Wars: So Long, My Love — Rebloom
 
-A native recompilation of **Sakura Wars V: So Long, My Love** (PlayStation 2) for Windows,
+A native recompilation of **Sakura Wars: So Long, My Love** (PlayStation 2) for Windows,
 Linux, Android and iOS. The game's own PS2 code is translated to C++ ahead of time and compiled
 into a normal program. No emulator and no BIOS are involved.
 
@@ -22,7 +22,7 @@ included.** This is an unofficial fan project.
 
 | | |
 | --- | --- |
-| ![Rebloom Launcher on Windows](screenshots/launcher.png) | ![Sakura Wars V running](screenshots/game.png) |
+| ![Rebloom Launcher on Windows](screenshots/launcher.png) | ![Sakura Wars: So Long, My Love running](screenshots/game.png) |
 | **Rebloom Launcher** — Sakura palette, key art and five-page rail. | **In game** — the recompiled PS2 renderer at 1080p. |
 
 ## Which discs do I need?
@@ -35,17 +35,17 @@ freely. The launcher copies the ISO into its own `discs/` folder and verifies th
 
 ## Downloads
 
-Get the latest packages from [Releases](https://github.com/dea7hsmiless/Sakura-Wars-V-Rebloom/releases).
+Get the latest packages from [Releases](https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases).
 
 | Platform | Download | Requirements |
 | --- | --- | --- |
-| Windows | [Rebloom-0.1-Windows-x86_64.zip](https://github.com/dea7hsmiless/Sakura-Wars-V-Rebloom/releases/latest/download/Rebloom-0.1-Windows-x86_64.zip) | Windows 10/11 x64; Direct3D 12 or Vulkan; your own disc |
-| Linux | [Rebloom-0.1-x86_64.AppImage](https://github.com/dea7hsmiless/Sakura-Wars-V-Rebloom/releases/latest/download/Rebloom-0.1-x86_64.AppImage) | x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland |
-| Linux alternative | [Rebloom-0.1-Linux-x86_64.tar.gz](https://github.com/dea7hsmiless/Sakura-Wars-V-Rebloom/releases/latest/download/Rebloom-0.1-Linux-x86_64.tar.gz) | Same AppDir package for systems that cannot run an AppImage |
-| Android | [Rebloom-0.1-android-arm64.apk](https://github.com/dea7hsmiless/Sakura-Wars-V-Rebloom/releases/latest/download/Rebloom-0.1-android-arm64.apk) | Android 9+ arm64; Vulkan GPU with 7+ storage buffers; debug-signed sideload |
-| iOS | [Rebloom-0.1-ios-unsigned.ipa](https://github.com/dea7hsmiless/Sakura-Wars-V-Rebloom/releases/latest/download/Rebloom-0.1-ios-unsigned.ipa) | iOS 16.4+ arm64; unsigned — sign with your own certificate |
+| Windows | [Rebloom-0.1-Windows-x86_64.zip](https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases/latest/download/Rebloom-0.1-Windows-x86_64.zip) | Windows 10/11 x64; Direct3D 12 or Vulkan; your own disc |
+| Linux | [Rebloom-0.1-x86_64.AppImage](https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases/latest/download/Rebloom-0.1-x86_64.AppImage) | x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland |
+| Linux alternative | [Rebloom-0.1-Linux-x86_64.tar.gz](https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases/latest/download/Rebloom-0.1-Linux-x86_64.tar.gz) | Same AppDir package for systems that cannot run an AppImage |
+| Android | [Rebloom-0.1-android-arm64.apk](https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases/latest/download/Rebloom-0.1-android-arm64.apk) | Android 9+ arm64; Vulkan GPU with 7+ storage buffers; debug-signed sideload |
+| iOS | [Rebloom-0.1-ios-unsigned.ipa](https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases/latest/download/Rebloom-0.1-ios-unsigned.ipa) | iOS 16.4+ arm64; unsigned — sign with your own certificate |
 
-[SHA256SUMS.txt](https://github.com/dea7hsmiless/Sakura-Wars-V-Rebloom/releases/latest/download/SHA256SUMS.txt)
+[SHA256SUMS.txt](https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases/latest/download/SHA256SUMS.txt)
 is attached to every release. The Windows zip also contains the full rebuild source.
 
 ## Quick start

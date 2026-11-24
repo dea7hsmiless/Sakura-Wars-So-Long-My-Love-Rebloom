@@ -1,6 +1,6 @@
 # Rebloom 0.1 — release handoff
 
-Prepared 2026-11-23; mobile builds refreshed 2026-11-24. **Published on GitHub:** https://github.com/dea7hsmiless/Sakura-Wars-V-Rebloom
+Prepared 2026-11-23; mobile builds refreshed 2026-11-24. **Published on GitHub:** https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom
 
 ## Where it is
 
