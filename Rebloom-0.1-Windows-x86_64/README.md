@@ -55,6 +55,10 @@ overrides; no texture pack is included.
 **Borderless** (the safe default, keeps the desktop mode) or **Exclusive** (changes the display
 mode, like a classic full-screen game). **F11** toggles full screen.
 
+**Deinterlace:** Settings → Display → **Deinterlace**. PS2 films and some scenes are 480i; the
+default **Blend** joins two fields, which is smooth but softens motion. **Off** shows one field
+(sharper, but can show comb edges).
+
 ## Controls
 
 | Key | Action |
