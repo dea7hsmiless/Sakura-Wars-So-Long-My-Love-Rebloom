@@ -45,15 +45,16 @@ something is missing) and tested by driving the real build through UI Automation
 | 35 | First-run stutter could only be fixed by deleting folders by hand. | Support shows the code/VU cache size and offers **Clear cache** / **Open cache**. |
 | 36 | The existing smooth-edge AA and texture override support were not exposed. | **Picture look** exposes Crisp/Soft/Sharp with optional edge AA; **HD textures** selects a PNG override folder. |
 | 37 | Full screen was always SDL's borderless desktop mode. | Display now offers **Borderless** or **Exclusive** (`PS2_EXCLUSIVE_FULLSCREEN=1`); exclusive falls back to borderless if refused. |
+| 38 | Browse still left the game pointing at an external ISO. | Browse, a typed path and drag-and-drop all run the importer; only a file already in `discs\` is used in place. |
 
 ## Open
 
 | # | Finding |
 |---|---|
-| 37 | **Add shortcut** points at whichever launcher built it, so a source-built shortcut can outlive a moved folder. |
-| 38 | The rail badge is the full wordmark squeezed into 188x84; a square `mark.png` would read better. |
-| 39 | Only Windows 11 at 100% has been used for real; DPI layouts were checked with the `--ui-scale` QA flag. |
-| 40 | True Hor+ widescreen needs a game patch; PCSX2 has none for this disc's CRC (`5AC9154D`). |
+| 39 | **Add shortcut** points at whichever launcher built it, so a source-built shortcut can outlive a moved folder. |
+| 40 | The rail badge is the full wordmark squeezed into 188x84; a square `mark.png` would read better. |
+| 41 | Only Windows 11 at 100% has been used for real; DPI layouts were checked with the `--ui-scale` QA flag. |
+| 42 | True Hor+ widescreen needs a game patch; PCSX2 has none for this disc's CRC (`5AC9154D`). |
 
 ## Verified after the fixes
 

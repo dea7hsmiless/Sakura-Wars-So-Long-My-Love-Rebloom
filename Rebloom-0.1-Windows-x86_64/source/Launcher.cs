@@ -1027,9 +1027,7 @@ namespace SakuraLauncher
             d.Filter = "Disc images (*.iso)|*.iso|All files (*.*)|*.*";
             d.Title = Language == "jp" ? "Choose the Japanese-voice disc (Disc 2)" : "Choose the English-voice disc (Disc 1)";
             if (d.ShowDialog(this) != DialogResult.OK) return;
-            Set(Language == "jp" ? "disc_jp" : "disc_en", d.FileName);
-            Append("disc " + (Language == "jp" ? "(Japanese voices)" : "(English voices)") + " = " + d.FileName);
-            ShowSetup();
+            ImportFrom(d.FileName);
         }
 
         // Install page: copy the chosen disc image into discs\ so the folder is self-contained and the source copy can go.
@@ -1173,7 +1171,35 @@ namespace SakuraLauncher
             box.BorderStyle = BorderStyle.FixedSingle;
             box.Font = new Font("Consolas", 9f);
             box.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            box.TextChanged += delegate { Set(key, box.Text); UpdateStatus(); };
+            Action commit = delegate
+            {
+                if (box.IsDisposed) return;
+                string path = box.Text.Trim().Trim('"');
+                if (path.Length == 0) return;
+                if (!File.Exists(path))
+                {
+                    MessageBox.Show(this, "That disc image is not there:\n" + path, "Disc image",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                string dir = Path.Combine(baseDir, "discs");
+                string root = Path.GetFullPath(dir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                string full = Path.GetFullPath(path);
+                if (full.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+                {
+                    Set(key, full);
+                    UpdateStatus();
+                    return;
+                }
+                ImportFrom(full);   // every external path is copied into discs\
+            };
+            box.KeyDown += delegate(object s, KeyEventArgs e)
+            {
+                if (e.KeyCode != Keys.Enter) return;
+                e.SuppressKeyPress = true;
+                commit();
+            };
+            box.Leave += delegate { commit(); };
             card.Controls.Add(box);
 
             RoundButton browse = new RoundButton();
@@ -1191,7 +1217,7 @@ namespace SakuraLauncher
                 {
                     OpenFileDialog d = new OpenFileDialog();
                     d.Filter = "Disc images (*.iso)|*.iso|All files (*.*)|*.*";
-                    if (d.ShowDialog(this) == DialogResult.OK) box.Text = d.FileName;
+                    if (d.ShowDialog(this) == DialogResult.OK) ImportFrom(d.FileName);
                 }
             };
             card.Controls.Add(browse);

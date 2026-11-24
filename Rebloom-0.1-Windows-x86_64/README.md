@@ -25,8 +25,9 @@ program contains only translated code and the runtime that runs it.
 1. Extract this folder anywhere, for example `C:\Games\Rebloom`.
 2. Press **Import disc image…** on the Install page — when no disc is present, the **Install**
    button does this for you. It copies the ISO into `discs\`, so the file you imported from can
-   be deleted afterwards. Use Disc 1 for English voices; **import Disc 2 as well for Japanese
-   voices.**
+   be deleted afterwards. **Browse and a typed path also copy the file into `discs\`**; there is no
+   way to leave the game pointing at an external image. Use Disc 1 for English voices; **import
+   Disc 2 as well for Japanese voices.**
 3. Run **Rebloom Launcher.exe** (or `Launch Rebloom.cmd`, which rebuilds it from source if it is missing)
    and press **Play**.
 

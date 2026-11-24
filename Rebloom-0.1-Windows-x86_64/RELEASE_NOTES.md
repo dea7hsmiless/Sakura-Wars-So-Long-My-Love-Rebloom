@@ -23,7 +23,8 @@ running as guest code.
   launcher at the copy, so the file you imported from can be deleted. The same thing is available
   as `Rebloom Launcher.exe --import <disc.iso>`. It reads the boot ELF (`SLUS_219.27` or
   `SLUS_219.30`) to choose the voice slot, checks free space and the filesystem, verifies the
-  copied size, and accepts an ISO dragged onto the window. Disc 1 has English voices; **import
+  copied size, and accepts an ISO dragged onto the window. **Browse and a typed path use the same
+  importer**, so every route ends with a copy in `discs\`. Disc 1 has English voices; **import
   Disc 2 as well for Japanese**.
 - **Portable settings.** Paths inside the folder are stored relative to it, so moving or renaming
   the install keeps the imported disc and settings working.
