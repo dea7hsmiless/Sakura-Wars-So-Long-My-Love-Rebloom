@@ -989,12 +989,127 @@ class Launcher:
                  font=("DejaVu Sans", 8)).pack(anchor="w", pady=(12, 0))
 
 
+def _say(text: str) -> None:
+    try:
+        print(text, file=sys.stderr, flush=True)
+    except Exception:  # noqa: BLE001 - a windowed build may have no stderr
+        pass
+
+
+def direct_main(args) -> int:
+    """RecompLauncher's start path: no window, no copy, wait for the game and return its exit code."""
+    if args.data:
+        try:
+            os.environ["REBLOOM_HOME"] = str(Path(args.data).expanduser().resolve())
+        except OSError as exc:
+            _say(f"{APP}: bad data folder: {exc}")
+            return 3
+
+    state = state_dir()
+    try:
+        state.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        _say(f"{APP}: could not make the data folder: {exc}")
+        return 3
+
+    ini: dict[str, str] = {}
+    try:
+        for raw in (state / "launcher.ini").read_text(encoding="utf-8", errors="replace").splitlines():
+            line = raw.strip()
+            if not line or line[0] in ";#":
+                continue
+            key, sep, value = line.partition("=")
+            if sep and key.strip():
+                ini[key.strip()] = value.strip()
+    except FileNotFoundError:
+        pass
+    except OSError as exc:
+        _say(f"{APP}: could not read launcher.ini: {exc}")
+
+    def get(key: str, fallback: str) -> str:
+        return ini.get(key) or fallback
+
+    resources = resource_dir()
+    runner = resources / "game" / "SakuraWarsV"
+    if not runner.is_file():
+        _say(f"{APP}: the game runner is missing: {runner}")
+        return 3
+
+    language = args.lang or get("language", "en")
+    disc = args.disc2 if language == "jp" else args.disc1
+    if not disc:
+        _say(f"{APP}: {'Disc 2 (Japanese voices)' if language == 'jp' else 'Disc 1 (English voices)'} was not selected.")
+        return 2
+    disc_path = Path(disc)
+    if not disc_path.is_file():
+        _say(f"{APP}: the disc image is missing: {disc_path}")
+        return 2
+
+    game_dir = state / "game" / "data"
+    try:
+        game_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        _say(f"{APP}: could not make the save folder: {exc}")
+        return 3
+    memcard = game_dir / ("play-japanese.ps2" if language == "jp" else "play-english.ps2")
+    fullscreen = get("fullscreen", "1") == "1"
+
+    env = os.environ.copy()
+    if get("scale", ""):
+        env["PS2_SCALE"] = get("scale", "")
+    if get("sharp", ""):
+        env["PS2_SHARP_2D"] = get("sharp", "")
+    env["PS2_LOOK"] = get("look", "1")
+    textures = state / "game" / "textures"
+    if textures.is_dir():
+        env["PS2_TEX_OVERRIDE_DIR"] = str(textures)
+    env["PS2_ASPECT"] = get("aspect", "16:9")
+    env["PS2_EXCLUSIVE_FULLSCREEN"] = "1" if get("fs_mode", "exclusive") == "exclusive" else "0"
+    if get("deinterlace", "off") == "off":
+        env["PS2_NO_DEINTERLACE"] = "1"
+    shader = resources / "game" / "blit-dedither.wgsl"
+    if get("dedither", "1") == "1" and shader.is_file():
+        env["PS2_BLIT_SHADER"] = str(shader)
+    env["PS2_PRESENT_MODE"] = get("vsync", "fifo")
+    env["PS2_FRAME_LATENCY"] = get("latency", "2")
+    env["PS2_WINDOW_TITLE"] = TITLE
+    if get("backend", ""):
+        env["PS2_GPU_BACKEND"] = get("backend", "")
+
+    launch = [
+        str(runner),
+        "--disc", str(disc_path),
+        "--game-dir", str(game_dir),
+        "--memcard", str(memcard),
+        "--fullscreen" if fullscreen else "--window",
+    ]
+    try:
+        proc = subprocess.Popen(launch, cwd=str(resources / "game"), env=env)
+    except OSError as exc:
+        _say(f"{APP}: the game could not start: {exc}")
+        return 3
+    return proc.wait()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--import", dest="import_path")
     parser.add_argument("--play", action="store_true")
     parser.add_argument("--launcher", action="store_true")
+    parser.add_argument("--direct", action="store_true")
+    parser.add_argument("--disc1")
+    parser.add_argument("--disc2")
+    parser.add_argument("--lang")
+    parser.add_argument("--data")
     args, _ = parser.parse_known_args()
+
+    if args.data:
+        try:
+            os.environ["REBLOOM_HOME"] = str(Path(args.data).expanduser().resolve())
+        except OSError:
+            pass
+    if args.direct:
+        return direct_main(args)
 
     root = tk.Tk()
     try:

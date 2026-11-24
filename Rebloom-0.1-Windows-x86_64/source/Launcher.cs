@@ -860,7 +860,12 @@ namespace SakuraLauncher
     sealed class Launcher : Form
     {
         readonly string baseDir;
+        readonly string stateDir;
         readonly string iniPath;
+        readonly bool direct;
+        readonly string directDiscEn;
+        readonly string directDiscJp;
+        readonly string directLanguage;
         readonly Dictionary<string, string> ini = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         readonly Label status = new Label();
@@ -882,14 +887,22 @@ namespace SakuraLauncher
         readonly float uiScale;
         readonly string importPath;
 
-        public Launcher(bool autoPlay, string importPath, float uiScale, bool forceLauncher)
+        public Launcher(bool autoPlay, string importPath, float uiScale, bool forceLauncher,
+                        bool direct = false, string directDiscEn = null, string directDiscJp = null,
+                        string directLanguage = null, string dataDir = null)
         {
             this.autoPlay = autoPlay;
             this.forceLauncher = forceLauncher;
             this.uiScale = uiScale;
             this.importPath = importPath;
+            this.direct = direct;
+            this.directDiscEn = directDiscEn;
+            this.directDiscJp = directDiscJp;
+            this.directLanguage = directLanguage;
             baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            iniPath = Path.Combine(baseDir, "launcher.ini");
+            stateDir = string.IsNullOrWhiteSpace(dataDir) ? baseDir : Path.GetFullPath(dataDir);
+            if (direct) Directory.CreateDirectory(stateDir);
+            iniPath = Path.Combine(stateDir, "launcher.ini");
             LoadIni();
             Palette.Apply(Get("theme", "sakura"));
 
@@ -905,6 +918,14 @@ namespace SakuraLauncher
             Size = new Size(1200, 800);
             MinimumSize = new Size(1000, 700);
             StartPosition = FormStartPosition.CenterScreen;
+            if (direct)
+            {
+                // RecompLauncher starts this with --direct: keep the launcher off-screen and let the game's window be the only one.
+                ShowInTaskbar = false;
+                WindowState = FormWindowState.Minimized;
+                StartPosition = FormStartPosition.Manual;
+                Location = new Point(-32000, -32000);
+            }
             BackColor = Palette.Bg;
             ForeColor = Palette.Ink;
             Font = new Font("Segoe UI", 10f);
@@ -1057,6 +1078,7 @@ namespace SakuraLauncher
                 List<string> lines = new List<string>();
                 lines.Add("; Sakura Wars V launcher settings");
                 foreach (KeyValuePair<string, string> kv in ini) lines.Add(kv.Key + "=" + kv.Value);
+                Directory.CreateDirectory(Path.GetDirectoryName(iniPath));
                 File.WriteAllLines(iniPath, lines.ToArray());
             }
             catch (Exception ex) { Append("settings: " + ex.Message); }
@@ -1197,6 +1219,7 @@ namespace SakuraLauncher
         {
             get
             {
+                if (!string.IsNullOrEmpty(directDiscEn)) return directDiscEn;
                 string found = FindDisc("en");
                 if (found.Length > 0) return found;
                 string stored = Get("disc_en", "");
@@ -1208,6 +1231,7 @@ namespace SakuraLauncher
         {
             get
             {
+                if (!string.IsNullOrEmpty(directDiscJp)) return directDiscJp;
                 string found = FindDisc("jp");
                 if (found.Length > 0) return found;
                 string stored = Get("disc_jp", "");
@@ -1215,8 +1239,12 @@ namespace SakuraLauncher
                 return IsPortable ? "" : @"C:\recomp\work\ps2\Sakura Wars - So Long, My Love (USA) (Disc 2) (Japanese Voice Over).iso";
             }
         }
-        string Language { get { return Get("language", "en"); } }
+        string Language { get { return !string.IsNullOrEmpty(directLanguage) ? directLanguage : Get("language", "en"); } }
         string DiscForLanguage { get { return Language == "jp" ? DiscJp : DiscEn; } }
+
+        // Direct starts keep saves in {data} (RecompLauncher's folder); the normal launcher keeps them beside the game.
+        string MemcardDir { get { return Path.Combine(stateDir, @"game\data"); } }
+        string MemcardPath { get { return Path.Combine(MemcardDir, Language == "jp" ? "play-japanese.ps2" : "play-english.ps2"); } }
 
         // ---------- shell ----------
 
@@ -2134,7 +2162,7 @@ namespace SakuraLauncher
             args.Add("--game-dir");
             args.Add(Quote(GameDir));
             args.Add("--memcard");
-            args.Add(Quote(Path.Combine(GameDir, Language == "jp" ? "play-japanese.ps2" : "play-english.ps2")));
+            args.Add(Quote(MemcardPath));
             args.Add(Get("fullscreen", "1") == "1" ? "--fullscreen" : "--window");
             return args;
         }
@@ -2185,8 +2213,16 @@ namespace SakuraLauncher
                 MessageBox.Show(this, "The game is already running.", "Sakura Wars");
                 return;
             }
-            if (DiscForLanguage.Length == 0)
+            if (DiscForLanguage.Length == 0 || (direct && !File.Exists(DiscForLanguage)))
             {
+                if (direct)
+                {
+                    Append("direct launch: the selected disc image is missing: " + DiscForLanguage);
+                    Environment.ExitCode = 2;
+                    closingAfterLaunch = true;
+                    Close();
+                    return;
+                }
                 ShowSetup();
                 MessageBox.Show(this, Language == "jp"
                     ? "Japanese voices need Disc 2 (SLUS_219.30).\n\nPut it in discs\\ or use Import disc image."
@@ -2205,6 +2241,7 @@ namespace SakuraLauncher
             try
             {
                 Directory.CreateDirectory(GameDir);   // the runner wants its game folder to exist
+                Directory.CreateDirectory(MemcardDir);
                 Append("play: " + LaunchLine());
                 Append("      display: " + (Get("scale", "3").Length > 0 ? Get("scale", "3") + "x" : "game's own resolution") +
                        ", " + (Get("sharp", "").Length > 0 ? "2D filter " + Get("sharp", "") : "game's own 2D filter") +
@@ -2220,6 +2257,13 @@ namespace SakuraLauncher
             catch (Exception ex)
             {
                 Append("launch failed: " + ex.Message);
+                if (direct)
+                {
+                    Environment.ExitCode = 3;
+                    closingAfterLaunch = true;
+                    Close();
+                    return;
+                }
                 MessageBox.Show(this, "The game did not start:\n" + ex.Message + "\n\nLine:\n" + LaunchLine(),
                                 "Sakura Wars");
             }
@@ -2236,13 +2280,42 @@ namespace SakuraLauncher
                 e.Cancel = true;
                 return;
             }
-            SaveIni();
+            if (!direct) SaveIni();
             base.OnFormClosing(e);
         }
 
         protected override void OnShown(EventArgs e)
         {
             base.OnShown(e);
+            if (direct)
+            {
+                // RecompLauncher: start the game, wait for it to close, and pass its exit code back without a window.
+                closingAfterLaunch = true;
+                BeginInvoke(new Action(delegate
+                {
+                    PlayGame();
+                    if (job == null) { Close(); return; }
+                    job.EnableRaisingEvents = true;
+                    job.Exited += delegate
+                    {
+                        try
+                        {
+                            BeginInvoke(new Action(delegate
+                            {
+                                Environment.ExitCode = job.ExitCode;
+                                Close();
+                            }));
+                        }
+                        catch { }
+                    };
+                    if (job.HasExited)
+                    {
+                        Environment.ExitCode = job.ExitCode;
+                        Close();
+                    }
+                }));
+                return;
+            }
             // QA hook: --ui-scale 1.5 renders the same layout at 150% without changing Windows' display DPI.
             if (uiScale > 0.01f && Math.Abs(uiScale - 1f) > 0.01f)
             {
@@ -2283,6 +2356,18 @@ namespace SakuraLauncher
             if (autoPlay) BeginInvoke(new Action(PlayGame));  // --play --launcher: fill the window, then start
         }
 
+        static string ArgValue(string[] args, string name)
+        {
+            for (int i = 0; i < args.Length; ++i)
+            {
+                if (string.Equals(args[i], name, StringComparison.Ordinal))
+                    return i + 1 < args.Length ? args[i + 1] : null;
+                if (args[i].StartsWith(name + "=", StringComparison.Ordinal))
+                    return args[i].Substring(name.Length + 1);
+            }
+            return null;
+        }
+
         [STAThread]
         static void Main(string[] args)
         {
@@ -2290,8 +2375,13 @@ namespace SakuraLauncher
             Application.SetCompatibleTextRenderingDefault(false);
             bool play = Array.IndexOf(args, "--play") >= 0;
             bool forceLauncher = Array.IndexOf(args, "--launcher") >= 0;
+            bool direct = Array.IndexOf(args, "--direct") >= 0;
             int at = Array.IndexOf(args, "--import");
             string import = at >= 0 && at + 1 < args.Length ? args[at + 1] : null;
+            string disc1 = ArgValue(args, "--disc1");
+            string disc2 = ArgValue(args, "--disc2");
+            string lang = ArgValue(args, "--lang");
+            string data = ArgValue(args, "--data");
             float uiScale = 1f;
             int scaleAt = Array.IndexOf(args, "--ui-scale");
             if (scaleAt >= 0 && scaleAt + 1 < args.Length)
@@ -2299,7 +2389,7 @@ namespace SakuraLauncher
                 float parsed;
                 if (float.TryParse(args[scaleAt + 1], out parsed) && parsed >= 0.5f && parsed <= 3f) uiScale = parsed;
             }
-            Application.Run(new Launcher(play, import, uiScale, forceLauncher));
+            Application.Run(new Launcher(play, import, uiScale, forceLauncher, direct, disc1, disc2, lang, data));
         }
     }
 }
