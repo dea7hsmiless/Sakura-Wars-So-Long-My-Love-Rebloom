@@ -7,11 +7,11 @@ Prepared 2026-11-23. **Nothing has been published.**
 | Asset | Path | Size |
 |---|---|---|
 | Release folder | `Desktop\Rebloom-0.1-release\` | — |
-| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,735,469 B |
+| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,735,491 B |
 | Extracted tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | 150.7 MB |
 | Source drop (working copy) | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\source\` | — |
 
-Zip SHA-256: `c03899fd450878e663ebfebdca34b4c3b86b4efc850a62a6ec053961f87a6bc7`
+Zip SHA-256: `a1d62fc36a8b658cf309a832e44521bc71ebc5d8dc7d92af6dcf683b150595ff`
 
 ## What was verified for this package
 

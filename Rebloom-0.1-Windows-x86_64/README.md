@@ -59,7 +59,7 @@ mode, like a classic full-screen game). **F11** toggles full screen.
 default **Blend** joins two fields, which is smooth but softens motion. **Off** shows one field
 (sharper, but can show comb edges).
 
-**De-dither:** Settings → Advanced → **De-dither**. The game dithers alpha fades and some video;
+**De-dither:** Settings → Graphics → **De-dither**. The game dithers alpha fades and some video;
 this optional 3×3 average softens that pattern, at the cost of a little detail. Leave it off for
 the sharpest text.
 
