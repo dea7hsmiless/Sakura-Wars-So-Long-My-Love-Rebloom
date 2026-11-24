@@ -9,9 +9,9 @@ disc reads and module loading are answered by the runtime.
 
 ## Screenshots
 
-![Rebloom Launcher](screenshots/launcher.png)
+![Sakura Wars opening dialogue](screenshots/01-opening-dialogue.png)
 
-![Sakura Wars: So Long, My Love running](screenshots/game.png)
+![Sakura Wars city arrival](screenshots/03-city-arrival.png)
 
 ## Downloads
 

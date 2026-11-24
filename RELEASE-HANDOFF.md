@@ -172,8 +172,8 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 ## Before publishing
 
 1. Decide the repository and tag: `v0.1`, with all four downloads attached.
-2. Upload `screenshots\launcher.png` and `screenshots\game.png`, then replace the download table
-   in `RELEASE-PAGE.md` with live asset URLs.
+2. Upload the six `screenshots\01-...` images, then replace the download table in
+   `RELEASE-PAGE.md` with live asset URLs.
 3. Re-check every hash after any change and update `SHA256SUMS.txt` and `LABEL.txt`.
 4. Sign the iOS IPA for distribution, or label it clearly as a developer build.
 5. The package ships `game\SakuraWarsV.exe`, which contains code translated from the disc. That

@@ -12,7 +12,7 @@ In this folder:
   LAUNCHER-AUDIT.md                    launcher findings, fixed and open
   ROADMAP.md                           platform status
   store-icon-512.png                   icon for a store or release page
-  screenshots\                         launcher.png and game.png for the release page
+  screenshots\                         01-opening-dialogue.png ... 06-city-crowd.png (README gallery)
 
 Mobile builds:
   mobile\android\dist\Rebloom-0.1-android-arm64.apk   50,034,100 B  sha256 33606b015243fed6292971ec39172f3c0e0c0506bec9948ce0d7d9787ea417ee
