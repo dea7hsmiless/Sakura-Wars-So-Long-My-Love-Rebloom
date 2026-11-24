@@ -17,7 +17,7 @@ running as guest code.
   executable plays the English-voice and Japanese-voice discs.
 - **60 fps** at 1080p on an RTX 3070 with ~14% CPU use.
 - **Launcher** with display, resolution, vsync, frame-latency, aspect, GPU-backend and
-  controller-menu options, plus per-language memory cards.
+  keyboard/gamepad binding editors, plus per-language memory cards.
 - **Install imports your disc image.** When no disc is present, the **Install** button opens the
   importer directly. It copies the ISO into `discs\` with progress and cancel, then points the
   launcher at the copy, so the file you imported from can be deleted. The same thing is available
@@ -34,12 +34,18 @@ running as guest code.
   **Quality** (2x, sharpest 2D, V-Sync) presets; every value can still be changed individually.
   **Picture look** exposes the runtime's Crisp/Soft/Sharp scaling and smooth-edge AA, and **HD
   textures** can point at a folder of PNG overrides (no pack ships).
-- **Full screen mode.** Settings -> Display can use **Borderless** (desktop mode, safe default) or
-  **Exclusive** (changes the display mode). F11 toggles full screen.
-- **Deinterlace.** Settings -> Display can blend the two fields of 480i film and scenes (default,
-  smooth) or show one field (`PS2_NO_DEINTERLACE=1`, sharper but may comb).
-- **De-dither.** Settings -> Advanced softens the game's dithered alpha fades/video with a light
-  3x3 average (`game\blit-dedither.wgsl`). It is **on by default**; turn it off for sharper text.
+- **Full screen mode.** Settings -> Display can use **Exclusive** (the default; changes the display
+  mode like a classic full-screen game) or **Borderless** (keeps the desktop mode). F11 toggles full
+  screen.
+- **Deinterlace.** Settings -> Display shows one field by default (`PS2_NO_DEINTERLACE=1`, sharper
+  but may comb) or blends the two fields of 480i film and scenes (smooth, softer).
+- **Controls.** Settings -> Controls edits keyboard bindings (Change, then press the key; arrows,
+  Tab and Enter work) and maps gamepad buttons. It writes `game\data\keys.ini` and
+  `game\data\gamepad.ini`; the game re-reads them within a second.
+- **De-dither.** Settings -> Advanced softens the game's dithered alpha fades/video with a
+  pattern-aware 8x8 average and a previous-frame blend (`game\blit-dedither.wgsl`). It is **on by
+  default**; flat fades and video transitions get the full filter, while edges and text keep
+  their detail.
 - **Support -> Clear cache** removes the translated-code/VU caches without touching saves or replays.
 - **Rebloom Launcher** is the app's name, with the key art as its window and file icon. The game
   window title is just the game name, and its title bar and taskbar use the same art.

@@ -1,0 +1,50 @@
+plugins { id 'com.android.application' }
+
+def repo = new File('C:/recomp/ps2-native-recomp')
+def sdl = new File('C:/Users/Donte/Documents/Codex/ios-toolchain-references/SDL2')
+def runtime = new File('C:/Users/Donte/AppData/Local/Temp/opencode/android-runtime28')
+def wgpu = new File(repo, 'third_party/wgpu-native-android-aarch64')
+def gen = new File(repo, 'generated/sakura5')
+
+// Gradle hands these to CMake as -D defines on the command line; a Windows
+// backslash there is an escape character, so every path goes in with slashes.
+static String slashed(File f) { return f.absolutePath.replace('\\', '/') }
+
+android {
+    namespace 'com.rebloom.sakurawarsv'
+    compileSdk 35
+    ndkVersion '30.0.16248370'
+
+    defaultConfig {
+        applicationId 'com.rebloom.sakurawarsv'
+        minSdk 28
+        targetSdk 35
+        versionCode 1
+        versionName '0.1'
+        ndk { abiFilters 'arm64-v8a' }
+        externalNativeBuild {
+            cmake {
+                arguments "-DREBLOOM_ROOT=${slashed(repo)}", "-DREBLOOM_GEN=${slashed(gen)}",
+                          "-DREBLOOM_RUNTIME=${slashed(runtime)}", "-DREBLOOM_SDL=${slashed(sdl)}",
+                          "-DREBLOOM_WGPU=${slashed(wgpu)}", '-DANDROID_STL=c++_static'
+            }
+        }
+    }
+    externalNativeBuild {
+        cmake { path 'src/main/jni/CMakeLists.txt' }
+    }
+    sourceSets {
+        main {
+            java.srcDirs += slashed(new File(sdl, 'android-project/app/src/main/java'))
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}

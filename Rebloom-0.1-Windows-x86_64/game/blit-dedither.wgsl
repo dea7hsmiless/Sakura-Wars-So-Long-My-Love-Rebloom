@@ -249,13 +249,43 @@ fn fs(in: VertexOut) -> @location(0) vec4<f32> {
         c = scene(in.uv);
         if ((blit.options & 1u) != 0u) { c = edge_aa(in.uv, c); }
     }
-    // Optional de-dither: a light 3x3 average at source resolution. The game dithers alpha fades
-    // and some video; this softens the 1-pixel pattern at the cost of a little detail.
+    // Strong de-dither for a 2x render scale: the 4x4 dither of the original 640x480 picture is an
+    // 8x8 pattern in the 1280x960 framebuffer, so the normal 4x4 average only covers half a period.
+    // Sixteen bilinear reads at half-pixel offsets make a uniform 8x8 source-resolution average.
+    // The edge test still uses a 4x4 block, so text and hard edges keep most of their detail.
     let px = vec2<f32>(1.0 / f32(blit.width), 1.0 / f32(blit.height));
-    let n = scene(in.uv + vec2<f32>(0.0, -px.y));
-    let s = scene(in.uv + vec2<f32>(0.0, px.y));
-    let w = scene(in.uv + vec2<f32>(-px.x, 0.0));
-    let e = scene(in.uv + vec2<f32>(px.x, 0.0));
-    c = (c * 4.0 + n + s + w + e) / 8.0;
+    let a00 = scene(in.uv + vec2<f32>(-3.5, -3.5) * px);
+    let a10 = scene(in.uv + vec2<f32>(-1.5, -3.5) * px);
+    let a20 = scene(in.uv + vec2<f32>(0.5, -3.5) * px);
+    let a30 = scene(in.uv + vec2<f32>(2.5, -3.5) * px);
+    let a01 = scene(in.uv + vec2<f32>(-3.5, -1.5) * px);
+    let a11 = scene(in.uv + vec2<f32>(-1.5, -1.5) * px);
+    let a21 = scene(in.uv + vec2<f32>(0.5, -1.5) * px);
+    let a31 = scene(in.uv + vec2<f32>(2.5, -1.5) * px);
+    let a02 = scene(in.uv + vec2<f32>(-3.5, 0.5) * px);
+    let a12 = scene(in.uv + vec2<f32>(-1.5, 0.5) * px);
+    let a22 = scene(in.uv + vec2<f32>(0.5, 0.5) * px);
+    let a32 = scene(in.uv + vec2<f32>(2.5, 0.5) * px);
+    let a03 = scene(in.uv + vec2<f32>(-3.5, 2.5) * px);
+    let a13 = scene(in.uv + vec2<f32>(-1.5, 2.5) * px);
+    let a23 = scene(in.uv + vec2<f32>(0.5, 2.5) * px);
+    let a33 = scene(in.uv + vec2<f32>(2.5, 2.5) * px);
+    let avg = (a00 + a10 + a20 + a30 + a01 + a11 + a21 + a31 + a02 + a12 + a22 + a32 + a03 + a13 + a23 + a33) / 16.0;
+    let low = min(min(luma(a11), luma(a21)), min(luma(a12), luma(a22)));
+    let high = max(max(luma(a11), luma(a21)), max(luma(a12), luma(a22)));
+    // The dither itself is only a few levels, well below this range; an edge or a glyph is well above it.
+    let flat = 1.0 - smoothstep(0.045, 0.16, high - low);
+    c = mix(c, avg, mix(0.15, 0.98, flat));
+    // Temporal de-dither: the previous frame is valid when bit 8 of options is set. Blend it in only
+    // when the picture is flat and the two frames are close, so a fade loses more dither while a cut
+    // or fast motion leaves no ghost.
+    if ((blit.options & 256u) != 0u) {
+        let size = vec2<f32>(f32(blit.width), f32(blit.height));
+        let at = vec2<i32>(floor(in.uv * size));
+        let prev = texel(blit.previous, at.x, at.y).rgb;
+        let motion = abs(luma(avg) - luma(prev));
+        let still = 1.0 - smoothstep(0.015, 0.08, motion);
+        c = mix(c, (c + prev) * 0.5, 0.55 * flat * still);
+    }
     return vec4<f32>(clamp(c, vec3<f32>(0.0), vec3<f32>(1.0)), 1.0);
 }

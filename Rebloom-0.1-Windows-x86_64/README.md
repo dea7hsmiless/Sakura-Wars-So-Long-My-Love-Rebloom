@@ -52,18 +52,27 @@ smooth-edge AA) and **Text and menus** filtering. An optional **HD textures** fo
 overrides; no texture pack is included.
 
 **Full screen:** Settings → Display has **Windowed/Fullscreen** and **Fullscreen mode** —
-**Borderless** (the safe default, keeps the desktop mode) or **Exclusive** (changes the display
-mode, like a classic full-screen game). **F11** toggles full screen.
+**Exclusive** (the default, changes the display mode like a classic full-screen game) or
+**Borderless** (keeps the desktop mode). **F11** toggles full screen.
 
-**Deinterlace:** Settings → Display → **Deinterlace**. PS2 films and some scenes are 480i; the
-default **Blend** joins two fields, which is smooth but softens motion. **Off** shows one field
-(sharper, but can show comb edges).
+**Deinterlace:** Settings → Display → **Deinterlace**. PS2 films and some scenes are 480i;
+**Blend** joins two fields, which is smooth but softens motion. **Off** (the default) shows one
+field: sharper, but can show comb edges.
 
 **De-dither:** Settings → Advanced → **De-dither**. The game dithers alpha fades and some video;
-this 3×3 average softens that pattern and is **on by default**. Turn it off if you prefer the
-sharpest text.
+this 8×8 pattern-aware average with a temporal previous-frame blend softens that pattern and is
+**on by default**. It smooths fades and video transitions more than the first version while
+leaving text sharper. Turn it off if you prefer the hardest pixels.
+
+The shipped defaults are Fullscreen + Exclusive, 16:9, 3x internal resolution, Crisp + edges,
+deinterlace Off, and temporal De-dither On.
 
 ## Controls
+
+Settings → **Controls** edits both keyboards and gamepads inside the launcher. Keyboard: click
+**Change**, then press the new key (arrows, Tab and Enter work too). Gamepad: choose the controller
+button for each game button. The files are `game\data\keys.ini` and `game\data\gamepad.ini`; the
+game re-reads them within a second, so a change applies when you return to its window.
 
 | Key | Action |
 |---|---|

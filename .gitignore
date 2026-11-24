@@ -1,5 +1,7 @@
 # Build and release artifacts
 *.zip
+*.tar.gz
+Rebloom-0.1-Linux-x86_64/
 Rebloom-0.1-Windows-x86_64/game/*.exe
 Rebloom-0.1-Windows-x86_64/game/*.dll
 Rebloom-0.1-Windows-x86_64/game/data/
@@ -11,6 +13,17 @@ Rebloom-0.1-Windows-x86_64/startup-error.txt
 Rebloom-0.1-Windows-x86_64/import-trace.txt
 Rebloom-0.1-Windows-x86_64/import-error.txt
 Rebloom-0.1-Windows-x86_64/source/.build/
+
+# Android build output and machine-local SDK path
+mobile/android/.gradle/
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/app/.cxx/
+mobile/android/local.properties
+mobile/android/dist/*.apk
+
+# iOS build output
+mobile/ios/dist/*.ipa
 
 # Local caches
 __pycache__/

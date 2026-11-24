@@ -1,10 +1,11 @@
-A native Windows build of **Sakura Wars V: So Long, My Love** (PlayStation 2), made by static
-recompilation. This package contains the port only; **you need your own discs.**
+A native build of **Sakura Wars V: So Long, My Love** (PlayStation 2), made by static
+recompilation, for Windows, Linux, Android and iOS. This package contains the port only;
+**you need your own discs.**
 
 The game's own PlayStation 2 code is translated to C++ ahead of time and compiled into a
-normal Windows program. No emulator and no BIOS are involved. The game's CD/DVD server, its
-sound engine (`Sakuya 2`) and the CRI ADX driver all run as guest code on an interpreted IOP;
-only disc reads and module loading are answered by the runtime.
+normal program. No emulator and no BIOS are involved. The game's CD/DVD server, its sound
+engine (`Sakuya 2`) and the CRI ADX driver all run as guest code on an interpreted IOP; only
+disc reads and module loading are answered by the runtime.
 
 ## Screenshots
 
@@ -16,11 +17,21 @@ only disc reads and module loading are answered by the runtime.
 
 | File | Size | Requirements |
 | --- | --- | --- |
-| Rebloom-0.1-Windows-x86_64.zip | 44.7 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
+| Rebloom-0.1-Windows-x86_64.zip | 44.8 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
+| Rebloom-0.1-Linux-x86_64.tar.gz | 33.1 MB | Linux x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland |
+| Rebloom-0.1-android-arm64.apk | 49.2 MB | Android 9+ arm64, Vulkan; debug-signed sideload |
+| Rebloom-0.1-ios-unsigned.ipa | 20.4 MB | iOS 16.4+ arm64; unsigned, needs your own signing |
 
-SHA-256: `8900828692af0487c4f30a0ba1edc2a0d5ad2b4a46aff6d1639132bc5f80d6cd`
+SHA-256:
 
-Also in the release: `SHA256SUMS.txt`, the two screenshots above, and the launcher source inside the zip under `source\`.
+```
+fcbd368a0d831fb60d9cb4ef32bdfd0275eede41160f7f4927fd595006e87e3d  Rebloom-0.1-Windows-x86_64.zip
+bea8104e9c68d7ace4b301d95dfe956dd9b9a3206caafccaa76ae7d1aedbdd14  Rebloom-0.1-Linux-x86_64.tar.gz
+4da9c29e4945e335cbf758b8e08256698c85926648bf1ccbf5b62fda3883bff5  Rebloom-0.1-android-arm64.apk
+20b7a16e5e5742ab6ad788bbdc68280670b40f20aaafda4b45c951cc3337bede  Rebloom-0.1-ios-unsigned.ipa
+```
+
+`SHA256SUMS.txt` and the launcher source inside the Windows zip are also in the release.
 
 ## What works
 
@@ -29,6 +40,7 @@ Also in the release: `SHA256SUMS.txt`, the two screenshots above, and the launch
 - Disc 1 (`SLUS_219.27`, English voices) and Disc 2 (`SLUS_219.30`, Japanese voices) — the two
   discs differ by 28 bytes, so one build plays either
 - 60 fps at 1080p on an RTX 3070 with about 14% CPU use
+- Keyboard and gamepad bindings edited in the launcher; both files are re-read within a second
 
 ## What is not done yet
 
@@ -41,8 +53,13 @@ Also in the release: `SHA256SUMS.txt`, the two screenshots above, and the launch
 - Texture filtering/AA in the launcher covers the runtime's Crisp/Soft/Sharp looks and smooth-edge
   AA; no separate MSAA/anisotropic path yet.
 - HD texture overrides are supported, but no texture pack is included.
+- **Android and iOS have not been run on a device.** The APK and IPA build and package, but
+  touch overlays are still missing; a controller is the intended input for now. Unseen code
+  cannot be translated on iOS, so some later scenes may not run there.
 
 ## Install
+
+### Windows
 
 1. Extract the zip anywhere, for example `C:\Games\Rebloom`.
 2. Press **Install → Import disc image** (the **Install** button does this when no disc is present).
@@ -51,13 +68,40 @@ Also in the release: `SHA256SUMS.txt`, the two screenshots above, and the launch
    7.17 GB, so use NTFS or exFAT, not FAT32.
 3. Run `Rebloom Launcher.exe` (or `Launch Rebloom.cmd`) and press **Play**.
 
-To skip the launcher next time, choose **Settings → Game → When opened → Play immediately**.
-Hold **Shift** while opening it (or use `--launcher`) to show the window again. Settings → Graphics
-has **Performance/Quality** presets, **Picture look** with smooth-edge AA, and an optional **HD
-textures** folder.
+### Linux
 
-Settings live in `launcher.ini` beside `Rebloom Launcher.exe`; the game's own keys and resolution live in
-`game\data\keys.ini`. Delete `launcher.ini` to go back to defaults.
+1. Extract the tar.gz anywhere.
+2. Run `./Rebloom.sh` (or `Rebloom Launcher`), open **Install**, and import your Disc 1 ISO.
+3. Press **Play**. Import Disc 2 too for Japanese voices.
+
+The Linux game links against the system Vulkan loader and SDL2 is bundled.
+
+### Android
+
+1. Sideload `Rebloom-0.1-android-arm64.apk` (debug-signed).
+2. Open **Sakura Wars V - Rebloom**, press **Import disc...**, and choose your ISO; it is copied
+   into app storage, so the source can be deleted.
+3. Press **Play**. Import Disc 2 for Japanese voices.
+
+### iOS
+
+1. Sign `Rebloom-0.1-ios-unsigned.ipa` with your own certificate (Sideloadly, AltStore, or Xcode)
+   and install it.
+2. Open **Rebloom**, import Disc 1 through the Files picker, and press **Play**.
+
+## Settings
+
+Settings live in `launcher.ini` beside the launcher (Windows/Linux) or `rebloom.ini` in the app's
+Documents folder (iOS/Android). The game's own keys live in `game\data\keys.ini` and
+`game\data\gamepad.ini`. Delete the launcher settings to go back to defaults.
+
+The shipped defaults are fullscreen + exclusive, 16:9, 3× internal resolution, Crisp + edges,
+deinterlace off, VSync fifo, frame latency 2, Vulkan, and temporal de-dither on.
+
+**Controls:** open **Settings → Controls** and click **Keyboard controls…** or **Gamepad
+controls…**. Keyboard: click Change, then press the new key — arrows, Tab and Enter work.
+Gamepad: choose the controller button for each game action; Start, Select and the triggers stay
+standard, while L3 and R3 map the stick presses. The game re-reads both files within a second.
 
 ## Notes
 
@@ -66,8 +110,8 @@ Settings live in `launcher.ini` beside `Rebloom Launcher.exe`; the game's own ke
 - **F1** opens the port's menu: quick save/load, picture look, aspect, resolution, keys, quit.
   **F11** is full screen. The controller chord for the menu is off by default; turn it on under
   Settings → Advanced if you play with a pad.
-- Settings → Display offers **Borderless** full screen (default, keeps the desktop mode) or
-  **Exclusive** full screen (changes the display mode).
+- Settings → Display offers **Exclusive** full screen (default, changes the display mode) or
+  **Borderless** full screen (keeps the desktop mode).
 - The game window's title bar is just the game name; the title bar and taskbar use the key art.
 - Logs: the launcher's under Support; the game's in `game\data\logs\`.
 

@@ -46,7 +46,8 @@ something is missing) and tested by driving the real build through UI Automation
 | 36 | The existing smooth-edge AA and texture override support were not exposed. | **Picture look** exposes Crisp/Soft/Sharp with optional edge AA; **HD textures** selects a PNG override folder. |
 | 37 | Full screen was always SDL's borderless desktop mode. | Display now offers **Borderless** or **Exclusive** (`PS2_EXCLUSIVE_FULLSCREEN=1`); exclusive falls back to borderless if refused. |
 | 38 | Browse still left the game pointing at an external ISO. | Browse, a typed path and drag-and-drop all run the importer; only a file already in `discs\` is used in place. |
-| 39 | Game alpha fades show the PS2 dither pattern on a sharp LCD. | Added a **De-dither** shader (`game\blit-dedither.wgsl`), a light 3x3 average, **on by default**. |
+| 39 | Game alpha fades show the PS2 dither pattern on a sharp LCD. | Added a **De-dither** shader (`game\blit-dedither.wgsl`): a pattern-aware 8x8 average plus a previous-frame blend, full in flat fades/video and lighter at edges, **on by default**. |
+| 40 | Arrow keys, Tab and Enter never reached the keyboard capture dialog. | The capture form handles them in `ProcessCmdKey` before Windows uses them for dialog navigation; Left, Right, Up, Down, Tab, Enter, Esc and letters were tested through the real launcher. |
 
 ## Open
 
@@ -60,6 +61,7 @@ something is missing) and tested by driving the real build through UI Automation
 ## Verified after the fixes
 
 - Launcher starts, banner fills edge to edge, badge reads `BUILD FOUND / DISC MISSING`.
+- Settings -> Controls -> Change captures Left, Tab and Enter; gamepad choices write all twelve actions, and the game re-reads both files while it runs.
 - Window title is `Sakura Wars V: So Long, My Love - Rebloom Launcher`; the title bar and taskbar show the key art.
 - **Install** shows the bundled runner as `game\SakuraWarsV.exe`, both disc rows, the picker and Import.
 - With only Disc 1 installed, switching Voices to Japanese shows `BUILD FOUND / DISC MISSING`,

@@ -362,6 +362,462 @@ namespace SakuraLauncher
         }
     }
 
+    sealed class KeyCaptureForm : Form
+    {
+        public string Captured;
+        Label hintLabel;
+
+        public KeyCaptureForm(string action)
+        {
+            Text = "Press a key";
+            ClientSize = new Size(440, 150);
+            BackColor = Palette.Bg;
+            ForeColor = Palette.Ink;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
+            StartPosition = FormStartPosition.CenterParent;
+            KeyPreview = true;
+
+            Label label = new Label();
+            label.Text = "Press the key for " + action + ".";
+            label.Font = new Font("Segoe UI", 11f, FontStyle.Bold);
+            label.ForeColor = Palette.Ink;
+            label.SetBounds(24, 24, 390, 28);
+            Controls.Add(label);
+
+            hintLabel = new Label();
+            hintLabel.Text = "Esc, F1, F2, F5, F8, F9 and F11 belong to the program.";
+            hintLabel.ForeColor = Palette.Muted;
+            hintLabel.SetBounds(24, 54, 390, 24);
+            Controls.Add(hintLabel);
+
+            Button cancel = new Button();
+            cancel.Text = "Cancel";
+            cancel.SetBounds(330, 100, 84, 30);
+            cancel.Click += delegate { DialogResult = DialogResult.Cancel; Close(); };
+            Controls.Add(cancel);
+
+            KeyDown += delegate(object sender, KeyEventArgs e) { TakeKey(e.KeyCode); };
+        }
+
+        // Left/Right/Up/Down, Tab and Enter are dialog navigation keys: KeyDown never sees them.
+        // They are still game buttons, so capture them before the dialog can move focus or close.
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            Keys key = keyData & Keys.KeyCode;
+            if (key == Keys.Left || key == Keys.Right || key == Keys.Up || key == Keys.Down ||
+                key == Keys.Tab || key == Keys.Enter || key == Keys.Escape ||
+                key == Keys.Space || key == Keys.Back)
+            {
+                TakeKey(key);
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        void TakeKey(Keys key)
+        {
+            if (key == Keys.F1 || key == Keys.F2 || key == Keys.F5 ||
+                key == Keys.F8 || key == Keys.F9 || key == Keys.F11)
+            {
+                hintLabel.Text = "That key belongs to the program. Press another one.";
+                hintLabel.ForeColor = Palette.Gold;
+                return;
+            }
+            string name = KeyNames.Of(key);
+            if (name == null)
+            {
+                hintLabel.Text = "That key has no name the game can use. Press another one.";
+                hintLabel.ForeColor = Palette.Gold;
+                return;
+            }
+            Captured = name;
+            DialogResult = DialogResult.OK;
+            Close();
+        }
+    }
+
+    static class KeyNames
+    {
+        public static string Of(Keys key)
+        {
+            if (key >= Keys.A && key <= Keys.Z) return key.ToString();
+            if (key >= Keys.D0 && key <= Keys.D9) return ((int)(key - Keys.D0)).ToString();
+            if (key >= Keys.NumPad0 && key <= Keys.NumPad9) return "Keypad " + (int)(key - Keys.NumPad0);
+            if (key >= Keys.F1 && key <= Keys.F12) return "F" + ((int)(key - Keys.F1) + 1);
+            switch (key)
+            {
+                case Keys.Space: return "Space";
+                case Keys.Return: return "Enter";
+                case Keys.Escape: return "Esc";
+                case Keys.Back: return "Backspace";
+                case Keys.Tab: return "Tab";
+                case Keys.Up: return "Up";
+                case Keys.Down: return "Down";
+                case Keys.Left: return "Left";
+                case Keys.Right: return "Right";
+                case Keys.Insert: return "Insert";
+                case Keys.Delete: return "Delete";
+                case Keys.Home: return "Home";
+                case Keys.End: return "End";
+                case Keys.PageUp: return "Page Up";
+                case Keys.PageDown: return "Page Down";
+                case Keys.Capital: return "Caps Lock";
+                case Keys.LShiftKey: case Keys.ShiftKey: return "Left Shift";
+                case Keys.RShiftKey: return "Right Shift";
+                case Keys.LControlKey: case Keys.ControlKey: return "Left Ctrl";
+                case Keys.RControlKey: return "Right Ctrl";
+                case Keys.LMenu: case Keys.Menu: return "Left Alt";
+                case Keys.RMenu: return "Right Alt";
+                case Keys.OemMinus: return "key 45";
+                case Keys.Oemplus: return "key 46";
+                case Keys.OemOpenBrackets: return "key 47";
+                case Keys.OemCloseBrackets: return "key 48";
+                case Keys.OemPipe: return "key 49";
+                case Keys.OemSemicolon: return "key 51";
+                case Keys.OemQuotes: return "key 52";
+                case Keys.Oemtilde: return "key 53";
+                case Keys.Oemcomma: return "key 54";
+                case Keys.OemPeriod: return "key 55";
+                case Keys.OemQuestion: return "key 56";
+                default: return null;
+            }
+        }
+    }
+
+    sealed class KeyboardControlsForm : Form
+    {
+        static readonly string[,] Actions = {
+            {"dpad_up", "D-pad Up"}, {"dpad_down", "D-pad Down"}, {"dpad_left", "D-pad Left"}, {"dpad_right", "D-pad Right"},
+            {"left_up", "Left Stick Up"}, {"left_down", "Left Stick Down"}, {"left_left", "Left Stick Left"}, {"left_right", "Left Stick Right"},
+            {"right_up", "Right Stick Up"}, {"right_down", "Right Stick Down"}, {"right_left", "Right Stick Left"}, {"right_right", "Right Stick Right"},
+            {"cross", "Cross"}, {"circle", "Circle"}, {"square", "Square"}, {"triangle", "Triangle"},
+            {"l1", "L1"}, {"r1", "R1"}, {"l2", "L2"}, {"r2", "R2"}, {"l3", "L3"}, {"r3", "R3"},
+            {"start", "Start"}, {"select", "Select"}, {"roll", "Roll"}, {"rage", "Rage"}, {"menu", "Menu key"}, {"help", "Help key"}
+        };
+
+        readonly string path;
+        readonly Dictionary<string, string> values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        readonly Dictionary<string, Label> shown = new Dictionary<string, Label>(StringComparer.OrdinalIgnoreCase);
+        readonly Action changed;
+        readonly Label fileLabel;
+
+        public KeyboardControlsForm(string gameDir, Action changed)
+        {
+            this.changed = changed;
+            path = Path.Combine(gameDir, "keys.ini");
+            Text = "Keyboard controls";
+            ClientSize = new Size(720, 680);
+            BackColor = Palette.Bg;
+            ForeColor = Palette.Ink;
+            StartPosition = FormStartPosition.CenterParent;
+            ShowIcon = false;
+
+            Label title = new Label();
+            title.Text = "Keyboard controls";
+            title.Font = new Font("Segoe UI", 18f, FontStyle.Bold);
+            title.ForeColor = Palette.Ink;
+            title.SetBounds(24, 18, 500, 34);
+            Controls.Add(title);
+            Label help = new Label();
+            help.Text = "Click Change, then press the new key. Arrows, Tab and Enter work. The game reads keys.ini when you return to its window.";
+            help.ForeColor = Palette.Muted;
+            help.SetBounds(26, 52, 650, 24);
+            Controls.Add(help);
+
+            FlowLayoutPanel list = new FlowLayoutPanel();
+            list.FlowDirection = FlowDirection.TopDown;
+            list.WrapContents = false;
+            list.AutoScroll = true;
+            list.BackColor = Palette.Bg;
+            list.SetBounds(24, 88, 672, 532);
+            Controls.Add(list);
+
+            if (!File.Exists(path))
+            {
+                Label none = new Label();
+                none.Text = "keys.ini is not there yet. Start the game once so it writes the default keys.";
+                none.ForeColor = Palette.Gold;
+                none.SetBounds(18, 18, 600, 40);
+                list.Controls.Add(none);
+            }
+            else
+            {
+                LoadValues();
+                for (int i = 0; i < Actions.GetLength(0); ++i) AddRow(list, Actions[i, 0], Actions[i, 1]);
+            }
+
+            fileLabel = new Label();
+            fileLabel.Text = "File: " + path;
+            fileLabel.ForeColor = Palette.Muted;
+            fileLabel.SetBounds(24, 636, 560, 20);
+            Controls.Add(fileLabel);
+
+            Button close = new Button();
+            close.Text = "Close";
+            close.SetBounds(612, 632, 84, 30);
+            close.Click += delegate { Close(); };
+            Controls.Add(close);
+        }
+
+        void LoadValues()
+        {
+            values.Clear();
+            foreach (string raw in File.ReadAllLines(path))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0 || line[0] == '#' || line[0] == ';') continue;
+                int eq = line.IndexOf('=');
+                if (eq <= 0) continue;
+                values[line.Substring(0, eq).Trim()] = line.Substring(eq + 1).Trim();
+            }
+        }
+
+        void AddRow(FlowLayoutPanel list, string action, string label)
+        {
+            Panel row = new Panel();
+            row.Width = 630;
+            row.Height = 34;
+            row.BackColor = Palette.Card;
+            row.Margin = new Padding(0, 0, 0, 4);
+
+            Label name = new Label();
+            name.Text = label;
+            name.ForeColor = Palette.Ink;
+            name.SetBounds(12, 8, 220, 20);
+            row.Controls.Add(name);
+
+            Label value = new Label();
+            string current;
+            value.Text = values.TryGetValue(action, out current) ? current : "";
+            value.ForeColor = Palette.Gold;
+            value.SetBounds(238, 8, 250, 20);
+            row.Controls.Add(value);
+            shown[action] = value;
+
+            Button change = new Button();
+            change.Text = "Change";
+            change.SetBounds(520, 4, 96, 26);
+            change.Click += delegate
+            {
+                using (KeyCaptureForm capture = new KeyCaptureForm(label))
+                {
+                    if (capture.ShowDialog(this) != DialogResult.OK) return;
+                    SetValue(action, capture.Captured);
+                    value.Text = capture.Captured;
+                    if (changed != null) changed();
+                }
+            };
+            row.Controls.Add(change);
+            list.Controls.Add(row);
+        }
+
+        void SetValue(string action, string value)
+        {
+            values[action] = value;
+            string[] lines = File.ReadAllLines(path);
+            bool found = false;
+            for (int i = 0; i < lines.Length; ++i)
+            {
+                string line = lines[i].Trim();
+                if (line.Length == 0 || line[0] == '#' || line[0] == ';') continue;
+                int eq = line.IndexOf('=');
+                if (eq <= 0) continue;
+                if (string.Equals(line.Substring(0, eq).Trim(), action, StringComparison.OrdinalIgnoreCase))
+                {
+                    lines[i] = action + " = " + value;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                List<string> all = new List<string>(lines);
+                all.Add(action + " = " + value);
+                lines = all.ToArray();
+            }
+            File.WriteAllLines(path, lines, new UTF8Encoding(false));
+            fileLabel.Text = "Saved to " + path;
+        }
+    }
+
+    sealed class PadChoice
+    {
+        public readonly string Label;
+        public readonly string Token;
+        public PadChoice(string label, string token) { Label = label; Token = token; }
+        public override string ToString() { return Label; }
+    }
+
+    sealed class GamepadControlsForm : Form
+    {
+        static readonly string[,] Actions = {
+            {"cross", "Cross", "a"}, {"circle", "Circle", "b"}, {"square", "Square", "x"}, {"triangle", "Triangle", "y"},
+            {"l1", "L1", "leftshoulder"}, {"r1", "R1", "rightshoulder"},
+            {"l3", "L3", "leftstick"}, {"r3", "R3", "rightstick"},
+            {"dpad_up", "D-pad Up", "dpup"}, {"dpad_down", "D-pad Down", "dpdown"},
+            {"dpad_left", "D-pad Left", "dpleft"}, {"dpad_right", "D-pad Right", "dpright"}
+        };
+
+        readonly string path;
+        readonly Dictionary<string, string> values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        readonly Action changed;
+        readonly Label fileLabel;
+
+        public GamepadControlsForm(string gameDir, Action changed)
+        {
+            this.changed = changed;
+            path = Path.Combine(gameDir, "gamepad.ini");
+            Text = "Gamepad controls";
+            ClientSize = new Size(620, 600);
+            BackColor = Palette.Bg;
+            ForeColor = Palette.Ink;
+            StartPosition = FormStartPosition.CenterParent;
+            ShowIcon = false;
+
+            Label title = new Label();
+            title.Text = "Gamepad controls";
+            title.Font = new Font("Segoe UI", 18f, FontStyle.Bold);
+            title.ForeColor = Palette.Ink;
+            title.SetBounds(24, 18, 500, 34);
+            Controls.Add(title);
+            Label help = new Label();
+            help.Text = "Choose the controller button for each game action. Start, Select and the triggers stay standard; L3 and R3 map the stick presses.";
+            help.ForeColor = Palette.Muted;
+            help.SetBounds(26, 52, 570, 36);
+            Controls.Add(help);
+
+            if (File.Exists(path)) LoadValues();
+            else
+            {
+                for (int i = 0; i < Actions.GetLength(0); ++i) values[Actions[i, 0]] = Actions[i, 2];
+            }
+
+            int y = 96;
+            for (int i = 0; i < Actions.GetLength(0); ++i)
+            {
+                string action = Actions[i, 0], label = Actions[i, 1];
+                Label name = new Label();
+                name.Text = label;
+                name.ForeColor = Palette.Ink;
+                name.SetBounds(26, y + 6, 180, 20);
+                Controls.Add(name);
+
+                ComboBox box = new ComboBox();
+                box.DropDownStyle = ComboBoxStyle.DropDownList;
+                box.SetBounds(214, y, 220, 26);
+                AddChoices(box);
+                string current;
+                if (values.TryGetValue(action, out current)) SelectToken(box, current);
+                else SelectToken(box, Actions[i, 2]);
+                box.SelectedIndexChanged += delegate
+                {
+                    PadChoice choice = box.SelectedItem as PadChoice;
+                    if (choice == null) return;
+                    values[action] = choice.Token;
+                    Save();
+                    if (changed != null) changed();
+                };
+                Controls.Add(box);
+                y += 34;
+            }
+
+            fileLabel = new Label();
+            fileLabel.Text = "File: " + path;
+            fileLabel.ForeColor = Palette.Muted;
+            fileLabel.SetBounds(26, 556, 470, 20);
+            Controls.Add(fileLabel);
+
+            Button close = new Button();
+            close.Text = "Close";
+            close.SetBounds(512, 552, 84, 30);
+            close.Click += delegate { Close(); };
+            Controls.Add(close);
+        }
+
+        static void AddChoices(ComboBox box)
+        {
+            box.Items.Add(new PadChoice("A", "a"));
+            box.Items.Add(new PadChoice("B", "b"));
+            box.Items.Add(new PadChoice("X", "x"));
+            box.Items.Add(new PadChoice("Y", "y"));
+            box.Items.Add(new PadChoice("Left Shoulder", "leftshoulder"));
+            box.Items.Add(new PadChoice("Right Shoulder", "rightshoulder"));
+            box.Items.Add(new PadChoice("Left Stick", "leftstick"));
+            box.Items.Add(new PadChoice("Right Stick", "rightstick"));
+            box.Items.Add(new PadChoice("D-pad Up", "dpup"));
+            box.Items.Add(new PadChoice("D-pad Down", "dpdown"));
+            box.Items.Add(new PadChoice("D-pad Left", "dpleft"));
+            box.Items.Add(new PadChoice("D-pad Right", "dpright"));
+            box.Items.Add(new PadChoice("Back", "back"));
+            box.Items.Add(new PadChoice("Start", "start"));
+            box.Items.Add(new PadChoice("Guide", "guide"));
+            box.Items.Add(new PadChoice("Misc 1", "misc1"));
+            box.Items.Add(new PadChoice("Paddle 1", "paddle1"));
+            box.Items.Add(new PadChoice("Paddle 2", "paddle2"));
+            box.Items.Add(new PadChoice("None", "none"));
+        }
+
+        static void SelectToken(ComboBox box, string token)
+        {
+            for (int i = 0; i < box.Items.Count; ++i)
+            {
+                PadChoice choice = box.Items[i] as PadChoice;
+                if (choice != null && string.Equals(choice.Token, token, StringComparison.OrdinalIgnoreCase))
+                {
+                    box.SelectedIndex = i;
+                    return;
+                }
+            }
+            box.SelectedIndex = box.Items.Count - 1;
+        }
+
+        void LoadValues()
+        {
+            values.Clear();
+            foreach (string raw in File.ReadAllLines(path))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0 || line[0] == '#' || line[0] == ';') continue;
+                int eq = line.IndexOf('=');
+                if (eq <= 0) continue;
+                values[line.Substring(0, eq).Trim()] = line.Substring(eq + 1).Trim();
+            }
+        }
+
+        void Save()
+        {
+            List<string> lines = new List<string>();
+            lines.Add("# gamepad.ini: which controller button works which game button.");
+            lines.Add("# SDL names; 'none' turns a button off. Delete this file for the standard mapping.");
+            for (int i = 0; i < Actions.GetLength(0); ++i)
+            {
+                string action = Actions[i, 0], value;
+                if (!values.TryGetValue(action, out value)) value = Actions[i, 2];
+                lines.Add(action.PadRight(10) + " = " + value);
+            }
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllLines(path, lines.ToArray(), new UTF8Encoding(false));
+            fileLabel.Text = "Saved to " + path;
+        }
+
+        // Open gamepad.ini must not be a dead end before the first controller is
+        // seen: write the standard mapping first, then open it.
+        public static void EnsureFile(string gameDir)
+        {
+            string file = Path.Combine(gameDir, "gamepad.ini");
+            if (File.Exists(file)) return;
+            Directory.CreateDirectory(gameDir);
+            List<string> lines = new List<string>();
+            lines.Add("# gamepad.ini: which controller button works which game button.");
+            lines.Add("# SDL names; 'none' turns a button off. Delete this file for the standard mapping.");
+            for (int i = 0; i < Actions.GetLength(0); ++i)
+                lines.Add(Actions[i, 0].PadRight(10) + " = " + Actions[i, 2]);
+            File.WriteAllLines(file, lines.ToArray(), new UTF8Encoding(false));
+        }
+    }
+
     sealed class Launcher : Form
     {
         readonly string baseDir;
@@ -946,8 +1402,8 @@ namespace SakuraLauncher
             title.SetBounds(0, 60, 460, 44);
             left.Controls.Add(title);
 
-            string subtitle = Language == "jp" ? "PlayStation 2 recompilation \u2014 Japanese voices (Disc 2)."
-                                               : "PlayStation 2 recompilation \u2014 English voices (Disc 1).";
+            string subtitle = Language == "jp" ? "So Long, My Love, rebuilt for PC \u2014 Japanese voices (Disc 2)."
+                                               : "So Long, My Love, rebuilt for PC \u2014 English voices (Disc 1).";
             if (!hasBuild) subtitle = "Run scripts/port.sh once, or use Install to point at the toolkit.";
             else if (!hasDisc) subtitle = Language == "jp"
                 ? "Japanese voices need Disc 2 (SLUS_219.30). Put it in discs\\, or import it."
@@ -1228,11 +1684,12 @@ namespace SakuraLauncher
             category = cat;
             string help = cat == "Game" ? "Language, the memory card and where things live."
                         : cat == "Advanced" ? "Diagnostics. Change these only when something is wrong."
-                        : cat == "Display" ? "Display-side options. Borderless full screen is the safe default; Exclusive changes the display mode."
+                        : cat == "Controls" ? "Keyboard and gamepad bindings. The game reads the files when you return to its window."
+                        : cat == "Display" ? "Display-side options. Exclusive full screen is the default; Borderless is the safer choice if it causes trouble."
                         : "Display-side options. The game's own picture is not modified.";
             Panel p = Standard("Settings", "Settings", help);
 
-            string[] categories = { "Display", "Graphics", "Game", "Advanced" };
+            string[] categories = { "Display", "Graphics", "Controls", "Game", "Advanced" };
             for (int i = 0; i < categories.Length; i++)
             {
                 string name = categories[i];   // the loop variable itself would be captured, and be past the end by the time it is clicked
@@ -1253,19 +1710,19 @@ namespace SakuraLauncher
             if (cat == "Display")
             {
                 Choice(card, ref y, "Aspect ratio", "aspect", new string[] { "4:3", "16:9", "Stretch" },
-                    new string[] { "4:3", "16:9", "fill" }, "4:3");
+                    new string[] { "4:3", "16:9", "fill" }, "16:9");
                 Choice(card, ref y, "Window", "fullscreen", new string[] { "Windowed", "Fullscreen" },
-                    new string[] { "0", "1" }, "0");
+                    new string[] { "0", "1" }, "1");
                 Choice(card, ref y, "Fullscreen mode", "fs_mode", new string[] { "Borderless", "Exclusive" },
-                    new string[] { "borderless", "exclusive" }, "borderless");
+                    new string[] { "borderless", "exclusive" }, "exclusive");
                 Choice(card, ref y, "V-Sync", "vsync", new string[] { "On", "Adaptive", "Off" },
                     new string[] { "fifo", "relaxed", "immediate" }, "fifo");
                 Choice(card, ref y, "Frames in flight", "latency", new string[] { "1", "2", "3", "4" },
                     new string[] { "1", "2", "3", "4" }, "2");
                 Choice(card, ref y, "Internal resolution", "scale", new string[] { "Game's own", "1x", "2x", "3x", "4x" },
-                    new string[] { "", "1", "2", "3", "4" }, "");
+                    new string[] { "", "1", "2", "3", "4" }, "3");
                 Choice(card, ref y, "Deinterlace", "deinterlace", new string[] { "Blend (smooth)", "Off (sharper)" },
-                    new string[] { "blend", "off" }, "blend");
+                    new string[] { "blend", "off" }, "off");
             }
             else if (cat == "Graphics")
             {
@@ -1273,7 +1730,7 @@ namespace SakuraLauncher
                     new string[] { "", "0", "1", "2" }, "");
                 Choice(card, ref y, "Picture look", "look",
                     new string[] { "Crisp", "Crisp + edges", "Soft", "Soft + edges", "Sharp", "Sharp + edges" },
-                    new string[] { "0", "1", "2", "3", "4", "5" }, "5");
+                    new string[] { "0", "1", "2", "3", "4", "5" }, "1");
                 Choice(card, ref y, "Graphics API", "backend", new string[] { "Direct3D 12", "Vulkan" },
                     new string[] { "dx12", "vulkan" }, "dx12");
                 Choice(card, ref y, "Frame pacing", "pacing", new string[] { "Clock", "Sound device" },
@@ -1317,6 +1774,33 @@ namespace SakuraLauncher
                 };
                 card.Controls.Add(texBrowse);
             }
+            else if (cat == "Controls")
+            {
+                ButtonAt(card, "Keyboard controls...", 24, 28, 230, delegate
+                {
+                    using (KeyboardControlsForm f = new KeyboardControlsForm(GameDir, delegate { Append("keyboard controls updated"); }))
+                        f.ShowDialog(this);
+                }, false);
+                ButtonAt(card, "Gamepad controls...", 270, 28, 230, delegate
+                {
+                    using (GamepadControlsForm f = new GamepadControlsForm(GameDir, delegate { Append("gamepad controls updated"); }))
+                        f.ShowDialog(this);
+                }, false);
+                Label note = LabelAt("Keyboard: click Change, then press the new key - arrows, Tab and Enter work. " +
+                                     "Gamepad: choose the controller button for each game action. Start, Select and the " +
+                                     "triggers stay standard; L3 and R3 map the stick presses. Bindings apply as soon " +
+                                     "as the game window has focus again.", 9.5f, false);
+                note.ForeColor = Palette.Muted;
+                note.SetBounds(24, 92, Math.Max(400, card.Width - 48), 90);
+                note.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+                card.Controls.Add(note);
+                ButtonAt(card, "Open keys.ini", 24, 196, 190, delegate { OpenPath(Path.Combine(GameDir, "keys.ini")); }, false);
+                ButtonAt(card, "Open gamepad.ini", 228, 196, 190, delegate
+                {
+                    GamepadControlsForm.EnsureFile(GameDir);
+                    OpenPath(Path.Combine(GameDir, "gamepad.ini"));
+                }, false);
+            }
             else if (cat == "Game")
             {
                 Choice(card, ref y, "Voice language", "language", new string[] { "English (Disc 1)", "Japanese (Disc 2)" },
@@ -1333,7 +1817,7 @@ namespace SakuraLauncher
             else
             {
                 int y2 = 150;
-                ButtonAt(card, "De-dither: " + (Get("dedither", "1") == "1" ? "On (soften)" : "Off"), 24, 24, 260, delegate
+                ButtonAt(card, "De-dither: " + (Get("dedither", "1") == "1" ? "On (temporal)" : "Off"), 24, 24, 260, delegate
                 {
                     Set("dedither", Get("dedither", "1") == "1" ? "0" : "1");
                     ShowSettingsFor("Advanced");
@@ -1475,20 +1959,29 @@ namespace SakuraLauncher
 
         void ShowAbout()
         {
-            Panel p = Standard("About", "Sakura Wars V: So Long, My Love",
-                "Rebloom \u2014 a community static recompilation for PC.");
+            Panel p = Standard("About", "Rebloom",
+                "A community edition of Sakura Wars V: So Long, My Love, rebuilt for PC.");
             Label copy = LabelAt(
-                "Rebloom is built on ps2-native-recomp by exoteric33, which is built on ps2-web-recomp by Samir Nuri.\n\n" +
-                "Rebloom Launcher 0.1 \u2014 2026-11-23.\n\n" +
-                "The game's own IOP driver modules run on an interpreter; only disc reads and module loading\n" +
-                "are answered natively. No BIOS, no disc image and no game data are included or shipped.\n\n" +
-                "Two discs, one program: SLUS_219.27 (English voices) and SLUS_219.30 (Japanese voices)\n" +
-                "differ by 28 bytes, so a single build boots either one.\n\n" +
-                "Launcher design follows the ReDUB launcher's model.\n\n" +
-                "Not affiliated with Sega, Red Entertainment or the owners of Sakura Wars.",
-                10.5f, false);
-            copy.SetBounds(38, 140, 800, 360);
+                "Rebloom is a community static recompilation of Sakura Wars V: So Long, My Love.\n\n" +
+                "Built on ps2-native-recomp by exoteric33, which is built on ps2-web-recomp by Samir Nuri.\n\n" +
+                "Launcher 0.1. No game data, disc image or BIOS is included; use your own discs.\n" +
+                "Not affiliated with Sega or Red Entertainment.",
+                11f, false);
+            copy.SetBounds(38, 140, 800, 170);
             p.Controls.Add(copy);
+            ButtonAt(p, "Features & credits", 36, 330, 230, delegate { OpenDocument(Path.Combine(baseDir, "README.md")); }, false);
+            ButtonAt(p, "Third-party notices", 276, 330, 210, delegate { OpenDocument(Path.Combine(baseDir, "THIRD-PARTY.md")); }, false);
+            ButtonAt(p, "License", 496, 330, 150, delegate { OpenDocument(Path.Combine(baseDir, "LICENSE")); }, false);
+        }
+
+        void OpenDocument(string path)
+        {
+            if (!File.Exists(path))
+            {
+                MessageBox.Show(this, "This is not there yet:\n" + path, "Sakura Wars");
+                return;
+            }
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
         }
 
         // ---------- state ----------
@@ -1520,7 +2013,7 @@ namespace SakuraLauncher
                 : !build ? "Build missing \u2014 run scripts/port.sh once, or use Install to point at the toolkit."
                 : !disc ? "Disc image missing \u2014 set it under Install."
                 : "Ready \u2014 " + (Language == "jp" ? "Japanese voices" : "English voices") + " \u00B7 " +
-                  Get("aspect", "4:3") + " \u00B7 " + (Get("scale", "").Length > 0 ? Get("scale", "") + "x" : "game's own resolution");
+                  Get("aspect", "16:9") + " \u00B7 " + (Get("scale", "3").Length > 0 ? Get("scale", "3") + "x" : "game's own resolution");
             status.Text = state;
             status.ForeColor = running ? Palette.Muted : (!build || !disc) ? Palette.Gold : Palette.Good;
 
@@ -1596,7 +2089,7 @@ namespace SakuraLauncher
             args.Add(Quote(GameDir));
             args.Add("--memcard");
             args.Add(Quote(Path.Combine(GameDir, Language == "jp" ? "play-japanese.ps2" : "play-english.ps2")));
-            args.Add(Get("fullscreen", "0") == "1" ? "--fullscreen" : "--window");
+            args.Add(Get("fullscreen", "1") == "1" ? "--fullscreen" : "--window");
             return args;
         }
 
@@ -1610,9 +2103,9 @@ namespace SakuraLauncher
         void ApplyEnvironment(ProcessStartInfo psi)
         {
             // "Game's own" (empty) leaves the variable unset, so keys.ini and the F1 menu keep their values.
-            if (Get("scale", "").Length > 0) psi.EnvironmentVariables["PS2_SCALE"] = Get("scale", "");
+            if (Get("scale", "3").Length > 0) psi.EnvironmentVariables["PS2_SCALE"] = Get("scale", "3");
             if (Get("sharp", "").Length > 0) psi.EnvironmentVariables["PS2_SHARP_2D"] = Get("sharp", "");
-            psi.EnvironmentVariables["PS2_LOOK"] = Get("look", "5");
+            psi.EnvironmentVariables["PS2_LOOK"] = Get("look", "1");
             string textures = Get("textures", "");
             if (textures.Length > 0)
             {
@@ -1620,9 +2113,9 @@ namespace SakuraLauncher
                 if (Directory.Exists(full)) psi.EnvironmentVariables["PS2_TEX_OVERRIDE_DIR"] = full;
                 else Append("texture folder missing: " + full);
             }
-            psi.EnvironmentVariables["PS2_ASPECT"] = Get("aspect", "4:3");
-            psi.EnvironmentVariables["PS2_EXCLUSIVE_FULLSCREEN"] = Get("fs_mode", "borderless") == "exclusive" ? "1" : "0";
-            if (Get("deinterlace", "blend") == "off") psi.EnvironmentVariables["PS2_NO_DEINTERLACE"] = "1";
+            psi.EnvironmentVariables["PS2_ASPECT"] = Get("aspect", "16:9");
+            psi.EnvironmentVariables["PS2_EXCLUSIVE_FULLSCREEN"] = Get("fs_mode", "exclusive") == "exclusive" ? "1" : "0";
+            if (Get("deinterlace", "off") == "off") psi.EnvironmentVariables["PS2_NO_DEINTERLACE"] = "1";
             if (Get("dedither", "1") == "1")
             {
                 string shader = Path.Combine(baseDir, @"game\blit-dedither.wgsl");
@@ -1667,9 +2160,9 @@ namespace SakuraLauncher
             {
                 Directory.CreateDirectory(GameDir);   // the runner wants its game folder to exist
                 Append("play: " + LaunchLine());
-                Append("      display: " + (Get("scale", "").Length > 0 ? Get("scale", "") + "x" : "game's own resolution") +
+                Append("      display: " + (Get("scale", "3").Length > 0 ? Get("scale", "3") + "x" : "game's own resolution") +
                        ", " + (Get("sharp", "").Length > 0 ? "2D filter " + Get("sharp", "") : "game's own 2D filter") +
-                       ", aspect " + Get("aspect", "4:3"));
+                       ", aspect " + Get("aspect", "16:9"));
                 Append("      PS2_PRESENT_MODE=" + Get("vsync", "fifo") + "  PS2_FRAME_LATENCY=" + Get("latency", "2") +
                        "  PS2_GPU_BACKEND=" + Get("backend", "dx12"));
                 job = Process.Start(psi);

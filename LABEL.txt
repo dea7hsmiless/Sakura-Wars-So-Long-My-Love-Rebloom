@@ -1,33 +1,44 @@
 Rebloom 0.1 - release assets
-Prepared 2026-11-23 (launcher audit, ReDUB parity, full source)
+Prepared 2026-11-23 (controls editors, temporal de-dither default, Windows/Linux/iOS/Android builds)
 
 In this folder:
-  Rebloom-0.1-Windows-x86_64.zip    44,735,509 B   sha256 8900828692af0487c4f30a0ba1edc2a0d5ad2b4a46aff6d1639132bc5f80d6cd
-  Rebloom-0.1-Windows-x86_64\       the same files, extracted for review
-  SHA256SUMS.txt                    the zip's SHA-256
-  RELEASE-PAGE.md                   the release body, ready to publish
-  RELEASE-HANDOFF.md                what was checked, and what is still open
-  LAUNCHER-AUDIT.md                 launcher findings, fixed and open
-  store-icon-512.png                icon for a store or release page
-  screenshots\                      launcher.png and game.png for the release page
+  Rebloom-0.1-Windows-x86_64.zip       44,777,758 B  sha256 fcbd368a0d831fb60d9cb4ef32bdfd0275eede41160f7f4927fd595006e87e3d
+  Rebloom-0.1-Linux-x86_64.tar.gz      33,087,282 B  sha256 bea8104e9c68d7ace4b301d95dfe956dd9b9a3206caafccaa76ae7d1aedbdd14
+  Rebloom-0.1-Windows-x86_64\          the same files as the zip, extracted for review
+  SHA256SUMS.txt                       hashes of every release download
+  RELEASE-PAGE.md                      the release body, ready to publish
+  RELEASE-HANDOFF.md                   what was checked, and what is still open
+  LAUNCHER-AUDIT.md                    launcher findings, fixed and open
+  ROADMAP.md                           platform status
+  store-icon-512.png                   icon for a store or release page
+  screenshots\                         launcher.png and game.png for the release page
+
+Mobile builds:
+  mobile\android\dist\Rebloom-0.1-android-arm64.apk   49,184,208 B  sha256 4da9c29e4945e335cbf758b8e08256698c85926648bf1ccbf5b62fda3883bff5
+  mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa        20,413,211 B  sha256 20b7a16e5e5742ab6ad788bbdc68280670b40f20aaafda4b45c951cc3337bede
+
+The Android APK is debug-signed and installs by sideloading. The iOS IPA is
+unsigned and needs the user's own signing (Sideloadly, AltStore, or Xcode).
 
 Inside the Windows zip:
-  Rebloom Launcher.exe               the launcher
-  Launch Rebloom.cmd                starts it, rebuilding it from source\ if missing
-  game\SakuraWarsV.exe              the recompiled game (56 MB) and its DLLs
+  Rebloom Launcher.exe                 the launcher
+  Launch Rebloom.cmd                   starts it, rebuilding it from source\ if missing
+  game\SakuraWarsV.exe                 the recompiled game (56 MB) and its DLLs
   game\SDL2.dll, dxcompiler.dll, dxil.dll
-  discs\                            empty: the user's own .iso goes here
+  game\blit-dedither*.wgsl             temporal shader plus 4x4 and 8x8 fallbacks
+  game\data\keys.ini, gamepad.ini      default keyboard and gamepad bindings
+  discs\                               empty: the user's own .iso goes here
   art\hero.jpg, logo.png, mark.png, icon.ico
-  source\                           full rebuild source:
+  source\                              full rebuild source:
       Launcher.cs, Build-Launcher.ps1
-      recomp\generated\sakura5\     257 C++ files the translator produced (62.6 MB)
-      recomp\vu1\, vu0\             recorded vector-unit programs
-      recomp\entries.txt            the 66 entry points
-      recomp\rebloom-changes.patch  the only toolkit changes
+      recomp\generated\sakura5\        257 C++ files the translator produced (62.6 MB)
+      recomp\vu1\, vu0\                recorded vector-unit programs
+      recomp\entries.txt               the 66 entry points
+      recomp\rebloom-changes.patch     the only toolkit changes
       recomp\build-notes.md, REBUILD.md, BUILDING.md, RESULTS.md
       tools\make-iso.py, tools\find-entry-tables.py
-  launcher-source.zip               Launcher.cs + Build-Launcher.ps1
-  .rebloom-source-manifest.txt      SHA-256 of every file under source\
+  launcher-source.zip                  Launcher.cs + Build-Launcher.ps1
+  .rebloom-source-manifest.txt         SHA-256 of every file under source\
   README.md, RELEASE_NOTES.md, LICENSE, THIRD-PARTY.md, SHA256SUMS.txt
 
 No disc image and no extracted disc files are in this package. The game executable and the

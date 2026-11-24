@@ -1,33 +1,68 @@
 # Rebloom 0.1
 
-Source and release assets for **Sakura Wars V: So Long, My Love — Rebloom**, a Windows static
-recompilation built on `ps2-native-recomp`.
+Source and release assets for **Sakura Wars V: So Long, My Love — Rebloom**, a static
+recompilation built on `ps2-native-recomp`, for Windows, Linux, Android (arm64) and iOS (arm64).
 
-The playable package is `Rebloom-0.1-Windows-x86_64.zip` in this folder. It is intentionally not
-tracked by Git; the source, launcher, documentation and screenshots are.
+Nothing has been published. The release downloads in this folder are:
+
+| File | Platform | Size |
+|---|---|---|
+| `Rebloom-0.1-Windows-x86_64.zip` | Windows 10/11 x64 | 44.8 MB |
+| `Rebloom-0.1-Linux-x86_64.tar.gz` | Linux x86-64 (glibc 2.39+) | 33.1 MB |
+| `mobile/android/dist/Rebloom-0.1-android-arm64.apk` | Android 9+ arm64, debug-signed | 49.2 MB |
+| `mobile/ios/dist/Rebloom-0.1-ios-unsigned.ipa` | iOS 16.4+ arm64, unsigned | 20.4 MB |
+
+`SHA256SUMS.txt` has the hashes; `Verify-Rebloom.ps1` checks every download that is present.
+The Android build installs by sideloading. The iOS IPA needs the user's own signing.
 
 ## Layout
 
 | Path | What it is |
 |---|---|
-| `Rebloom-0.1-Windows-x86_64/source/` | launcher, build script and manifest, full rebuild source, toolkit patch |
-| `Rebloom-0.1-Windows-x86_64/art/` | launcher artwork |
-| `Rebloom-0.1-Windows-x86_64/README.md` | player-facing readme (also in the zip) |
-| `RELEASE-PAGE.md` | release body, screenshots and checksum |
+| `Rebloom-0.1-Windows-x86_64/` | extracted Windows package, player readme and full source |
+| `Rebloom-0.1-Windows-x86_64/source/` | launcher, build script, full rebuild source, toolkit patch |
+| `Rebloom-0.1-Linux-x86_64/` | Linux package: self-contained launcher, game, shader, default bindings |
+| `linux/` | Linux launcher source and package docs |
+| `mobile/android/` | Gradle project, Java launcher, native glue and the built APK |
+| `mobile/ios/` | Objective-C launcher, packaging script, icons and the built IPA |
+| `RELEASE-PAGE.md` | release body, screenshots and checksums |
 | `RELEASE-HANDOFF.md` | what was verified and what is still open |
 | `LAUNCHER-AUDIT.md` | launcher findings and fixes |
+| `ROADMAP.md` | platform status |
 | `screenshots/` | launcher and game images |
-| `Verify-Rebloom.ps1` | checks the release zip against `SHA256SUMS.txt` |
+| `Verify-Rebloom.ps1` | checks the release downloads against `SHA256SUMS.txt` |
 
 ## Build
+
+Windows launcher (no Visual Studio needed):
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File Rebloom-0.1-Windows-x86_64/source/Build-Launcher.ps1 -NoShortcut
 ```
 
 The game executable is built from the translated C++ in `source/recomp/`; see
-`source/REBUILD.md` and `source/BUILDING.md`. The launcher source is a single C# 5 file compiled
+`source/REBUILD.md` and `source/BUILDING.md`. The launcher source is a single C# file compiled
 by the .NET Framework 4 `csc.exe` that ships with Windows.
+
+Linux launcher (PyInstaller, from WSL or Linux):
+
+```bash
+cd /root/rebloom && ./venv/bin/pyinstaller --noconfirm \
+  --distpath dist --workpath pyi "pyi/Rebloom Launcher.spec"
+```
+
+Android (arm64, NDK 30):
+
+```powershell
+cd mobile/android
+java -classpath gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon assembleDebug
+```
+
+iOS (unsigned IPA, from Windows with the iPhoneOS SDK and Swift clang):
+
+```powershell
+python mobile/ios/build_ios.py
+```
 
 ## Verify a download
 

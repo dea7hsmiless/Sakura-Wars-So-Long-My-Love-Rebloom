@@ -1,52 +1,57 @@
 # Platform roadmap
 
-Windows 0.1 is the current release. Mobile and Linux are separate ports, not repackages.
+Windows 0.1 is feature-complete for this release. Linux, Android and iOS build from the same
+translated code; only Windows has been played past the opening.
 
-## Windows 0.1 — finish first
+## Windows 0.1 — release candidate
 
 - [x] Launcher, import, settings, bypass, exclusive/borderless full screen
+- [x] Keyboard and gamepad editing in the launcher (arrows/Tab/Enter capture fixed)
+- [x] Binding files ship with defaults and reload in-game within a second
 - [x] Package, checksums, screenshots, release verifier, local Git history
 - [ ] Play a battle (chapter 1)
 - [ ] Listen to the audio by ear
 - [ ] Save/load round trip through the game's own menu
 - [ ] Disc 2 gameplay past boot
 - [ ] Clean Windows account or second PC
-- [ ] Create the GitHub repo/tag and upload the zip + screenshots
-- [ ] Replace the local paths in `RELEASE-PAGE.md` with the live URLs
+- [ ] Create the GitHub repo/tag and upload the assets
+- [ ] Replace the download table in `RELEASE-PAGE.md` with live URLs
 
-## Linux — next
+## Linux — package built
 
-The runtime already builds and runs on Linux; the Windows launcher does not.
-
-- [ ] Build the generated game + runtime with clang/CMake on Linux
-- [ ] Ship a small native launcher (or a CLI first): import ISO, language, display settings, play
-- [ ] Vulkan path and controller/keyboard input
-- [ ] Portable folder layout matching Windows: `discs/`, `game/`, launcher settings
-- [ ] Tar.gz package, checksums, README, test on a clean distro
+- [x] Build the generated game + runtime with clang/CMake on Linux
+- [x] Native Tk launcher: import, language, display/graphics, controls editors, play
+- [x] Vulkan path, keyboard and controller input
+- [x] Portable layout: `discs/`, `game/`, `launcher.ini`
+- [x] Tar.gz package, checksums, README; runtime boot-tested under WSLg
+- [ ] Install on a clean distro and play a chapter
 - [ ] Keep the same no-ISO, own-disc rules
 
-## Android — after Linux
+## Android — APK built
 
-- [ ] arm64 NDK build of the runtime and generated C++
-- [ ] SDL2 + wgpu Vulkan Android surface
-- [ ] Touch overlay (stick, face buttons, Start/Select) and controller support
-- [ ] SAF file picker that copies the ISO into app storage
-- [ ] Remove the runtime `clang++` path; ship precompiled code/VU coverage
+- [x] arm64 NDK build of the runtime and generated C++
+- [x] SDL2 + wgpu Vulkan Android surface
+- [x] Controller support
+- [x] SAF file picker that copies the ISO into app storage
+- [x] Gradle project, icons, debug-signed APK
+- [ ] Touch overlay (stick, face buttons, Start/Select)
+- [ ] Remove the runtime `clang++` path; ship precompiled code/VU coverage for unseen code
 - [ ] Test 1x/720p on a real phone, then a mid-range device
-- [ ] APK, checksums, install notes; sideloading, not a store release
+- [ ] Install and sign-off notes for sideloading
 
-## iOS — last
+## iOS — IPA built
 
-- [ ] Metal backend through wgpu + SDL2 iOS
-- [ ] Xcode project, signing and IPA/sideload path (requires a Mac)
-- [ ] No JIT and no compiler on device: all reachable EE/VU code must be precompiled
-- [ ] Files-app ISO import and local storage plan for a 3.6/7.17 GB image
+- [x] Metal backend through wgpu + SDL2 iOS
+- [x] Native UIKit launcher, Files import, local storage
+- [x] Icons, Info.plist, unsigned IPA and packaging script
+- [ ] Signing and install on a device (needs the user's certificate)
 - [ ] Touch overlay and controller support
+- [ ] No JIT and no compiler on device: all reachable EE/VU code must be precompiled
 - [ ] Memory/thermal testing on device
-- [ ] IPA, checksums, install notes; no App Store claim
+- [ ] Install notes; no App Store claim
 
 ## Shared prerequisite
 
-The current Windows build translates unseen code while it runs. Android and iOS cannot ship a
+The current runtime translates unseen code while it runs. Android and iOS cannot ship a
 compiler on the device, so the mobile ports depend on complete precompiled coverage. That means
-the battle and Disc 2 coverage work comes before mobile, not after it.
+the battle and Disc 2 coverage work comes before mobile can be called finished.
