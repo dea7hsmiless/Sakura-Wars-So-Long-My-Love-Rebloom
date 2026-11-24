@@ -29,8 +29,8 @@ SHA-256:
 bd92776051fd1e54c481e781b6ed0054fb0786bad844f80854fca7790693d1f2  Rebloom-0.1-Windows-x86_64.zip
 d7dd7b7688c0ca135a555b30f7dab2dbed6c1a30a2f2f3e076d761d9b1d27d69  Rebloom-0.1-Linux-x86_64.tar.gz
 7f6466b52d0a1f486d6169df3cac563155dbc7420668bee1965161a3d91bb199  Rebloom-0.1-x86_64.AppImage
-7931b13b98d78ede010b72506630a595f10a513947e9ef4e9f4e492e7a98687f  Rebloom-0.1-android-arm64.apk
-3ad0d3b52a6eba0ed9478dc63003b11cb558416f37a529a5a5244ea997a65e22  Rebloom-0.1-ios-unsigned.ipa
+dad0fde2193ee3e75d3089bee67755f1c20ee20ae49962e1e49f5260c4984437  Rebloom-0.1-android-arm64.apk
+129e931fe5bce6334ed687545188f0b9fab31e9ce505b3cf9d9cc684321452ca  Rebloom-0.1-ios-unsigned.ipa
 ```
 
 `SHA256SUMS.txt` and the launcher source inside the Windows zip are also in the release.
@@ -111,8 +111,9 @@ Settings live in `launcher.ini` beside the launcher (Windows/Linux) or `rebloom.
 Documents folder (iOS/Android). The game's own keys live in `game\data\keys.ini` and
 `game\data\gamepad.ini`. Delete the launcher settings to go back to defaults.
 
-The shipped defaults are fullscreen + exclusive, 16:9, 3× internal resolution, Crisp + edges,
-deinterlace off, VSync fifo, frame latency 2, Vulkan, and temporal de-dither on. The Windows and
+The shipped defaults on Windows and Linux are fullscreen + exclusive, 16:9, 3× internal resolution,
+Crisp + edges, deinterlace off, VSync fifo, frame latency 2, Vulkan, and temporal de-dither on. The
+Android and iOS launchers default to **1× internal resolution**; the Windows and
 Linux launchers default to the **Sakura** palette; **Settings → Display → Launcher colors**
 switches to **Classic (gold)** and applies when the launcher reopens.
 

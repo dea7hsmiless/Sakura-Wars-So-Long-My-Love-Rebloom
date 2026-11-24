@@ -673,7 +673,7 @@ void ios_launcher_receive_url(void *nsurl) {
     [self.look setTitle:LookName(Get(@"look", @"1")) forState:UIControlStateNormal];
     [self.aspect setTitle:AspectName(Get(@"aspect", @"16:9")) forState:UIControlStateNormal];
     [self.deinterlace setTitle:([Get(@"deinterlace", @"off") isEqual:@"off"] ? @"Off (sharp)" : @"Blend") forState:UIControlStateNormal];
-    [self.scale setTitle:ScaleName(Get(@"scale", @"3")) forState:UIControlStateNormal];
+    [self.scale setTitle:ScaleName(Get(@"scale", @"1")) forState:UIControlStateNormal];
     [self.touch setTitle:([Get(@"touch", @"1") isEqual:@"1"] ? @"On" : @"Off") forState:UIControlStateNormal];
     [self.touchColor setTitle:ColorName(Get(@"touch_color", @"#F5A9C1")) forState:UIControlStateNormal];
     [self.touchOpacity setTitle:[NSString stringWithFormat:@"%d%%", (int)lround(OpacityValue(Get(@"touch_opacity", @"0.7")) * 100)] forState:UIControlStateNormal];
@@ -683,7 +683,7 @@ void ios_launcher_receive_url(void *nsurl) {
     if (!self.busy) {
         self.status.text = [NSString stringWithFormat:@"  %@  /  %@  /  %@  /  %@x  /  touch %@  /  Rebloom %s",
             disc ? @"Ready" : @"No disc", [Language() isEqual:@"jp"] ? @"Japanese voices" : @"English voices",
-            Get(@"aspect", @"16:9"), Get(@"scale", @"3"),
+            Get(@"aspect", @"16:9"), Get(@"scale", @"1"),
             [Get(@"touch", @"1") isEqual:@"1"] ? @"on" : @"off", REBLOOM_VERSION];
     }
 }
@@ -710,7 +710,7 @@ void ios_launcher_receive_url(void *nsurl) {
     [self refresh];
 }
 - (void)cycleScale {
-    Set(@"scale", NextScale(Get(@"scale", @"3")));
+    Set(@"scale", NextScale(Get(@"scale", @"1")));
     [self refresh];
 }
 - (void)toggleTouch {
@@ -875,7 +875,7 @@ void ios_launcher_receive_url(void *nsurl) {
     NSString *db = [NSBundle.mainBundle pathForResource:@"gamecontrollerdb" ofType:@"txt"];
     if (db.length) setenv("SDL_GAMECONTROLLERCONFIG_FILE", db.fileSystemRepresentation, 1);
     if ([Get(@"deinterlace", @"off") isEqual:@"off"]) setenv("PS2_NO_DEINTERLACE", "1", 1);
-    NSString *scale = Get(@"scale", @"3");
+    NSString *scale = Get(@"scale", @"1");
     if (scale.length) setenv("PS2_SCALE", scale.UTF8String, 1);
     if ([Get(@"dedither", @"1") isEqual:@"1"] && Exists(ShaderPath()))
         setenv("PS2_BLIT_SHADER", ShaderPath().fileSystemRepresentation, 1);

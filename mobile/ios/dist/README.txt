@@ -2,8 +2,8 @@ Rebloom 0.1 - iOS arm64 (unsigned)
 ==================================
 
 File:  Rebloom-0.1-ios-unsigned.ipa
-Size:  20,641,148 B
-SHA-256: 3ad0d3b52a6eba0ed9478dc63003b11cb558416f37a529a5a5244ea997a65e22
+Size:  20,641,387 B
+SHA-256: 129e931fe5bce6334ed687545188f0b9fab31e9ce505b3cf9d9cc684321452ca
 
 Requirements
 ------------
@@ -18,8 +18,9 @@ Install
    press Play. Import Disc 2 for Japanese voices.
 3. The on-screen pad is shown by default; Settings -> Controls can turn it off,
    change its colour and opacity, enable button/stick haptics, and set the display
-   to 16:9, 4:3 or Fill. "Tap to advance" sends Cross on a short tap. A Bluetooth
-   controller can be paired in iOS Settings > Bluetooth and works beside the pad.
+   to 16:9, 4:3 or Fill. The internal resolution starts at 1x. "Tap to advance"
+   sends Cross on a short tap. A Bluetooth controller can be paired in iOS
+   Settings > Bluetooth and works beside the pad.
 4. If an older Rebloom is installed, delete it before installing this build;
    iOS can otherwise keep the old blank icon or cache.
 

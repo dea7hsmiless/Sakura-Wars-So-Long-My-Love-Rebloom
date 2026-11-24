@@ -11,16 +11,16 @@ Prepared 2026-11-23; mobile builds refreshed 2026-11-24. **Nothing has been publ
 | Extracted Windows tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | ~150 MB |
 | Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,609,963 B |
 | Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,811,512 B |
-| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,751,824 B |
-| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,641,148 B |
+| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,706,368 B |
+| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,641,387 B |
 
 Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that is present.
 
 - Windows: `bd92776051fd1e54c481e781b6ed0054fb0786bad844f80854fca7790693d1f2`
 - Linux: `d7dd7b7688c0ca135a555b30f7dab2dbed6c1a30a2f2f3e076d761d9b1d27d69`
 - AppImage: `7f6466b52d0a1f486d6169df3cac563155dbc7420668bee1965161a3d91bb199`
-- Android: `7931b13b98d78ede010b72506630a595f10a513947e9ef4e9f4e492e7a98687f`
-- iOS: `3ad0d3b52a6eba0ed9478dc63003b11cb558416f37a529a5a5244ea997a65e22`
+- Android: `dad0fde2193ee3e75d3089bee67755f1c20ee20ae49962e1e49f5260c4984437`
+- iOS: `129e931fe5bce6334ed687545188f0b9fab31e9ce505b3cf9d9cc684321452ca`
 
 ## What was verified for this package
 
@@ -107,6 +107,8 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - Android 15 edge-to-edge insets and display cutouts are handled on the launcher root, and the iOS
   rail starts inside the safe area, so the notch/Dynamic Island no longer covers the rail or shifts
   the page on iPhone landscape. The status bar and gesture bar no longer cover the footer.
+- The mobile launcher now defaults to **1x internal resolution**; 2x and 3x stay available in
+  Settings -> Display.
 - The refreshed launcher was reinstalled on the same emulator on 2026-11-24: the sakura palette,
   larger medium-weight text, hero and Android 15 insets were checked, and Play booted the game to its
   loaded-save screen.

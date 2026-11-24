@@ -397,7 +397,7 @@ public class LauncherActivity extends Activity {
                 new String[] { "16:9 (fit)", "4:3 (original)", "Fill (stretch)" },
                 new String[] { "16:9", "4:3", "fill" }, "16:9");
         choiceRow(display, "Internal resolution", "scale", new String[] { "1x (native)", "2x", "3x" },
-                new String[] { "1", "2", "3" }, "3");
+                new String[] { "1", "2", "3" }, "1");
         content.addView(display);
 
         LinearLayout graphics = card();
@@ -576,7 +576,7 @@ public class LauncherActivity extends Activity {
         String lang = "jp".equals(pref("language", "en")) ? "Japanese voices" : "English voices";
         String look = pref("look", "1");
         status.setText((disc != null ? "Ready" : "No disc") + "  /  " + lang + "  /  " + pref("aspect", "16:9")
-                + "  /  " + pref("scale", "3") + "x  /  touch " + ("1".equals(pref("touch", "1")) ? "on" : "off")
+                + "  /  " + pref("scale", "1") + "x  /  touch " + ("1".equals(pref("touch", "1")) ? "on" : "off")
                 + "  /  look " + look);
     }
 
@@ -682,7 +682,7 @@ public class LauncherActivity extends Activity {
             i.putExtra("memcard", new File(dataDir, "jp".equals(lang) ? "play-japanese.ps2" : "play-english.ps2").getAbsolutePath());
             i.putExtra("look", pref("look", "1"));
             i.putExtra("aspect", pref("aspect", "16:9"));
-            i.putExtra("scale", pref("scale", "3"));
+            i.putExtra("scale", pref("scale", "1"));
             i.putExtra("dedither", pref("dedither", "1"));
             i.putExtra("deinterlace", pref("deinterlace", "off"));
             i.putExtra("touch", pref("touch", "1"));
