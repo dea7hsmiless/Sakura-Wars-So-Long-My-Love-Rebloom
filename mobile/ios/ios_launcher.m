@@ -434,7 +434,7 @@ void ios_launcher_receive_url(void *nsurl) {
     if (self.railWidthConstraint.constant != rail) self.railWidthConstraint.constant = rail;
     CGFloat width = self.scroll.bounds.size.width;
     if (width > 1) {
-        CGFloat hero = MAX(120, width / 4.0);
+        CGFloat hero = MAX(120, width / 3.0);
         if (fabs(self.heroHeight.constant - hero) > 0.5) self.heroHeight.constant = hero;
     }
 }

@@ -2,8 +2,8 @@ Rebloom 0.1 - iOS arm64 (unsigned)
 ==================================
 
 File:  Rebloom-0.1-ios-unsigned.ipa
-Size:  20,641,387 B
-SHA-256: 129e931fe5bce6334ed687545188f0b9fab31e9ce505b3cf9d9cc684321452ca
+Size:  20,968,283 B
+SHA-256: 55f1765d3624f9b78b60a3727085d7e49199907d3ed7e5484002d2eb405883d5
 
 Requirements
 ------------

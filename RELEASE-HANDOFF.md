@@ -11,16 +11,16 @@ Prepared 2026-11-23; mobile builds refreshed 2026-11-24. **Nothing has been publ
 | Extracted Windows tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | ~150 MB |
 | Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,609,963 B |
 | Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,811,512 B |
-| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,706,368 B |
-| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,641,387 B |
+| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 50,033,004 B |
+| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,968,283 B |
 
 Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that is present.
 
 - Windows: `bd92776051fd1e54c481e781b6ed0054fb0786bad844f80854fca7790693d1f2`
 - Linux: `d7dd7b7688c0ca135a555b30f7dab2dbed6c1a30a2f2f3e076d761d9b1d27d69`
 - AppImage: `7f6466b52d0a1f486d6169df3cac563155dbc7420668bee1965161a3d91bb199`
-- Android: `dad0fde2193ee3e75d3089bee67755f1c20ee20ae49962e1e49f5260c4984437`
-- iOS: `129e931fe5bce6334ed687545188f0b9fab31e9ce505b3cf9d9cc684321452ca`
+- Android: `a199ffec332f0e003e22c0e6d25f570ce5b436ad34ce7204d4c31d45b6f3b574`
+- iOS: `55f1765d3624f9b78b60a3727085d7e49199907d3ed7e5484002d2eb405883d5`
 
 ## What was verified for this package
 
@@ -97,8 +97,8 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - The launcher now shows the Windows hero art and rail logo; the Play hero is capped at 180 dp
   so the Play card stays visible on small screens.
 - The mobile palette now matches the sakura theme (plum panels, cream text, sakura-pink accents,
-  deep-rose active nav). The hero is a 2400x600 composition with blurred sides, so it fills the
-  pane without side bars, and the Play page puts the title, status and actions below it.
+  deep-rose active nav). The hero is a sharp 2400x800 key-art banner that fills the pane edge to
+  edge without blurred side panels, and the Play page puts the title, status and actions below it.
 - The mobile launcher text is larger and uses medium-weight type for small labels; the low-contrast
   muted text was lightened. The iOS Play page now uses the ReDUB layout: a pane-wide hero at the top,
   then status, title, subtitle, actions and cards, with no heading above the hero.

@@ -289,11 +289,11 @@ public class LauncherActivity extends Activity {
         boolean has = disc != null;
         Bitmap heroArt = asset("hero.jpg");
         if (heroArt != null) {
-            // Keep the hero at its own 4:1 shape so the blurred sides are never cropped.
+            // Keep the hero at its own 3:1 shape so the sharp art fills the pane with no side panels.
             ImageView hero = new ImageView(this) {
                 @Override protected void onMeasure(int widthSpec, int heightSpec) {
                     int width = MeasureSpec.getSize(widthSpec);
-                    setMeasuredDimension(width, Math.round(width / 4f));
+                    setMeasuredDimension(width, Math.round(width / 3f));
                 }
             };
             hero.setImageBitmap(heroArt);
