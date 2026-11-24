@@ -432,9 +432,9 @@ void ios_launcher_receive_url(void *nsurl) {
     [super viewDidLayoutSubviews];
     CGFloat rail = self.view.bounds.size.width < 800 ? 126 : 160;
     if (self.railWidthConstraint.constant != rail) self.railWidthConstraint.constant = rail;
-    CGFloat room = self.scroll.bounds.size.height;
-    if (room > 1) {
-        CGFloat hero = MAX(150, MIN(280, room - 160));
+    CGFloat width = self.scroll.bounds.size.width;
+    if (width > 1) {
+        CGFloat hero = MAX(120, width / 4.0);
         if (fabs(self.heroHeight.constant - hero) > 0.5) self.heroHeight.constant = hero;
     }
 }

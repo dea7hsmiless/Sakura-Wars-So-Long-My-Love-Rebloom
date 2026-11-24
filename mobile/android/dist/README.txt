@@ -2,8 +2,8 @@ Rebloom 0.1 - Android arm64
 ===========================
 
 File:  Rebloom-0.1-android-arm64.apk
-Size:  49,751,436 B
-SHA-256: 492f6742cf50173cf658211e7e5e944be067b7871d14b5029eaad5c91a25c4ce
+Size:  49,751,824 B
+SHA-256: 7931b13b98d78ede010b72506630a595f10a513947e9ef4e9f4e492e7a98687f
 
 Requirements
 ------------

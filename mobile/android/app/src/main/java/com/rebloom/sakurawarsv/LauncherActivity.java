@@ -243,7 +243,6 @@ public class LauncherActivity extends Activity {
         scroll.setFillViewport(true);
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(22), 0, dp(22), 0);
         scroll.addView(content, new ScrollView.LayoutParams(
                 ScrollView.LayoutParams.MATCH_PARENT, ScrollView.LayoutParams.WRAP_CONTENT));
         main.addView(scroll, new LinearLayout.LayoutParams(
@@ -270,6 +269,8 @@ public class LauncherActivity extends Activity {
             nav.get(i).setBackground(box(on ? RED : CARD, on ? 0 : EDGE, 9));
         }
         content.removeAllViews();
+        int pad = playPage ? 0 : dp(22);
+        content.setPadding(pad, 0, pad, 0);
         if ("Play".equals(target)) pagePlay();
         else if ("Install".equals(target)) pageInstall();
         else if ("Settings".equals(target)) pageSettings();
@@ -288,24 +289,32 @@ public class LauncherActivity extends Activity {
         boolean has = disc != null;
         Bitmap heroArt = asset("hero.jpg");
         if (heroArt != null) {
-            ImageView hero = new ImageView(this);
+            // Keep the hero at its own 4:1 shape so the blurred sides are never cropped.
+            ImageView hero = new ImageView(this) {
+                @Override protected void onMeasure(int widthSpec, int heightSpec) {
+                    int width = MeasureSpec.getSize(widthSpec);
+                    setMeasuredDimension(width, Math.round(width / 4f));
+                }
+            };
             hero.setImageBitmap(heroArt);
-            hero.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            int heroH = Math.max(dp(120), Math.min(dp(180),
-                    getResources().getDisplayMetrics().heightPixels - dp(180)));
-            hero.setPadding(0, 0, 0, dp(12));
+            hero.setScaleType(ImageView.ScaleType.FIT_XY);
             LinearLayout.LayoutParams heroParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, heroH);
-            heroParams.leftMargin = -dp(22);
-            heroParams.rightMargin = -dp(22);
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            heroParams.bottomMargin = dp(12);
             content.addView(hero, heroParams);
         }
+        LinearLayout body = new LinearLayout(this);
+        body.setOrientation(LinearLayout.VERTICAL);
+        body.setPadding(dp(22), 0, dp(22), 0);
+        content.addView(body, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
         TextView title = label("Sakura Wars V: So Long, My Love", 26, true, INK);
         title.setPadding(0, dp(6), 0, 0);
-        content.addView(title);
-        content.addView(label(has ? "READY  /  ANDROID ARM64" : "NO DISC  /  ANDROID ARM64",
+        body.addView(title);
+        body.addView(label(has ? "READY  /  ANDROID ARM64" : "NO DISC  /  ANDROID ARM64",
                 9, true, GOLD));
-        content.addView(label(has ? ("jp".equals(pref("language", "en"))
+        body.addView(label(has ? ("jp".equals(pref("language", "en"))
                         ? "Japanese voices (Disc 2)." : "English voices (Disc 1).")
                         : "Import your own Disc 1 ISO to begin.",
                 13, false, MUTED));
@@ -325,9 +334,9 @@ public class LauncherActivity extends Activity {
         ip.leftMargin = dp(10);
         actions.addView(imp, ip);
         actions.setPadding(0, dp(12), 0, dp(4));
-        content.addView(actions);
+        body.addView(actions);
 
-        if (has) content.addView(label(new File(disc).getName(), 10, false, MUTED));
+        if (has) body.addView(label(new File(disc).getName(), 10, false, MUTED));
 
         LinearLayout voiceCard = card();
         voiceCard.addView(label("VOICE LANGUAGE", 9, true, MUTED));
@@ -341,7 +350,7 @@ public class LauncherActivity extends Activity {
         voiceCard.addView(voice);
         voiceCard.addView(label("Japanese voices require importing Disc 2. The launcher picks the matching disc from discs/.",
                 11, false, MUTED));
-        content.addView(voiceCard);
+        body.addView(voiceCard);
 
         LinearLayout touchCard = card();
         touchCard.addView(label("TOUCH CONTROLS", 9, true, MUTED));
@@ -350,7 +359,7 @@ public class LauncherActivity extends Activity {
                 : "Touch pad is off. Settings -> Controls turns it on.", 12, false, INK));
         touchCard.addView(label("A Bluetooth controller works at the same time: pair it in Android's Bluetooth settings.",
                 10, false, MUTED));
-        content.addView(touchCard);
+        body.addView(touchCard);
     }
 
     private void pageInstall() {
