@@ -18,13 +18,6 @@ on an interpreted IOP; only disc reads and module loading are answered by the ho
 **Bring your own discs. No disc image, game data, saves, soundtrack or extracted files are
 included.** This is an unofficial fan project.
 
-## Screenshots
-
-| | |
-| --- | --- |
-| ![Rebloom Launcher on Windows](screenshots/launcher.png) | ![Sakura Wars: So Long, My Love running](screenshots/game.png) |
-| **Rebloom Launcher** — Sakura palette, key art and five-page rail. | **In game** — the recompiled PS2 renderer at 1080p. |
-
 ## Which discs do I need?
 
 - **Disc 1** — `SLUS_219.27`, English voices.
