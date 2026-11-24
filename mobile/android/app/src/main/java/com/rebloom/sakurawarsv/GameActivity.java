@@ -1,7 +1,6 @@
 package com.rebloom.sakurawarsv;
 
 import android.os.Bundle;
-import android.system.Os;
 import android.widget.RelativeLayout;
 import org.libsdl.app.SDLActivity;
 
@@ -10,9 +9,19 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/** SDL's activity: libmain.so receives the disc and settings from the environment. */
+/** SDL's activity: the native runner gets the disc and settings through JNI. */
 public class GameActivity extends SDLActivity {
     private TouchOverlay overlay;
+
+    private static native void nativeLaunch(String disc, String data, String memcard, String shader,
+                                            String look, String aspect, String scale, String touch,
+                                            String tap, String deinterlace, String dedither,
+                                            String title, String controllerDb);
+
+    static {
+        System.loadLibrary("SDL2");
+        System.loadLibrary("main");
+    }
 
     @Override
     protected String[] getLibraries() {
@@ -22,21 +31,18 @@ public class GameActivity extends SDLActivity {
     @Override
     protected void onCreate(Bundle state) {
         android.content.Intent i = getIntent();
-        set("REBLOOM_DISC", i.getStringExtra("disc"));
-        set("REBLOOM_DATA", i.getStringExtra("data"));
-        set("REBLOOM_MEMCARD", i.getStringExtra("memcard"));
-        set("PS2_LOOK", i.getStringExtra("look"));
-        set("PS2_ASPECT", i.getStringExtra("aspect"));
-        set("PS2_SCALE", i.getStringExtra("scale"));
-        set("PS2_PRESENT_MODE", "fifo");
-        set("PS2_WINDOW_TITLE", "Sakura Wars V: So Long, My Love - Rebloom");
-        if ("1".equals(i.getStringExtra("dedither"))) set("PS2_BLIT_SHADER", i.getStringExtra("shader"));
-        if ("off".equals(i.getStringExtra("deinterlace"))) set("PS2_NO_DEINTERLACE", "1");
         boolean touch = !"0".equals(i.getStringExtra("touch"));
         boolean tap = !"0".equals(i.getStringExtra("tap"));
-        set("REBLOOM_TOUCH", touch ? "1" : "0");
-        set("REBLOOM_TAP", tap ? "1" : "0");
-        installControllerDb();
+        String controllerDb = installControllerDb();
+        android.util.Log.i("Rebloom", "GameActivity disc=" + i.getStringExtra("disc")
+                + " data=" + i.getStringExtra("data")
+                + " memcard=" + i.getStringExtra("memcard")
+                + " touch=" + touch + " tap=" + tap);
+        nativeLaunch(i.getStringExtra("disc"), i.getStringExtra("data"), i.getStringExtra("memcard"),
+                i.getStringExtra("shader"), i.getStringExtra("look"), i.getStringExtra("aspect"),
+                i.getStringExtra("scale"), touch ? "1" : "0", tap ? "1" : "0",
+                i.getStringExtra("deinterlace"), i.getStringExtra("dedither"),
+                "Sakura Wars V: So Long, My Love - Rebloom", controllerDb);
         super.onCreate(state);
         if (touch) {
             overlay = new TouchOverlay(this, tap);
@@ -47,7 +53,7 @@ public class GameActivity extends SDLActivity {
     }
 
     /** SDL reads this file at start, so Bluetooth pads outside its built-in list still map. */
-    private void installControllerDb() {
+    private String installControllerDb() {
         try {
             File db = new File(getFilesDir(), "gamecontrollerdb.txt");
             if (!db.isFile() || db.length() == 0) {
@@ -62,8 +68,9 @@ public class GameActivity extends SDLActivity {
                     try { out.close(); } catch (Exception ignored) { }
                 }
             }
-            set("SDL_GAMECONTROLLERCONFIG_FILE", db.getAbsolutePath());
+            return db.getAbsolutePath();
         } catch (Exception ignored) {
+            return "";
         }
     }
 
@@ -77,10 +84,5 @@ public class GameActivity extends SDLActivity {
     protected void onDestroy() {
         if (overlay != null) overlay.resetState();
         super.onDestroy();
-    }
-
-    private static void set(String key, String value) {
-        if (value == null || value.length() == 0) return;
-        try { Os.setenv(key, value, true); } catch (Exception ignored) { }
     }
 }

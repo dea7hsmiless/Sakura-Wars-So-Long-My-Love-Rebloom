@@ -144,51 +144,59 @@ public class LauncherActivity extends Activity {
         root.setOrientation(LinearLayout.HORIZONTAL);
         root.setBackgroundColor(BG);
 
-        int width = getResources().getDisplayMetrics().widthPixels;
-        int railWidth = Math.min(dp(310), (int) (width * 0.31f));
+        float widthDp = getResources().getDisplayMetrics().widthPixels
+                / getResources().getDisplayMetrics().density;
+        int railWidth = dp(widthDp < 800 ? 126 : 160);
         LinearLayout rail = new LinearLayout(this);
         rail.setOrientation(LinearLayout.VERTICAL);
         rail.setBackgroundColor(RAIL);
-        rail.setPadding(dp(18), dp(22), dp(18), dp(18));
+        rail.setPadding(dp(9), dp(16), dp(9), dp(8));
         root.addView(rail, new LinearLayout.LayoutParams(railWidth, LinearLayout.LayoutParams.MATCH_PARENT));
 
-        rail.addView(label("REBLOOM", 28, true, GOLD));
-        rail.addView(label("SAKURA WARS V", 9, true, MUTED));
-        rail.addView(label("SO LONG, MY LOVE", 9, false, MUTED));
+        LinearLayout brand = new LinearLayout(this);
+        brand.setOrientation(LinearLayout.VERTICAL);
+        brand.setGravity(Gravity.CENTER_VERTICAL);
+        brand.addView(label("REBLOOM", 20, true, GOLD));
+        brand.addView(label("SAKURA WARS V", 7, true, MUTED));
+        rail.addView(brand, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(42)));
 
         LinearLayout links = new LinearLayout(this);
         links.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams linksParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1);
-        linksParams.topMargin = dp(24);
+        linksParams.topMargin = dp(8);
         rail.addView(links, linksParams);
-        for (String name : PAGES) {
-            final String target = name;
-            TextView b = label(name, 15, true, MUTED);
+        for (int i = 0; i < PAGES.length; i++) {
+            if (i == 3) {
+                View spacer = new View(this);
+                links.addView(spacer, new LinearLayout.LayoutParams(1, 0, 1));
+            }
+            final String target = PAGES[i];
+            TextView b = label(target, 14, true, MUTED);
             b.setGravity(Gravity.CENTER_VERTICAL);
-            b.setPadding(dp(16), dp(12), dp(16), dp(12));
-            b.setBackground(box(RAIL, 0, 8));
+            b.setPadding(dp(10), 0, dp(10), 0);
+            b.setBackground(box(RAIL, 0, 9));
             b.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) { show(target); }
             });
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            p.bottomMargin = dp(4);
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(41));
+            p.bottomMargin = dp(i == 2 ? 0 : 8);
             links.addView(b, p);
             nav.add(b);
         }
-        rail.addView(label("Rebloom Launcher " + VERSION, 9, false, MUTED));
 
         LinearLayout main = new LinearLayout(this);
         main.setOrientation(LinearLayout.VERTICAL);
         main.setBackgroundColor(BG);
-        main.setPadding(dp(26), dp(20), dp(26), 0);
+        main.setPadding(dp(22), dp(18), dp(22), 0);
         root.addView(main, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1));
 
-        heading = label("", 23, true, INK);
+        heading = label("", 24, true, INK);
         main.addView(heading);
         subheading = label("", 10, false, MUTED);
-        subheading.setPadding(0, dp(3), 0, dp(12));
+        subheading.setPadding(0, dp(3), 0, dp(10));
         main.addView(subheading);
 
         ScrollView scroll = new ScrollView(this);
@@ -202,9 +210,10 @@ public class LauncherActivity extends Activity {
 
         status = label("", 10, false, MUTED);
         status.setBackgroundColor(FOOT);
-        status.setPadding(dp(14), dp(7), dp(14), dp(7));
+        status.setGravity(Gravity.CENTER_VERTICAL);
+        status.setPadding(dp(20), 0, dp(20), 0);
         main.addView(status, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(25)));
 
         setContentView(root);
     }

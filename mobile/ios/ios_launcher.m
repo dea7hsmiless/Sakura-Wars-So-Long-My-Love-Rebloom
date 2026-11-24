@@ -117,6 +117,7 @@ static NSString *NextScale(NSString *value) {
 
 @interface RebloomLauncher : UIViewController <UIDocumentPickerDelegate>
 @property(nonatomic, strong) UIStackView *rail;
+@property(nonatomic, strong) NSLayoutConstraint *railWidthConstraint;
 @property(nonatomic, strong) UIStackView *navStack;
 @property(nonatomic, copy) NSString *page;
 @property(nonatomic, strong) UILabel *heading;
@@ -181,7 +182,7 @@ void ios_launcher_receive_url(void *nsurl) {
     b.titleLabel.font = [UIFont boldSystemFontOfSize:14];
     b.contentEdgeInsets = UIEdgeInsetsMake(9, 14, 9, 14);
     [b addTarget:self action:action forControlEvents:UIControlEventTouchUpInside];
-    [b.heightAnchor constraintGreaterThanOrEqualToConstant:42].active = YES;
+    [b.heightAnchor constraintGreaterThanOrEqualToConstant:46].active = YES;
     return b;
 }
 
@@ -224,12 +225,12 @@ void ios_launcher_receive_url(void *nsurl) {
 - (UIButton *)navButton:(NSString *)title {
     UIButton *b = [UIButton buttonWithType:UIButtonTypeSystem];
     b.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-    b.contentEdgeInsets = UIEdgeInsetsMake(10, 16, 10, 16);
+    b.contentEdgeInsets = UIEdgeInsetsMake(0, 10, 0, 10);
     b.layer.cornerRadius = 8;
     [b setTitle:title forState:UIControlStateNormal];
     b.titleLabel.font = [UIFont boldSystemFontOfSize:15];
     [b addTarget:self action:@selector(nav:) forControlEvents:UIControlEventTouchUpInside];
-    [b.heightAnchor constraintEqualToConstant:44].active = YES;
+    [b.heightAnchor constraintEqualToConstant:41].active = YES;
     return b;
 }
 
@@ -248,15 +249,12 @@ void ios_launcher_receive_url(void *nsurl) {
     rail.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:rail];
     UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
-    NSLayoutConstraint *railWidth = [rail.widthAnchor constraintEqualToAnchor:self.view.widthAnchor multiplier:0.32];
-    railWidth.priority = 750;
+    self.railWidthConstraint = [rail.widthAnchor constraintEqualToConstant:126];
     [NSLayoutConstraint activateConstraints:@[
         [rail.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
         [rail.topAnchor constraintEqualToAnchor:self.view.topAnchor],
         [rail.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
-        railWidth,
-        [rail.widthAnchor constraintGreaterThanOrEqualToConstant:220],
-        [rail.widthAnchor constraintLessThanOrEqualToConstant:330],
+        self.railWidthConstraint,
     ]];
 
     UIStackView *railStack = [[UIStackView alloc] init];
@@ -265,42 +263,45 @@ void ios_launcher_receive_url(void *nsurl) {
     railStack.translatesAutoresizingMaskIntoConstraints = NO;
     [rail addSubview:railStack];
     [NSLayoutConstraint activateConstraints:@[
-        [railStack.topAnchor constraintEqualToAnchor:safe.topAnchor constant:22],
-        [railStack.leadingAnchor constraintEqualToAnchor:rail.leadingAnchor constant:16],
-        [railStack.trailingAnchor constraintEqualToAnchor:rail.trailingAnchor constant:-16],
-        [railStack.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor constant:-16],
+        [railStack.topAnchor constraintEqualToAnchor:safe.topAnchor constant:16],
+        [railStack.leadingAnchor constraintEqualToAnchor:rail.leadingAnchor constant:9],
+        [railStack.trailingAnchor constraintEqualToAnchor:rail.trailingAnchor constant:-9],
+        [railStack.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor constant:-8],
     ]];
 
-    [railStack addArrangedSubview:[self label:@"REBLOOM" size:28 bold:YES color:RGB(0xE8C46A)]];
-    [railStack addArrangedSubview:[self label:@"SAKURA WARS V" size:9 bold:YES color:RGB(0xA99C8E)]];
-    [railStack addArrangedSubview:[self label:@"SO LONG, MY LOVE" size:9 bold:NO color:RGB(0xA99C8E)]];
+    [railStack addArrangedSubview:[self label:@"REBLOOM" size:20 bold:YES color:RGB(0xE8C46A)]];
+    [railStack addArrangedSubview:[self label:@"SAKURA WARS V" size:7 bold:YES color:RGB(0xA99C8E)]];
     UIView *gap = [UIView new];
-    [gap.heightAnchor constraintEqualToConstant:18].active = YES;
+    [gap.heightAnchor constraintEqualToConstant:8].active = YES;
     [railStack addArrangedSubview:gap];
 
     self.navStack = [UIStackView new];
     self.navStack.axis = UILayoutConstraintAxisVertical;
-    self.navStack.spacing = 4;
-    for (NSString *name in g_pages) [self.navStack addArrangedSubview:[self navButton:name]];
+    self.navStack.spacing = 0;
+    [self.navStack setContentHuggingPriority:1 forAxis:UILayoutConstraintAxisVertical];
+    for (NSUInteger i = 0; i < g_pages.count; i++) {
+        if (i == 3) {
+            UIView *spacer = [UIView new];
+            [spacer setContentHuggingPriority:1 forAxis:UILayoutConstraintAxisVertical];
+            [self.navStack addArrangedSubview:spacer];
+        }
+        UIButton *button = [self navButton:g_pages[i]];
+        [self.navStack addArrangedSubview:button];
+        [self.navStack setCustomSpacing:(i == 2 ? 0 : 8) afterView:button];
+    }
     [railStack addArrangedSubview:self.navStack];
-    UIView *push = [UIView new];
-    push.userInteractionEnabled = NO;
-    [push setContentHuggingPriority:1 forAxis:UILayoutConstraintAxisVertical];
-    [railStack addArrangedSubview:push];
-    [railStack addArrangedSubview:[self label:[NSString stringWithFormat:@"Rebloom Launcher %s", REBLOOM_VERSION]
-                                        size:9 bold:NO color:RGB(0xA99C8E)]];
 
     UIView *pane = [UIView new];
     pane.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:pane];
     [NSLayoutConstraint activateConstraints:@[
-        [pane.leadingAnchor constraintEqualToAnchor:rail.trailingAnchor constant:26],
-        [pane.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor constant:-26],
+        [pane.leadingAnchor constraintEqualToAnchor:rail.trailingAnchor constant:22],
+        [pane.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor constant:-22],
         [pane.topAnchor constraintEqualToAnchor:safe.topAnchor constant:18],
         [pane.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor],
     ]];
 
-    self.heading = [self label:@"" size:23 bold:YES color:RGB(0xF2ECE4)];
+    self.heading = [self label:@"" size:24 bold:YES color:RGB(0xF2ECE4)];
     self.subheading = [self label:@"" size:10 bold:NO color:RGB(0xA99C8E)];
     [pane addSubview:self.heading];
     [pane addSubview:self.subheading];
@@ -327,7 +328,7 @@ void ios_launcher_receive_url(void *nsurl) {
         [self.status.leadingAnchor constraintEqualToAnchor:pane.leadingAnchor],
         [self.status.trailingAnchor constraintEqualToAnchor:pane.trailingAnchor],
         [self.status.bottomAnchor constraintEqualToAnchor:pane.bottomAnchor],
-        [self.status.heightAnchor constraintGreaterThanOrEqualToConstant:28],
+        [self.status.heightAnchor constraintEqualToConstant:25],
     ]];
 
     self.stack = [UIStackView new];
@@ -351,6 +352,12 @@ void ios_launcher_receive_url(void *nsurl) {
     if (self.busy) return;
     self.page = sender.currentTitle;
     [self render];
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    CGFloat rail = self.view.bounds.size.width < 800 ? 126 : 160;
+    if (self.railWidthConstraint.constant != rail) self.railWidthConstraint.constant = rail;
 }
 
 - (void)render {

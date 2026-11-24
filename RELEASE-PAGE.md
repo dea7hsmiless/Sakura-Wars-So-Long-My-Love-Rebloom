@@ -20,7 +20,7 @@ disc reads and module loading are answered by the runtime.
 | Rebloom-0.1-Windows-x86_64.zip | 44.8 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
 | Rebloom-0.1-Linux-x86_64.tar.gz | 33.1 MB | Linux x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland |
 | Rebloom-0.1-x86_64.AppImage | 32.3 MB | Linux x86-64, FUSE 2 (or `--appimage-extract-and-run`), Vulkan 1.1 |
-| Rebloom-0.1-android-arm64.apk | 49.3 MB | Android 9+ arm64, Vulkan; debug-signed sideload |
+| Rebloom-0.1-android-arm64.apk | 49.3 MB | Android 9+ arm64, Vulkan GPU with 7+ storage buffers; debug-signed sideload |
 | Rebloom-0.1-ios-unsigned.ipa | 20.5 MB | iOS 16.4+ arm64; unsigned, needs your own signing |
 
 SHA-256:
@@ -29,8 +29,8 @@ SHA-256:
 397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f  Rebloom-0.1-Windows-x86_64.zip
 e01930fb124fa41d2386d92aef432a7978192a02d4299543cd89cd7109f56dc0  Rebloom-0.1-Linux-x86_64.tar.gz
 4b538a6c224b410409d0d4242dc99e9afd4da03949538d8d1a89fc08c4941306  Rebloom-0.1-x86_64.AppImage
-57064e7c451c7938a8f76ea258551f21734cd92f4830dabeb71e73eee9960c3a  Rebloom-0.1-android-arm64.apk
-16fc557a231404ef673dfdeb5ac2bfad62092aa22b586d6ea8810d10a8d61c15  Rebloom-0.1-ios-unsigned.ipa
+098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832  Rebloom-0.1-android-arm64.apk
+788596dc58c0fe3aad983e2bb977901db47d27ba60a9a049d2be0a76408a2ed6  Rebloom-0.1-ios-unsigned.ipa
 ```
 
 `SHA256SUMS.txt` and the launcher source inside the Windows zip are also in the release.
@@ -56,9 +56,9 @@ e01930fb124fa41d2386d92aef432a7978192a02d4299543cd89cd7109f56dc0  Rebloom-0.1-Li
 - Texture filtering/AA in the launcher covers the runtime's Crisp/Soft/Sharp looks and smooth-edge
   AA; no separate MSAA/anisotropic path yet.
 - HD texture overrides are supported, but no texture pack is included.
-- **Android and iOS have not been run on a device.** The APK and IPA build and package, but
-  touch overlays are still missing; a controller is the intended input for now. Unseen code
-  cannot be translated on iOS, so some later scenes may not run there.
+- **Android and iOS have not been run on a phone.** The Android game was run on an emulator with a host RTX 3070; the SwiftShader emulator cannot run its 7-storage-buffer compute pass. iOS still needs a signed device test. The APK and IPA build and package, but neither has
+  been run on a phone; the touch overlay and Bluetooth controller path are untested on hardware.
+  Unseen code cannot be translated on iOS, so some later scenes may not run there.
 
 ## Install
 
@@ -83,7 +83,7 @@ The Linux game links against the system Vulkan loader and SDL2 is bundled.
 ### Android
 
 1. Sideload `Rebloom-0.1-android-arm64.apk` (debug-signed).
-2. Open **Sakura Wars V - Rebloom**, press **Import disc...**, and choose your ISO; it is copied
+2. Open **Rebloom**, press **Import disc...**, and choose your ISO; it is copied
    into app storage, so the source can be deleted.
 3. Press **Play**. The on-screen pad is on by default; **Settings -> Controls** turns it off or on,
    and **Tap to advance** sends Cross on a short tap. Pair a Bluetooth controller in Android's

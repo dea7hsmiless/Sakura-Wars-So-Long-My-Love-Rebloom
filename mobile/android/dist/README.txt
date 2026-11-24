@@ -2,17 +2,17 @@ Rebloom 0.1 - Android arm64
 ===========================
 
 File:  Rebloom-0.1-android-arm64.apk
-Size:  49,278,089 B
-SHA-256: 57064e7c451c7938a8f76ea258551f21734cd92f4830dabeb71e73eee9960c3a
+Size:  49,283,577 B
+SHA-256: 098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832
 
 Requirements
 ------------
-Android 9 (API 28) or newer, arm64, a Vulkan 1.1 driver. Built and debug-signed;
+Android 9 (API 28) or newer, arm64, a Vulkan 1.1 driver with at least 7 storage buffers per compute stage. SwiftShader emulators (4 buffers) cannot run the port. Built and debug-signed;
 install by sideloading (adb install -r, or copy it to the device and open it).
 
 Install
 -------
-1. Install the APK and open "Sakura Wars V - Rebloom".
+1. Install the APK and open "Rebloom".
 2. Press "Import disc..." and choose Disc 1 (.iso). The file is copied into the
    app's external files folder, so the original can be deleted. Import Disc 2
    too for Japanese voices.
