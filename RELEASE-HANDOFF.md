@@ -72,9 +72,10 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - The launcher now uses the five-page rail (Play, Install, Settings, Support, About) with the
   same dark/gold/red styling as Windows. Settings has touch controls and tap-to-advance.
 - The game was run on the Android emulator with its host GPU (RTX 3070 Vulkan): the disc was read,
-  nine shaders compiled, the touch overlay drew, and an empty-screen tap sent Cross and advanced
-  the game's memory-card prompt. The title screen and save flow were not completed. SwiftShader's
-  4-storage-buffer limit cannot run the compute pass; a real Vulkan GPU is required.
+  nine shaders compiled, the touch overlay drew, its d-pad selected Yes, and its Cross button
+  formatted an 8 MB memory card, created a game file, and reached the Sega and opening screens.
+  An empty-screen tap also sent Cross and advanced the prompts. SwiftShader's 4-storage-buffer
+  limit cannot run the compute pass; a real Vulkan GPU is required.
 - `TouchOverlay` exports its JNI entry points (`nativeButton`, `nativeStick`, `nativeTrigger`,
   `nativeTap`, `nativeReset`); a Bluetooth pad still uses the normal SDL path in port 1 and
   works alongside the overlay.
