@@ -249,28 +249,42 @@ fn fs(in: VertexOut) -> @location(0) vec4<f32> {
         c = scene(in.uv);
         if ((blit.options & 1u) != 0u) { c = edge_aa(in.uv, c); }
     }
-    // Strong de-dither for a 2x render scale: the 4x4 dither of the original 640x480 picture is an
-    // 8x8 pattern in the 1280x960 framebuffer, so the normal 4x4 average only covers half a period.
-    // Sixteen bilinear reads at half-pixel offsets make a uniform 8x8 source-resolution average.
-    // The edge test still uses a 4x4 block, so text and hard edges keep most of their detail.
+    // Strong de-dither is scale-aware: the 4x4 dither of the original 640x480 picture is 8x8 at
+    // 2x and 12x12 at 3x. The 2x path keeps the original sixteen-tap 8x8 average; 3x needs a
+    // 12x12 average or a faint residual pattern remains during slow fades. The edge test still
+    // uses a 4x4 block, so text and hard edges keep most of their detail.
     let px = vec2<f32>(1.0 / f32(blit.width), 1.0 / f32(blit.height));
-    let a00 = scene(in.uv + vec2<f32>(-3.5, -3.5) * px);
-    let a10 = scene(in.uv + vec2<f32>(-1.5, -3.5) * px);
-    let a20 = scene(in.uv + vec2<f32>(0.5, -3.5) * px);
-    let a30 = scene(in.uv + vec2<f32>(2.5, -3.5) * px);
-    let a01 = scene(in.uv + vec2<f32>(-3.5, -1.5) * px);
     let a11 = scene(in.uv + vec2<f32>(-1.5, -1.5) * px);
     let a21 = scene(in.uv + vec2<f32>(0.5, -1.5) * px);
-    let a31 = scene(in.uv + vec2<f32>(2.5, -1.5) * px);
-    let a02 = scene(in.uv + vec2<f32>(-3.5, 0.5) * px);
     let a12 = scene(in.uv + vec2<f32>(-1.5, 0.5) * px);
     let a22 = scene(in.uv + vec2<f32>(0.5, 0.5) * px);
-    let a32 = scene(in.uv + vec2<f32>(2.5, 0.5) * px);
-    let a03 = scene(in.uv + vec2<f32>(-3.5, 2.5) * px);
-    let a13 = scene(in.uv + vec2<f32>(-1.5, 2.5) * px);
-    let a23 = scene(in.uv + vec2<f32>(0.5, 2.5) * px);
-    let a33 = scene(in.uv + vec2<f32>(2.5, 2.5) * px);
-    let avg = (a00 + a10 + a20 + a30 + a01 + a11 + a21 + a31 + a02 + a12 + a22 + a32 + a03 + a13 + a23 + a33) / 16.0;
+    let three = (blit.width % 3u == 0u) &&
+        ((blit.width / 3u == 640u) || (blit.width / 3u == 512u) ||
+         (blit.width / 3u == 448u) || (blit.width / 3u == 384u) ||
+         (blit.width / 3u == 320u));
+    var avg = vec3<f32>(0.0);
+    if (three) {
+        for (var j = 0u; j < 6u; j = j + 1u) {
+            for (var i = 0u; i < 6u; i = i + 1u) {
+                avg += scene(in.uv + vec2<f32>(-5.5 + 2.0 * f32(i), -5.5 + 2.0 * f32(j)) * px);
+            }
+        }
+        avg = avg / 36.0;
+    } else {
+        let a00 = scene(in.uv + vec2<f32>(-3.5, -3.5) * px);
+        let a10 = scene(in.uv + vec2<f32>(-1.5, -3.5) * px);
+        let a20 = scene(in.uv + vec2<f32>(0.5, -3.5) * px);
+        let a30 = scene(in.uv + vec2<f32>(2.5, -3.5) * px);
+        let a01 = scene(in.uv + vec2<f32>(-3.5, -1.5) * px);
+        let a31 = scene(in.uv + vec2<f32>(2.5, -1.5) * px);
+        let a02 = scene(in.uv + vec2<f32>(-3.5, 0.5) * px);
+        let a32 = scene(in.uv + vec2<f32>(2.5, 0.5) * px);
+        let a03 = scene(in.uv + vec2<f32>(-3.5, 2.5) * px);
+        let a13 = scene(in.uv + vec2<f32>(-1.5, 2.5) * px);
+        let a23 = scene(in.uv + vec2<f32>(0.5, 2.5) * px);
+        let a33 = scene(in.uv + vec2<f32>(2.5, 2.5) * px);
+        avg = (a00 + a10 + a20 + a30 + a01 + a11 + a21 + a31 + a02 + a12 + a22 + a32 + a03 + a13 + a23 + a33) / 16.0;
+    }
     let low = min(min(luma(a11), luma(a21)), min(luma(a12), luma(a22)));
     let high = max(max(luma(a11), luma(a21)), max(luma(a12), luma(a22)));
     // The dither itself is only a few levels, well below this range; an edge or a glyph is well above it.

@@ -26,7 +26,7 @@ disc reads and module loading are answered by the runtime.
 SHA-256:
 
 ```
-3c563685a3b83cfb78f96cfd66674f3c8cf2b0929e5aafcbd33582cfeb7f26bd  Rebloom-0.1-Windows-x86_64.zip
+bd92776051fd1e54c481e781b6ed0054fb0786bad844f80854fca7790693d1f2  Rebloom-0.1-Windows-x86_64.zip
 d7dd7b7688c0ca135a555b30f7dab2dbed6c1a30a2f2f3e076d761d9b1d27d69  Rebloom-0.1-Linux-x86_64.tar.gz
 7f6466b52d0a1f486d6169df3cac563155dbc7420668bee1965161a3d91bb199  Rebloom-0.1-x86_64.AppImage
 492f6742cf50173cf658211e7e5e944be067b7871d14b5029eaad5c91a25c4ce  Rebloom-0.1-android-arm64.apk
