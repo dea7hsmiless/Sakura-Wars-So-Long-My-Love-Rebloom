@@ -157,10 +157,17 @@ public class LauncherActivity extends Activity {
         root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
             @Override public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
                 if (Build.VERSION.SDK_INT >= 30) {
-                    Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
-                    v.setPadding(0, bars.top, 0, bars.bottom);
+                    Insets bars = insets.getInsets(WindowInsets.Type.systemBars()
+                            | WindowInsets.Type.displayCutout());
+                    v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
                 } else {
-                    v.setPadding(0, insets.getSystemWindowInsetTop(), 0,
+                    int left = insets.getSystemWindowInsetLeft();
+                    int right = insets.getSystemWindowInsetRight();
+                    if (insets.getDisplayCutout() != null) {
+                        left = Math.max(left, insets.getDisplayCutout().getSafeInsetLeft());
+                        right = Math.max(right, insets.getDisplayCutout().getSafeInsetRight());
+                    }
+                    v.setPadding(left, insets.getSystemWindowInsetTop(), right,
                             insets.getSystemWindowInsetBottom());
                 }
                 return insets;

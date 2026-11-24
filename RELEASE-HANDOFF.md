@@ -11,16 +11,16 @@ Prepared 2026-11-23; mobile builds refreshed 2026-11-24. **Nothing has been publ
 | Extracted Windows tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | ~150 MB |
 | Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,609,963 B |
 | Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,811,512 B |
-| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,751,060 B |
-| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,641,152 B |
+| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,751,436 B |
+| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,641,100 B |
 
 Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that is present.
 
 - Windows: `3c563685a3b83cfb78f96cfd66674f3c8cf2b0929e5aafcbd33582cfeb7f26bd`
 - Linux: `d7dd7b7688c0ca135a555b30f7dab2dbed6c1a30a2f2f3e076d761d9b1d27d69`
 - AppImage: `7f6466b52d0a1f486d6169df3cac563155dbc7420668bee1965161a3d91bb199`
-- Android: `b271fd6fa2372df179a2d283e9f1257d8a661749c6454c73cb1e8db4c77943ab`
-- iOS: `aa84048711e4ca1b9e86d61b787ae29d520cd935e14fe53a7d4863b80fd662c5`
+- Android: `492f6742cf50173cf658211e7e5e944be067b7871d14b5029eaad5c91a25c4ce`
+- iOS: `b322bdf6e4cff715b9905727592548da64d7740fcca2b06e1e2de92b07fe2884`
 
 ## What was verified for this package
 
@@ -102,8 +102,9 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - The mobile launcher text is larger and uses medium-weight type for small labels; the low-contrast
   muted text was lightened. The iOS Play page now uses the ReDUB layout: a pane-wide hero at the top,
   then status, title, subtitle, actions and cards, with no heading above the hero.
-- Android 15 edge-to-edge insets are handled on the launcher root, so the status bar and gesture
-  bar no longer cover the rail, hero or footer.
+- Android 15 edge-to-edge insets and display cutouts are handled on the launcher root, and the iOS
+  rail starts inside the safe area, so the notch/Dynamic Island no longer covers the rail or shifts
+  the page on iPhone landscape. The status bar and gesture bar no longer cover the footer.
 - The refreshed launcher was reinstalled on the same emulator on 2026-11-24: the sakura palette,
   larger medium-weight text, hero and Android 15 insets were checked, and Play booted the game to its
   loaded-save screen.

@@ -297,7 +297,7 @@ void ios_launcher_receive_url(void *nsurl) {
     UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
     self.railWidthConstraint = [rail.widthAnchor constraintEqualToConstant:126];
     [NSLayoutConstraint activateConstraints:@[
-        [rail.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [rail.leadingAnchor constraintEqualToAnchor:safe.leadingAnchor],
         [rail.topAnchor constraintEqualToAnchor:self.view.topAnchor],
         [rail.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
         self.railWidthConstraint,
