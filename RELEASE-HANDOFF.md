@@ -11,16 +11,16 @@ Prepared 2026-11-23. **Nothing has been published.**
 | Extracted Windows tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | ~150 MB |
 | Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,608,332 B |
 | Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,807,416 B |
-| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,283,577 B |
-| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 22,286,335 B |
+| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,983,792 B |
+| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,916,299 B |
 
 Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that is present.
 
 - Windows: `397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f`
 - Linux: `cbf14569e28ea40cdbb4464c3cf34be23887b48f8230b17a55360198804c44e8`
 - AppImage: `fa98a18db8412aa19ef3f81287f63a0fc169da0b3f1d4ef848f344cc8ffd1973`
-- Android: `098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832`
-- iOS: `baba39d3deeaf1899f724a2f51e9426e1a2c73cf6a65b48351747dd8f3419c0c`
+- Android: `aba6b0133f74748bcc03555b0dfbbf98cef0cae7aa8d9c5c5e7d9b9d2bf4253e`
+- iOS: `1681a278ecdaad3f13fff58a5b2adaa473a4b7b7691de7ef6a0f75b73a3ee832`
 
 ## What was verified for this package
 
@@ -83,14 +83,22 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - `TouchOverlay` exports its JNI entry points (`nativeButton`, `nativeStick`, `nativeTrigger`,
   `nativeTap`, `nativeReset`); a Bluetooth pad still uses the normal SDL path in port 1 and
   works alongside the overlay.
+- The overlay now has a real analog stick (the knob follows the thumb and sends continuous
+  axes; the outer edge still nudges the d-pad for menus), haptics when it leaves the centre and
+  reaches the outer ring, and launcher-selected accent colour/opacity. Settings has
+  on-screen controls On/Off, touch colour, opacity, button haptics, stick haptics, and
+  16:9 / 4:3 / Fill display modes.
+- The launcher now shows the Windows hero art and rail logo; the Play hero is capped at 180 dp
+  so the Play card stays visible on small screens.
 - Not installed on a phone; the host-GPU emulator run above is the only device test.
 
 ### iOS
 
 - arm64 static runtime/game, SDL2, the native UIKit launcher and the touch overlay link into a
   thin arm64 Mach-O; `rebloom_touch_tap` and `rebloom_touch_install` are exported.
-- The launcher uses the same rail and five pages as Android/Windows, with touch controls and
-  tap-to-advance under Settings.
+- The launcher uses the same rail and five pages as Android/Windows, with the hero banner and
+  rail logo, a real analog stick with button/stick haptics, configurable touch colour/opacity,
+  on-screen controls On/Off, tap-to-advance, and 16:9 / 4:3 / Fill display modes.
 - IPA contains 16 entries and nine app icons; `GCSupportedGameControllers` and
   `GCSupportsControllerUserInteraction` are set for Bluetooth pads.
 - The rail uses 126 pt below 800 pt wide and 160 pt above, matching the Android launcher.

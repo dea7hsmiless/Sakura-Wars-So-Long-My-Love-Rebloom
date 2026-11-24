@@ -5,6 +5,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -16,6 +18,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -156,10 +159,19 @@ public class LauncherActivity extends Activity {
         LinearLayout brand = new LinearLayout(this);
         brand.setOrientation(LinearLayout.VERTICAL);
         brand.setGravity(Gravity.CENTER_VERTICAL);
-        brand.addView(label("REBLOOM", 20, true, GOLD));
-        brand.addView(label("SAKURA WARS V", 7, true, MUTED));
+        Bitmap railMark = asset("rail_logo.png");
+        if (railMark != null) {
+            ImageView logo = new ImageView(this);
+            logo.setImageBitmap(railMark);
+            logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            brand.addView(logo, new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(42)));
+        } else {
+            brand.addView(label("REBLOOM", 20, true, GOLD));
+            brand.addView(label("SAKURA WARS V", 7, true, MUTED));
+        }
         rail.addView(brand, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(42)));
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(54)));
 
         LinearLayout links = new LinearLayout(this);
         links.setOrientation(LinearLayout.VERTICAL);
@@ -243,6 +255,17 @@ public class LauncherActivity extends Activity {
         String disc = findDisc();
         boolean has = disc != null;
         head("Play", "Your own discs, recompiled for this device. Nothing is uploaded.");
+        Bitmap heroArt = asset("hero.jpg");
+        if (heroArt != null) {
+            ImageView hero = new ImageView(this);
+            hero.setImageBitmap(heroArt);
+            hero.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            int heroH = Math.max(dp(120), Math.min(dp(180),
+                    getResources().getDisplayMetrics().heightPixels - dp(180)));
+            hero.setPadding(0, 0, 0, dp(12));
+            content.addView(hero, new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, heroH));
+        }
         LinearLayout discCard = card();
         discCard.addView(label("DISC", 9, true, MUTED));
         discCard.addView(label(has ? new File(disc).getName() : "No disc imported yet", 16, true, INK));
@@ -313,8 +336,9 @@ public class LauncherActivity extends Activity {
         head("Settings", "Changes apply on the next game launch.");
         LinearLayout display = card();
         display.addView(label("DISPLAY", 10, true, GOLD));
-        choiceRow(display, "Aspect", "aspect", new String[] { "16:9 (stretch)", "4:3 (original)" },
-                new String[] { "16:9", "4:3" }, "16:9");
+        choiceRow(display, "Aspect", "aspect",
+                new String[] { "16:9 (fit)", "4:3 (original)", "Fill (stretch)" },
+                new String[] { "16:9", "4:3", "fill" }, "16:9");
         choiceRow(display, "Internal resolution", "scale", new String[] { "1x (native)", "2x", "3x" },
                 new String[] { "1", "2", "3" }, "3");
         content.addView(display);
@@ -330,11 +354,22 @@ public class LauncherActivity extends Activity {
 
         LinearLayout controls = card();
         controls.addView(label("CONTROLS", 10, true, GOLD));
-        choiceRow(controls, "Touch controls", "touch", new String[] { "On", "Off" },
+        choiceRow(controls, "On-screen controls", "touch", new String[] { "On", "Off" },
+                new String[] { "1", "0" }, "1");
+        choiceRow(controls, "Touch color", "touch_color",
+                new String[] { "Gold", "Sky", "Rose", "Mint", "White" },
+                new String[] { "#E8C46A", "#7CC7FF", "#FF8FA3", "#8FE3C0", "#F2ECE4" }, "#E8C46A");
+        choiceRow(controls, "Touch opacity", "touch_opacity",
+                new String[] { "35%", "45%", "55%", "70%", "85%", "100%" },
+                new String[] { "0.35", "0.45", "0.55", "0.7", "0.85", "1" }, "0.7");
+        choiceRow(controls, "Button haptics", "haptics", new String[] { "On", "Off" },
+                new String[] { "1", "0" }, "1");
+        choiceRow(controls, "Stick haptics", "stick_haptics", new String[] { "On", "Off" },
                 new String[] { "1", "0" }, "1");
         choiceRow(controls, "Tap to advance", "tap_advance", new String[] { "On", "Off" },
                 new String[] { "1", "0" }, "1");
-        controls.addView(label("On: a short tap on an empty part of the screen sends Cross, which advances dialogue. "
+        controls.addView(label("Touch color and opacity apply to the on-screen pad immediately at the next launch. "
+                + "Stick haptics click when the analog leaves the centre and reaches the outer ring. "
                 + "Keyboard and gamepad bindings live in game/data/keys.ini and gamepad.ini. "
                 + "A Bluetooth controller uses the standard mapping and works beside the touch pad.", 10, false, MUTED));
         content.addView(controls);
@@ -417,6 +452,14 @@ public class LauncherActivity extends Activity {
 
     private String pref(String key, String fallback) {
         return prefs.getString(key, fallback);
+    }
+
+    private Bitmap asset(String name) {
+        try (InputStream in = getAssets().open(name)) {
+            return BitmapFactory.decodeStream(in);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     private void setPref(String key, String value) {
@@ -587,6 +630,10 @@ public class LauncherActivity extends Activity {
             i.putExtra("deinterlace", pref("deinterlace", "off"));
             i.putExtra("touch", pref("touch", "1"));
             i.putExtra("tap", pref("tap_advance", "1"));
+            i.putExtra("haptics", pref("haptics", "1"));
+            i.putExtra("stick_haptics", pref("stick_haptics", "1"));
+            i.putExtra("touch_color", pref("touch_color", "#E8C46A"));
+            i.putExtra("touch_opacity", pref("touch_opacity", "0.7"));
             i.putExtra("shader", shader.getAbsolutePath());
             startActivity(i);
         } catch (Exception e) {

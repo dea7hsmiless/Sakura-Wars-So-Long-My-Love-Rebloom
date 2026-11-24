@@ -1,5 +1,5 @@
 397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f  Rebloom-0.1-Windows-x86_64.zip
 cbf14569e28ea40cdbb4464c3cf34be23887b48f8230b17a55360198804c44e8  Rebloom-0.1-Linux-x86_64.tar.gz
 fa98a18db8412aa19ef3f81287f63a0fc169da0b3f1d4ef848f344cc8ffd1973  Rebloom-0.1-x86_64.AppImage
-098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832  mobile/android/dist/Rebloom-0.1-android-arm64.apk
-baba39d3deeaf1899f724a2f51e9426e1a2c73cf6a65b48351747dd8f3419c0c  mobile/ios/dist/Rebloom-0.1-ios-unsigned.ipa
+aba6b0133f74748bcc03555b0dfbbf98cef0cae7aa8d9c5c5e7d9b9d2bf4253e  mobile/android/dist/Rebloom-0.1-android-arm64.apk
+1681a278ecdaad3f13fff58a5b2adaa473a4b7b7691de7ef6a0f75b73a3ee832  mobile/ios/dist/Rebloom-0.1-ios-unsigned.ipa

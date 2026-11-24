@@ -15,8 +15,8 @@ In this folder:
   screenshots\                         launcher.png and game.png for the release page
 
 Mobile builds:
-  mobile\android\dist\Rebloom-0.1-android-arm64.apk   49,283,577 B  sha256 098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832
-  mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa        22,286,335 B  sha256 baba39d3deeaf1899f724a2f51e9426e1a2c73cf6a65b48351747dd8f3419c0c
+  mobile\android\dist\Rebloom-0.1-android-arm64.apk   49,983,792 B  sha256 aba6b0133f74748bcc03555b0dfbbf98cef0cae7aa8d9c5c5e7d9b9d2bf4253e
+  mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa        20,916,299 B  sha256 1681a278ecdaad3f13fff58a5b2adaa473a4b7b7691de7ef6a0f75b73a3ee832
 
 The Android APK is debug-signed and installs by sideloading. The iOS IPA is
 unsigned and needs the user's own signing (Sideloadly, AltStore, or Xcode).

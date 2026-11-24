@@ -25,8 +25,12 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     BOOL _held[16];
 }
 @property(nonatomic) CGFloat dpadX, dpadY, dpadR;
+@property(nonatomic) CGFloat knobX, knobY;
 @property(nonatomic) CGFloat faceX, faceY, faceR, faceButtonR;
 @property(nonatomic) CGFloat unit;
+@property(nonatomic) CGFloat accentR, accentG, accentB, alphaScale;
+@property(nonatomic) BOOL buttonHaptics, stickHaptics;
+@property(nonatomic) int stickZone;
 @property(nonatomic, strong) NSMutableDictionary<NSValue *, NSNumber *> *roles;
 @property(nonatomic, weak) UITouch *dpadTouch;
 @property(nonatomic) BOOL up, down, left, right;
@@ -50,10 +54,33 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     _tapTimes = [NSMutableDictionary dictionary];
     const char *tap = getenv("REBLOOM_TAP");
     _tapAdvance = !tap || strcmp(tap, "0") != 0;
+    const char *haptics = getenv("REBLOOM_TOUCH_HAPTICS");
+    _buttonHaptics = !haptics || strcmp(haptics, "0") != 0;
+    const char *stickHaptics = getenv("REBLOOM_TOUCH_STICK_HAPTICS");
+    _stickHaptics = !stickHaptics || strcmp(stickHaptics, "0") != 0;
+    _accentR = 232; _accentG = 196; _accentB = 106;
+    const char *color = getenv("REBLOOM_TOUCH_COLOR");
+    if (color && color[0] == '#') {
+        unsigned int rgb = 0;
+        if (sscanf(color + 1, "%x", &rgb) == 1) {
+            _accentR = (rgb >> 16) & 255;
+            _accentG = (rgb >> 8) & 255;
+            _accentB = rgb & 255;
+        }
+    }
+    _alphaScale = 0.7;
+    const char *opacity = getenv("REBLOOM_TOUCH_OPACITY");
+    if (opacity) _alphaScale = MAX(0.2, MIN(1.0, atof(opacity)));
     _lastLx = _lastLy = 128;
+    _stickZone = 0;
     for (int i = 0; i < 4; i++) _held[i] = NO;
     return self;
 }
+
+- (CGFloat)alpha:(CGFloat)value { return value * self.alphaScale; }
+- (UIColor *)accent:(CGFloat)alpha { return RBColor(self.accentR, self.accentG, self.accentB, [self alpha:alpha]); }
+- (UIColor *)ink:(CGFloat)alpha { return RBColor(242, 236, 228, [self alpha:alpha]); }
+- (UIColor *)red:(CGFloat)alpha { return RBColor(176, 58, 72, [self alpha:alpha]); }
 
 - (BOOL)canBecomeFirstResponder { return NO; }
 
@@ -63,7 +90,9 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     self.unit = MIN(w, h);
     self.dpadX = w * 0.16;
     self.dpadY = h * 0.72;
-    self.dpadR = self.unit * 0.145;
+    self.dpadR = self.unit * 0.16;
+    self.knobX = self.dpadX;
+    self.knobY = self.dpadY;
     self.faceX = w * 0.84;
     self.faceY = h * 0.72;
     self.faceR = self.unit * 0.125;
@@ -77,20 +106,31 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     CGFloat w = self.bounds.size.width, h = self.bounds.size.height;
     CGContextSetLineWidth(ctx, MAX(2.0, self.unit * 0.006));
 
-    // left pad
-    CGContextSetFillColorWithColor(ctx, RBColor(8, 6, 5, 0.30).CGColor);
+    // analog stick: base, ring, guide and thumb knob
+    CGContextSetFillColorWithColor(ctx, RBColor(8, 6, 5, [self alpha:0.37]).CGColor);
     CGContextFillEllipseInRect(ctx, CGRectMake(self.dpadX - self.dpadR, self.dpadY - self.dpadR,
                                                self.dpadR * 2, self.dpadR * 2));
-    CGContextSetStrokeColorWithColor(ctx, RBColor(232, 196, 106, 0.62).CGColor);
+    CGContextSetStrokeColorWithColor(ctx, [self accent:0.63].CGColor);
     CGContextStrokeEllipseInRect(ctx, CGRectMake(self.dpadX - self.dpadR, self.dpadY - self.dpadR,
                                                  self.dpadR * 2, self.dpadR * 2));
-    CGContextSetStrokeColorWithColor(ctx, RBColor(232, 196, 106, 0.35).CGColor);
-    CGFloat inner = self.dpadR * 0.68;
+    CGContextSetStrokeColorWithColor(ctx, [self accent:0.28].CGColor);
+    CGFloat inner = self.dpadR * 0.58;
     CGContextStrokeEllipseInRect(ctx, CGRectMake(self.dpadX - inner, self.dpadY - inner, inner * 2, inner * 2));
-    [self arrowAt:CGPointMake(self.dpadX, self.dpadY - (inner + self.dpadR) / 2) rotation:0 on:self.up];
-    [self arrowAt:CGPointMake(self.dpadX, self.dpadY + (inner + self.dpadR) / 2) rotation:M_PI on:self.down];
-    [self arrowAt:CGPointMake(self.dpadX - (inner + self.dpadR) / 2, self.dpadY) rotation:-M_PI_2 on:self.left];
-    [self arrowAt:CGPointMake(self.dpadX + (inner + self.dpadR) / 2, self.dpadY) rotation:M_PI_2 on:self.right];
+    for (int i = 0; i < 4; i++) {
+        CGFloat a = i * M_PI / 2;
+        CGContextMoveToPoint(ctx, self.dpadX + cos(a) * self.dpadR * 0.82,
+                             self.dpadY + sin(a) * self.dpadR * 0.82);
+        CGContextAddLineToPoint(ctx, self.dpadX + cos(a) * self.dpadR * 0.96,
+                                self.dpadY + sin(a) * self.dpadR * 0.96);
+    }
+    CGContextSetStrokeColorWithColor(ctx, [self accent:0.38].CGColor);
+    CGContextStrokePath(ctx);
+    CGContextSetFillColorWithColor(ctx, [self accent:0.32].CGColor);
+    CGContextFillEllipseInRect(ctx, CGRectMake(self.knobX - self.dpadR * 0.36, self.knobY - self.dpadR * 0.36,
+                                               self.dpadR * 0.72, self.dpadR * 0.72));
+    CGContextSetStrokeColorWithColor(ctx, [self accent:0.82].CGColor);
+    CGContextStrokeEllipseInRect(ctx, CGRectMake(self.knobX - self.dpadR * 0.36, self.knobY - self.dpadR * 0.36,
+                                                 self.dpadR * 0.72, self.dpadR * 0.72));
 
     // face buttons
     [self face:RB_CROSS x:self.faceX y:self.faceY + self.faceR];
@@ -119,7 +159,7 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     CGContextAddLineToPoint(ctx, -s * 0.9, s * 0.7);
     CGContextAddLineToPoint(ctx, s * 0.9, s * 0.7);
     CGContextClosePath(ctx);
-    CGContextSetFillColorWithColor(ctx, RBColor(232, 196, 106, on ? 0.86 : 0.53).CGColor);
+    CGContextSetFillColorWithColor(ctx, [self accent:(on ? 0.86 : 0.53)].CGColor);
     CGContextFillPath(ctx);
     CGContextRestoreGState(ctx);
 }
@@ -127,15 +167,15 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
 - (void)face:(int)button x:(CGFloat)x y:(CGFloat)y {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     BOOL on = _held[button];
-    CGContextSetFillColorWithColor(ctx, (on ? RBColor(176, 58, 72, 0.82) : RBColor(8, 6, 5, 0.33)).CGColor);
+    CGContextSetFillColorWithColor(ctx, (on ? [self red:0.82] : RBColor(8, 6, 5, [self alpha:0.33])).CGColor);
     CGContextFillEllipseInRect(ctx, CGRectMake(x - self.faceButtonR, y - self.faceButtonR,
                                                self.faceButtonR * 2, self.faceButtonR * 2));
-    CGContextSetStrokeColorWithColor(ctx, on ? RBColor(242, 236, 228, 1).CGColor : RBColor(232, 196, 106, 0.75).CGColor);
+    CGContextSetStrokeColorWithColor(ctx, on ? [self ink:1].CGColor : [self accent:0.75].CGColor);
     CGContextSetLineWidth(ctx, MAX(2.0, self.unit * (on ? 0.008 : 0.006)));
     CGContextStrokeEllipseInRect(ctx, CGRectMake(x - self.faceButtonR, y - self.faceButtonR,
                                                  self.faceButtonR * 2, self.faceButtonR * 2));
     CGFloat s = self.faceButtonR * 0.48;
-    CGContextSetStrokeColorWithColor(ctx, on ? RBColor(242, 236, 228, 1).CGColor : RBColor(232, 196, 106, 0.84).CGColor);
+    CGContextSetStrokeColorWithColor(ctx, on ? [self ink:1].CGColor : [self accent:0.84].CGColor);
     CGContextBeginPath(ctx);
     if (button == RB_CROSS) {
         CGContextMoveToPoint(ctx, x - s, y - s); CGContextAddLineToPoint(ctx, x + s, y + s);
@@ -159,15 +199,15 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     BOOL on = _held[button];
     CGRect r = CGRectMake(x - rx, y - ry, rx * 2, ry * 2);
     UIBezierPath *p = [UIBezierPath bezierPathWithRoundedRect:r cornerRadius:ry * 0.8];
-    [RBColor(8, 6, 5, 0.30) setFill];
-    if (on) [RBColor(176, 58, 72, 0.82) setFill];
+    [RBColor(8, 6, 5, [self alpha:0.30]) setFill];
+    if (on) [[self red:0.82] setFill];
     [p fill];
-    [RBColor(232, 196, 106, on ? 1.0 : 0.68) setStroke];
+    [[self accent:(on ? 1.0 : 0.68)] setStroke];
     p.lineWidth = MAX(2.0, self.unit * 0.005);
     [p stroke];
     NSDictionary *attrs = @{
         NSFontAttributeName: [UIFont boldSystemFontOfSize:ry * 0.95],
-        NSForegroundColorAttributeName: on ? RBColor(242, 236, 228, 1) : RBColor(232, 196, 106, 1)
+        NSForegroundColorAttributeName: on ? [self ink:1] : [self accent:1]
     };
     CGSize size = [label sizeWithAttributes:attrs];
     [label drawAtPoint:CGPointMake(x - size.width / 2, y - size.height / 2) withAttributes:attrs];
@@ -204,11 +244,16 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     if (button < 0 || button >= 16 || _held[button] == on) return;
     _held[button] = on;
     rebloom_touch_button(button, on ? 1 : 0);
-    if (on) {
+    if (on && self.buttonHaptics) {
         UIImpactFeedbackGenerator *feedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
         [feedback impactOccurred];
     }
     [self setNeedsDisplay];
+}
+
+- (void)stickHaptic:(UIImpactFeedbackStyle)style {
+    UIImpactFeedbackGenerator *feedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:style];
+    [feedback impactOccurred];
 }
 
 - (void)setDirection:(int)button on:(BOOL)on {
@@ -219,27 +264,41 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     [self setNeedsDisplay];
 }
 
-- (void)moveDpad:(CGPoint)p {
+- (void)moveStick:(CGPoint)p {
     CGFloat dx = p.x - self.dpadX, dy = p.y - self.dpadY;
     CGFloat len = sqrt(dx * dx + dy * dy);
-    int lx = 128, ly = 128;
-    if (len > self.dpadR * 0.22) {
-        CGFloat nx = MAX(-1.0, MIN(1.0, dx / self.dpadR));
-        CGFloat ny = MAX(-1.0, MIN(1.0, dy / self.dpadR));
-        if (len > self.dpadR) { nx = dx / len; ny = dy / len; }
-        lx = (int)lround(128 + nx * 127);
-        ly = (int)lround(128 + ny * 127);
+    CGFloat dead = self.dpadR * 0.16;
+    CGFloat nx = 0, ny = 0;
+    if (len > dead) {
+        CGFloat amount = MIN(1.0, (len - dead) / (self.dpadR - dead));
+        nx = dx / len * amount;
+        ny = dy / len * amount;
     }
+    CGFloat reach = self.dpadR * 0.62;
+    self.knobX = self.dpadX + nx * reach;
+    self.knobY = self.dpadY + ny * reach;
+    int lx = (int)lround(128 + nx * 127);
+    int ly = (int)lround(128 + ny * 127);
     if (lx != self.lastLx || ly != self.lastLy) {
         self.lastLx = lx;
         self.lastLy = ly;
         rebloom_touch_stick(0, lx, ly);
     }
-    CGFloat threshold = self.dpadR * 0.30;
-    [self setDirection:RB_UP on:dy < -threshold];
-    [self setDirection:RB_DOWN on:dy > threshold];
-    [self setDirection:RB_LEFT on:dx < -threshold];
-    [self setDirection:RB_RIGHT on:dx > threshold];
+    CGFloat threshold = 0.55;
+    [self setDirection:RB_UP on:ny < -threshold];
+    [self setDirection:RB_DOWN on:ny > threshold];
+    [self setDirection:RB_LEFT on:nx < -threshold];
+    [self setDirection:RB_RIGHT on:nx > threshold];
+
+    if (self.stickHaptics) {
+        int zone = len < dead ? 0 : len < self.dpadR * 0.88 ? 1 : 2;
+        if (zone != self.stickZone) {
+            if (zone == 1) [self stickHaptic:UIImpactFeedbackStyleLight];
+            else if (zone == 2) [self stickHaptic:UIImpactFeedbackStyleMedium];
+            self.stickZone = zone;
+        }
+    }
+    [self setNeedsDisplay];
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
@@ -249,7 +308,7 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
         if (!self.dpadTouch && [self inDpad:p]) {
             self.dpadTouch = touch;
             self.roles[key] = @(-1);
-            [self moveDpad:p];
+            [self moveStick:p];
             continue;
         }
         int button = [self hitButton:p];
@@ -268,7 +327,7 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     for (UITouch *touch in touches)
-        if (touch == self.dpadTouch) [self moveDpad:[touch locationInView:self]];
+        if (touch == self.dpadTouch) [self moveStick:[touch locationInView:self]];
 }
 
 - (void)releaseTouch:(UITouch *)touch {
@@ -283,6 +342,9 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
         rebloom_touch_button(RB_UP, 0); rebloom_touch_button(RB_DOWN, 0);
         rebloom_touch_button(RB_LEFT, 0); rebloom_touch_button(RB_RIGHT, 0);
         self.lastLx = self.lastLy = 128;
+        self.stickZone = 0;
+        self.knobX = self.dpadX;
+        self.knobY = self.dpadY;
         rebloom_touch_stick(0, 128, 128);
         [self setNeedsDisplay];
     } else if (value >= 0) {
@@ -318,6 +380,9 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     self.up = self.down = self.left = self.right = NO;
     for (int i = 0; i < 16; i++) _held[i] = NO;
     self.lastLx = self.lastLy = 128;
+    self.stickZone = 0;
+    self.knobX = self.dpadX;
+    self.knobY = self.dpadY;
     rebloom_touch_reset();
     [self setNeedsDisplay];
 }

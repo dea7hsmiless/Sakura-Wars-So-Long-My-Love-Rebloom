@@ -114,6 +114,30 @@ static NSString *NextScale(NSString *value) {
     if ([value isEqual:@"3"] || value.length == 0) return @"1";
     return @"2";
 }
+static NSString *AspectName(NSString *value) {
+    if ([value isEqual:@"4:3"]) return @"4:3 (original)";
+    if ([value isEqual:@"fill"] || [value isEqual:@"stretch"]) return @"Fill (stretch)";
+    return @"16:9 (fit)";
+}
+static CGFloat OpacityValue(NSString *value) {
+    CGFloat v = value.length ? value.doubleValue : 0.7;
+    return MAX(0.2, MIN(1.0, v));
+}
+static NSString *ColorName(NSString *hex) {
+    NSDictionary *names = @{@"#E8C46A": @"Gold", @"#7CC7FF": @"Sky", @"#FF8FA3": @"Rose",
+                            @"#8FE3C0": @"Mint", @"#F2ECE4": @"White"};
+    return names[hex.uppercaseString] ?: hex;
+}
+static NSString *NextColor(NSString *hex) {
+    NSArray *colors = @[@"#E8C46A", @"#7CC7FF", @"#FF8FA3", @"#8FE3C0", @"#F2ECE4"];
+    NSUInteger i = [colors indexOfObject:hex.uppercaseString];
+    return colors[(i == NSNotFound ? 0 : i + 1) % colors.count];
+}
+static NSString *NextOpacity(NSString *value) {
+    NSArray *values = @[@"0.35", @"0.45", @"0.55", @"0.7", @"0.85", @"1"];
+    NSUInteger i = [values indexOfObject:value];
+    return values[(i == NSNotFound ? 3 : i + 1) % values.count];
+}
 
 @interface RebloomLauncher : UIViewController <UIDocumentPickerDelegate>
 @property(nonatomic, strong) UIStackView *rail;
@@ -135,6 +159,10 @@ static NSString *NextScale(NSString *value) {
 @property(nonatomic, strong) UIButton *scale;
 @property(nonatomic, strong) UIButton *touch;
 @property(nonatomic, strong) UIButton *tapAdvance;
+@property(nonatomic, strong) UIButton *touchColor;
+@property(nonatomic, strong) UIButton *touchOpacity;
+@property(nonatomic, strong) UIButton *haptics;
+@property(nonatomic, strong) UIButton *stickHaptics;
 @property(nonatomic, strong) UISegmentedControl *language;
 @property(nonatomic, strong) UIProgressView *progress;
 @property(nonatomic, strong) NSURL *pendingISO;
@@ -383,6 +411,10 @@ void ios_launcher_receive_url(void *nsurl) {
     self.scale = nil;
     self.touch = nil;
     self.tapAdvance = nil;
+    self.touchColor = nil;
+    self.touchOpacity = nil;
+    self.haptics = nil;
+    self.stickHaptics = nil;
     self.language = nil;
     self.progress = nil;
 
@@ -410,15 +442,25 @@ void ios_launcher_receive_url(void *nsurl) {
 }
 
 - (void)pagePlay {
-    UIImage *bannerImage = [UIImage imageNamed:@"play-banner"];
+    UIImage *bannerImage = [UIImage imageWithContentsOfFile:[NSBundle.mainBundle pathForResource:@"hero" ofType:@"jpg"]];
+    if (!bannerImage) bannerImage = [UIImage imageNamed:@"play-banner"];
     if (bannerImage) {
+        UIView *box = [UIView new];
+        box.backgroundColor = RGB(0x0C0908);
+        box.layer.cornerRadius = 10;
+        box.clipsToBounds = YES;
+        [box.heightAnchor constraintEqualToConstant:180].active = YES;
         UIImageView *banner = [[UIImageView alloc] initWithImage:bannerImage];
-        banner.contentMode = UIViewContentModeScaleAspectFill;
-        banner.clipsToBounds = YES;
-        banner.layer.cornerRadius = 10;
-        [banner.heightAnchor constraintEqualToAnchor:banner.widthAnchor
-                                          multiplier:bannerImage.size.height / bannerImage.size.width].active = YES;
-        [self.stack addArrangedSubview:banner];
+        banner.contentMode = UIViewContentModeScaleAspectFit;
+        banner.translatesAutoresizingMaskIntoConstraints = NO;
+        [box addSubview:banner];
+        [NSLayoutConstraint activateConstraints:@[
+            [banner.leadingAnchor constraintEqualToAnchor:box.leadingAnchor],
+            [banner.trailingAnchor constraintEqualToAnchor:box.trailingAnchor],
+            [banner.topAnchor constraintEqualToAnchor:box.topAnchor],
+            [banner.bottomAnchor constraintEqualToAnchor:box.bottomAnchor],
+        ]];
+        [self.stack addArrangedSubview:box];
     }
     [self head:@"Play" subtitle:@"Your own discs, recompiled for this device. Nothing is uploaded."];
     UIView *discCard = [self card];
@@ -513,10 +555,18 @@ void ios_launcher_receive_url(void *nsurl) {
     UIStackView *c = [self cardStack:controls spacing:8];
     [c addArrangedSubview:[self label:@"CONTROLS" size:10 bold:YES color:RGB(0xE8C46A)]];
     self.touch = [self button:@"" action:@selector(toggleTouch) primary:NO];
-    [c addArrangedSubview:[self row:@"Touch controls" value:self.touch]];
+    [c addArrangedSubview:[self row:@"On-screen controls" value:self.touch]];
+    self.touchColor = [self button:@"" action:@selector(cycleTouchColor) primary:NO];
+    [c addArrangedSubview:[self row:@"Touch color" value:self.touchColor]];
+    self.touchOpacity = [self button:@"" action:@selector(cycleTouchOpacity) primary:NO];
+    [c addArrangedSubview:[self row:@"Touch opacity" value:self.touchOpacity]];
+    self.haptics = [self button:@"" action:@selector(toggleHaptics) primary:NO];
+    [c addArrangedSubview:[self row:@"Button haptics" value:self.haptics]];
+    self.stickHaptics = [self button:@"" action:@selector(toggleStickHaptics) primary:NO];
+    [c addArrangedSubview:[self row:@"Stick haptics" value:self.stickHaptics]];
     self.tapAdvance = [self button:@"" action:@selector(toggleTapAdvance) primary:NO];
     [c addArrangedSubview:[self row:@"Tap to advance" value:self.tapAdvance]];
-    [c addArrangedSubview:[self label:@"On: a short tap on an empty part of the screen sends Cross, which advances dialogue. "
+    [c addArrangedSubview:[self label:@"Touch color and opacity apply at the next launch. Stick haptics click when the analog leaves the centre and reaches the outer ring. "
         "Keyboard and gamepad bindings live in game-data/keys.ini and gamepad.ini. "
         "A Bluetooth controller uses the standard mapping and works beside the touch pad." size:10 bold:NO color:RGB(0xA99C8E)]];
     [self.stack addArrangedSubview:controls];
@@ -585,10 +635,14 @@ void ios_launcher_receive_url(void *nsurl) {
     [self.play setTitle:(disc ? @"Play" : @"Import") forState:UIControlStateNormal];
     [self.dedither setTitle:([Get(@"dedither", @"1") isEqual:@"1"] ? @"On (temporal)" : @"Off") forState:UIControlStateNormal];
     [self.look setTitle:LookName(Get(@"look", @"1")) forState:UIControlStateNormal];
-    [self.aspect setTitle:([Get(@"aspect", @"16:9") isEqual:@"16:9"] ? @"16:9 (stretch)" : @"4:3 (original)") forState:UIControlStateNormal];
+    [self.aspect setTitle:AspectName(Get(@"aspect", @"16:9")) forState:UIControlStateNormal];
     [self.deinterlace setTitle:([Get(@"deinterlace", @"off") isEqual:@"off"] ? @"Off (sharp)" : @"Blend") forState:UIControlStateNormal];
     [self.scale setTitle:ScaleName(Get(@"scale", @"3")) forState:UIControlStateNormal];
-    [self.touch setTitle:([Get(@"touch", @"1") isEqual:@"1"] ? @"On (on-screen pad)" : @"Off") forState:UIControlStateNormal];
+    [self.touch setTitle:([Get(@"touch", @"1") isEqual:@"1"] ? @"On" : @"Off") forState:UIControlStateNormal];
+    [self.touchColor setTitle:ColorName(Get(@"touch_color", @"#E8C46A")) forState:UIControlStateNormal];
+    [self.touchOpacity setTitle:[NSString stringWithFormat:@"%d%%", (int)lround(OpacityValue(Get(@"touch_opacity", @"0.7")) * 100)] forState:UIControlStateNormal];
+    [self.haptics setTitle:([Get(@"haptics", @"1") isEqual:@"1"] ? @"On" : @"Off") forState:UIControlStateNormal];
+    [self.stickHaptics setTitle:([Get(@"stick_haptics", @"1") isEqual:@"1"] ? @"On" : @"Off") forState:UIControlStateNormal];
     [self.tapAdvance setTitle:([Get(@"tap_advance", @"1") isEqual:@"1"] ? @"On (tap the screen)" : @"Off") forState:UIControlStateNormal];
     if (!self.busy) {
         self.status.text = [NSString stringWithFormat:@"  %@  /  %@  /  %@  /  %@x  /  touch %@  /  Rebloom %s",
@@ -611,7 +665,8 @@ void ios_launcher_receive_url(void *nsurl) {
     [self refresh];
 }
 - (void)toggleAspect {
-    Set(@"aspect", [Get(@"aspect", @"16:9") isEqual:@"16:9"] ? @"4:3" : @"16:9");
+    NSString *now = Get(@"aspect", @"16:9");
+    Set(@"aspect", [now isEqual:@"16:9"] ? @"4:3" : [now isEqual:@"4:3"] ? @"fill" : @"16:9");
     [self refresh];
 }
 - (void)toggleDeinterlace {
@@ -628,6 +683,22 @@ void ios_launcher_receive_url(void *nsurl) {
 }
 - (void)toggleTapAdvance {
     Set(@"tap_advance", [Get(@"tap_advance", @"1") isEqual:@"1"] ? @"0" : @"1");
+    [self refresh];
+}
+- (void)cycleTouchColor {
+    Set(@"touch_color", NextColor(Get(@"touch_color", @"#E8C46A")));
+    [self refresh];
+}
+- (void)cycleTouchOpacity {
+    Set(@"touch_opacity", NextOpacity(Get(@"touch_opacity", @"0.7")));
+    [self refresh];
+}
+- (void)toggleHaptics {
+    Set(@"haptics", [Get(@"haptics", @"1") isEqual:@"1"] ? @"0" : @"1");
+    [self refresh];
+}
+- (void)toggleStickHaptics {
+    Set(@"stick_haptics", [Get(@"stick_haptics", @"1") isEqual:@"1"] ? @"0" : @"1");
     [self refresh];
 }
 
@@ -761,6 +832,10 @@ void ios_launcher_receive_url(void *nsurl) {
     setenv("PS2_WINDOW_TITLE", "Sakura Wars V: So Long, My Love - Rebloom", 1);
     setenv("REBLOOM_TOUCH", [Get(@"touch", @"1") isEqual:@"1"] ? "1" : "0", 1);
     setenv("REBLOOM_TAP", [Get(@"tap_advance", @"1") isEqual:@"1"] ? "1" : "0", 1);
+    setenv("REBLOOM_TOUCH_HAPTICS", [Get(@"haptics", @"1") isEqual:@"1"] ? "1" : "0", 1);
+    setenv("REBLOOM_TOUCH_STICK_HAPTICS", [Get(@"stick_haptics", @"1") isEqual:@"1"] ? "1" : "0", 1);
+    setenv("REBLOOM_TOUCH_COLOR", Get(@"touch_color", @"#E8C46A").UTF8String, 1);
+    setenv("REBLOOM_TOUCH_OPACITY", Get(@"touch_opacity", @"0.7").UTF8String, 1);
     NSString *db = [NSBundle.mainBundle pathForResource:@"gamecontrollerdb" ofType:@"txt"];
     if (db.length) setenv("SDL_GAMECONTROLLERCONFIG_FILE", db.fileSystemRepresentation, 1);
     if ([Get(@"deinterlace", @"off") isEqual:@"off"]) setenv("PS2_NO_DEINTERLACE", "1", 1);

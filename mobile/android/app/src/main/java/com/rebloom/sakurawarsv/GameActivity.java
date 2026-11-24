@@ -33,11 +33,21 @@ public class GameActivity extends SDLActivity {
         android.content.Intent i = getIntent();
         boolean touch = !"0".equals(i.getStringExtra("touch"));
         boolean tap = !"0".equals(i.getStringExtra("tap"));
+        boolean haptics = !"0".equals(i.getStringExtra("haptics"));
+        boolean stickHaptics = !"0".equals(i.getStringExtra("stick_haptics"));
+        String touchColor = i.getStringExtra("touch_color");
+        float touchOpacity;
+        try {
+            touchOpacity = Float.parseFloat(i.getStringExtra("touch_opacity"));
+        } catch (Exception ignored) {
+            touchOpacity = 0.7f;
+        }
         String controllerDb = installControllerDb();
         android.util.Log.i("Rebloom", "GameActivity disc=" + i.getStringExtra("disc")
                 + " data=" + i.getStringExtra("data")
                 + " memcard=" + i.getStringExtra("memcard")
-                + " touch=" + touch + " tap=" + tap);
+                + " touch=" + touch + " tap=" + tap + " haptics=" + haptics
+                + " color=" + touchColor + " opacity=" + touchOpacity);
         nativeLaunch(i.getStringExtra("disc"), i.getStringExtra("data"), i.getStringExtra("memcard"),
                 i.getStringExtra("shader"), i.getStringExtra("look"), i.getStringExtra("aspect"),
                 i.getStringExtra("scale"), touch ? "1" : "0", tap ? "1" : "0",
@@ -45,7 +55,7 @@ public class GameActivity extends SDLActivity {
                 "Sakura Wars V: So Long, My Love - Rebloom", controllerDb);
         super.onCreate(state);
         if (touch) {
-            overlay = new TouchOverlay(this, tap);
+            overlay = new TouchOverlay(this, tap, haptics, stickHaptics, touchColor, touchOpacity);
             mLayout.addView(overlay, new RelativeLayout.LayoutParams(
                     RelativeLayout.LayoutParams.MATCH_PARENT,
                     RelativeLayout.LayoutParams.MATCH_PARENT));

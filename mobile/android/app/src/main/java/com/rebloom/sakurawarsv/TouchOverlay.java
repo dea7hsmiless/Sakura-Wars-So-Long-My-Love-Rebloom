@@ -7,24 +7,33 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.SystemClock;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 
 /**
  * The on-screen pad. It feeds the runtime's first controller port beside the
  * keyboard and any real Bluetooth controller, so both keep working.
+ *
+ * The left control is a real analog stick: the knob follows the thumb outside a
+ * small dead zone and sends continuous 0..255 axes. The outer edge still nudges
+ * the d-pad so menu-driven screens keep working. Haptics fire when the stick
+ * leaves the centre and when it reaches the outer ring.
  */
 public class TouchOverlay extends View {
     private static final int CROSS = 0, CIRCLE = 1, SQUARE = 2, TRIANGLE = 3;
     private static final int L1 = 4, R1 = 5, L2 = 6, R2 = 7;
     private static final int START = 10, SELECT = 11;
     private static final int UP = 12, DOWN = 13, LEFT = 14, RIGHT = 15;
-    private static final int DPAD = -1;
+    private static final int STICK = -1;
 
-    private static final int GOLD = Color.rgb(232, 196, 106);
+    private static final int DEFAULT_ACCENT = Color.rgb(232, 196, 106);
     private static final int INK = Color.rgb(242, 236, 228);
     private static final int RED = Color.rgb(176, 58, 72);
 
@@ -43,22 +52,34 @@ public class TouchOverlay extends View {
     private final SparseIntArray emptyX = new SparseIntArray();
     private final SparseIntArray emptyY = new SparseIntArray();
     private final boolean tapAdvance;
+    private final boolean buttonHaptics;
+    private final boolean stickHaptics;
+    private final int accent;
+    private final float opacity;
     private final boolean[] held = new boolean[16];
     private final RectF[] face = new RectF[4];
     private final RectF[] shoulder = new RectF[4];
     private final RectF startRect = new RectF();
     private final RectF selectRect = new RectF();
 
-    private float dpadX, dpadY, dpadR;
+    private Vibrator vibrator;
+    private float stickX, stickY, stickR;
+    private float knobX, knobY;
     private float faceX, faceY, faceR, faceButtonR;
     private float unit;
-    private int dpadPointer = -1;
+    private int stickPointer = -1;
     private boolean up, down, left, right;
     private int lastLx = 128, lastLy = 128;
+    private int stickZone = 0;
 
-    public TouchOverlay(Context context, boolean tapAdvance) {
+    public TouchOverlay(Context context, boolean tapAdvance, boolean buttonHaptics,
+                        boolean stickHaptics, String color, float opacity) {
         super(context);
         this.tapAdvance = tapAdvance;
+        this.buttonHaptics = buttonHaptics;
+        this.stickHaptics = stickHaptics;
+        this.accent = parseColor(color);
+        this.opacity = Math.max(0.2f, Math.min(1f, opacity));
         setFocusable(false);
         setFocusableInTouchMode(false);
         setClickable(false);
@@ -70,15 +91,32 @@ public class TouchOverlay extends View {
         text.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
         for (int i = 0; i < face.length; i++) face[i] = new RectF();
         for (int i = 0; i < shoulder.length; i++) shoulder[i] = new RectF();
+        vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+    }
+
+    private static int parseColor(String value) {
+        if (value == null || value.length() == 0) return DEFAULT_ACCENT;
+        try {
+            return Color.parseColor(value);
+        } catch (IllegalArgumentException ignored) {
+            return DEFAULT_ACCENT;
+        }
+    }
+
+    private int tint(int color, int alpha) {
+        return Color.argb(Math.max(0, Math.min(255, Math.round(alpha * opacity))),
+                Color.red(color), Color.green(color), Color.blue(color));
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         unit = Math.min(w, h);
-        dpadX = w * 0.16f;
-        dpadY = h * 0.72f;
-        dpadR = unit * 0.145f;
+        stickX = w * 0.16f;
+        stickY = h * 0.72f;
+        stickR = unit * 0.16f;
+        knobX = stickX;
+        knobY = stickY;
         faceX = w * 0.84f;
         faceY = h * 0.72f;
         faceR = unit * 0.125f;
@@ -109,18 +147,27 @@ public class TouchOverlay extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (unit <= 0) return;
-        // left pad: outer ring and four directions
-        fill.setColor(Color.argb(70, 8, 6, 5));
-        canvas.drawCircle(dpadX, dpadY, dpadR, fill);
-        stroke.setColor(Color.argb(150, 232, 196, 106));
-        canvas.drawCircle(dpadX, dpadY, dpadR, stroke);
-        stroke.setColor(Color.argb(90, 232, 196, 106));
-        float inner = dpadR * 0.68f;
-        canvas.drawCircle(dpadX, dpadY, inner, stroke);
-        arrow(canvas, dpadX, dpadY - (inner + dpadR) / 2, 0, up);
-        arrow(canvas, dpadX, dpadY + (inner + dpadR) / 2, 180, down);
-        arrow(canvas, dpadX - (inner + dpadR) / 2, dpadY, 270, left);
-        arrow(canvas, dpadX + (inner + dpadR) / 2, dpadY, 90, right);
+
+        // analog stick: base, ring, centre guide, thumb knob
+        fill.setColor(tint(Color.rgb(8, 6, 5), 95));
+        canvas.drawCircle(stickX, stickY, stickR, fill);
+        stroke.setColor(tint(accent, 160));
+        canvas.drawCircle(stickX, stickY, stickR, stroke);
+        stroke.setColor(tint(accent, 70));
+        canvas.drawCircle(stickX, stickY, stickR * 0.58f, stroke);
+        for (int i = 0; i < 4; i++) {
+            float a = i * (float) Math.PI / 2f;
+            float x1 = stickX + (float) Math.cos(a) * (stickR * 0.82f);
+            float y1 = stickY + (float) Math.sin(a) * (stickR * 0.82f);
+            float x2 = stickX + (float) Math.cos(a) * (stickR * 0.96f);
+            float y2 = stickY + (float) Math.sin(a) * (stickR * 0.96f);
+            stroke.setColor(tint(accent, 95));
+            canvas.drawLine(x1, y1, x2, y2, stroke);
+        }
+        fill.setColor(tint(accent, 80));
+        canvas.drawCircle(knobX, knobY, stickR * 0.36f, fill);
+        stroke.setColor(tint(accent, 205));
+        canvas.drawCircle(knobX, knobY, stickR * 0.36f, stroke);
 
         // face buttons
         faceSymbol(canvas, CROSS);
@@ -139,30 +186,16 @@ public class TouchOverlay extends View {
         pill(canvas, startRect, "START", START);
     }
 
-    private void arrow(Canvas canvas, float x, float y, float rotation, boolean on) {
-        canvas.save();
-        canvas.rotate(rotation, x, y);
-        float s = dpadR * 0.17f;
-        path.reset();
-        path.moveTo(x, y - s);
-        path.lineTo(x - s * 0.9f, y + s * 0.7f);
-        path.lineTo(x + s * 0.9f, y + s * 0.7f);
-        path.close();
-        fill.setColor(on ? Color.argb(220, 232, 196, 106) : Color.argb(135, 232, 196, 106));
-        canvas.drawPath(path, fill);
-        canvas.restore();
-    }
-
     private void faceSymbol(Canvas canvas, int id) {
         RectF r = face[id];
         float cx = r.centerX(), cy = r.centerY();
-        fill.setColor(held[id] ? Color.argb(210, 176, 58, 72) : Color.argb(85, 8, 6, 5));
+        fill.setColor(held[id] ? tint(RED, 210) : tint(Color.rgb(8, 6, 5), 90));
         canvas.drawCircle(cx, cy, faceButtonR, fill);
-        stroke.setColor(held[id] ? Color.argb(255, 242, 236, 228) : Color.argb(190, 232, 196, 106));
+        stroke.setColor(held[id] ? tint(INK, 255) : tint(accent, 195));
         stroke.setStrokeWidth(held[id] ? Math.max(3f, unit * 0.008f) : Math.max(2f, unit * 0.006f));
         canvas.drawCircle(cx, cy, faceButtonR, stroke);
         float s = faceButtonR * 0.48f;
-        stroke.setColor(held[id] ? Color.argb(255, 242, 236, 228) : Color.argb(215, 232, 196, 106));
+        stroke.setColor(held[id] ? tint(INK, 255) : tint(accent, 220));
         if (id == CROSS) {
             canvas.drawLine(cx - s, cy - s, cx + s, cy + s, stroke);
             canvas.drawLine(cx + s, cy - s, cx - s, cy + s, stroke);
@@ -181,28 +214,28 @@ public class TouchOverlay extends View {
     }
 
     private void shoulderButton(Canvas canvas, RectF r, String label, int id) {
-        fill.setColor(held[id] ? Color.argb(210, 176, 58, 72) : Color.argb(80, 8, 6, 5));
+        fill.setColor(held[id] ? tint(RED, 210) : tint(Color.rgb(8, 6, 5), 100));
         canvas.drawRoundRect(r, r.width() * 0.35f, r.height() * 0.35f, fill);
-        stroke.setColor(Color.argb(held[id] ? 255 : 175, 232, 196, 106));
+        stroke.setColor(tint(accent, held[id] ? 255 : 175));
         canvas.drawRoundRect(r, r.width() * 0.35f, r.height() * 0.35f, stroke);
-        text.setColor(held[id] ? INK : GOLD);
+        text.setColor(held[id] ? tint(INK, 255) : tint(accent, 255));
         text.setTextSize(r.height() * 0.55f);
         canvas.drawText(label, r.centerX(), r.centerY() + r.height() * 0.20f, text);
     }
 
     private void pill(Canvas canvas, RectF r, String label, int id) {
-        fill.setColor(held[id] ? Color.argb(210, 176, 58, 72) : Color.argb(80, 8, 6, 5));
+        fill.setColor(held[id] ? tint(RED, 210) : tint(Color.rgb(8, 6, 5), 100));
         canvas.drawRoundRect(r, r.height() * 0.45f, r.height() * 0.45f, fill);
-        stroke.setColor(Color.argb(held[id] ? 255 : 165, 232, 196, 106));
+        stroke.setColor(tint(accent, held[id] ? 255 : 165));
         canvas.drawRoundRect(r, r.height() * 0.45f, r.height() * 0.45f, stroke);
-        text.setColor(held[id] ? INK : GOLD);
+        text.setColor(held[id] ? tint(INK, 255) : tint(accent, 255));
         text.setTextSize(r.height() * 0.48f);
         canvas.drawText(label, r.centerX(), r.centerY() + r.height() * 0.18f, text);
     }
 
-    private boolean inDpad(float x, float y) {
-        float dx = x - dpadX, dy = y - dpadY;
-        return dx * dx + dy * dy <= dpadR * dpadR * 1.75f;
+    private boolean inStick(float x, float y) {
+        float dx = x - stickX, dy = y - stickY;
+        return dx * dx + dy * dy <= stickR * stickR * 1.75f;
     }
 
     private int hitButton(float x, float y) {
@@ -228,10 +261,11 @@ public class TouchOverlay extends View {
                 int index = event.getActionIndex();
                 int id = event.getPointerId(index);
                 float x = event.getX(index), y = event.getY(index);
-                if (dpadPointer < 0 && inDpad(x, y)) {
-                    dpadPointer = id;
-                    roles.put(id, DPAD);
-                    moveDpad(x, y);
+                if (stickPointer < 0 && inStick(x, y)) {
+                    stickPointer = id;
+                    roles.put(id, STICK);
+                    stickZone = 0;
+                    moveStick(x, y);
                 } else {
                     int button = hitButton(x, y);
                     if (button >= 0) {
@@ -251,7 +285,7 @@ public class TouchOverlay extends View {
             case MotionEvent.ACTION_MOVE: {
                 for (int i = 0; i < event.getPointerCount(); i++) {
                     int id = event.getPointerId(i);
-                    if (roles.get(id, -3) == DPAD) moveDpad(event.getX(i), event.getY(i));
+                    if (roles.get(id, -3) == STICK) moveStick(event.getX(i), event.getY(i));
                 }
                 return true;
             }
@@ -272,14 +306,17 @@ public class TouchOverlay extends View {
     private void releasePointer(int id, float x, float y) {
         int role = roles.get(id, -3);
         roles.delete(id);
-        if (role == DPAD) {
-            if (dpadPointer == id) dpadPointer = -1;
+        if (role == STICK) {
+            if (stickPointer == id) stickPointer = -1;
             up = down = left = right = false;
             nativeButton(UP, false);
             nativeButton(DOWN, false);
             nativeButton(LEFT, false);
             nativeButton(RIGHT, false);
             lastLx = lastLy = 128;
+            stickZone = 0;
+            knobX = stickX;
+            knobY = stickY;
             nativeStick(0, 128, 128);
             invalidate();
         } else if (role >= 0) {
@@ -299,30 +336,43 @@ public class TouchOverlay extends View {
         }
     }
 
-    private void moveDpad(float x, float y) {
-        float dx = x - dpadX, dy = y - dpadY;
+    private void moveStick(float x, float y) {
+        float dx = x - stickX, dy = y - stickY;
         float len = (float) Math.sqrt(dx * dx + dy * dy);
-        int lx = 128, ly = 128;
-        if (len > dpadR * 0.22f) {
-            float nx = Math.max(-1f, Math.min(1f, dx / dpadR));
-            float ny = Math.max(-1f, Math.min(1f, dy / dpadR));
-            if (len > dpadR) {
-                nx = dx / len;
-                ny = dy / len;
-            }
-            lx = Math.round(128 + nx * 127);
-            ly = Math.round(128 + ny * 127);
+        float dead = stickR * 0.16f;
+        float nx = 0, ny = 0;
+        if (len > dead) {
+            float amount = Math.min(1f, (len - dead) / (stickR - dead));
+            nx = dx / len * amount;
+            ny = dy / len * amount;
         }
+        float reach = stickR * 0.62f;
+        knobX = stickX + nx * reach;
+        knobY = stickY + ny * reach;
+
+        int lx = Math.round(128 + nx * 127);
+        int ly = Math.round(128 + ny * 127);
         if (lx != lastLx || ly != lastLy) {
             lastLx = lx;
             lastLy = ly;
             nativeStick(0, lx, ly);
         }
-        float threshold = dpadR * 0.30f;
-        setDir(UP, dy < -threshold);
-        setDir(DOWN, dy > threshold);
-        setDir(LEFT, dx < -threshold);
-        setDir(RIGHT, dx > threshold);
+
+        // Menus still get a d-pad at the outer half of the stick.
+        float threshold = 0.55f;
+        setDir(UP, ny < -threshold);
+        setDir(DOWN, ny > threshold);
+        setDir(LEFT, nx < -threshold);
+        setDir(RIGHT, nx > threshold);
+
+        if (stickHaptics) {
+            int zone = len < dead ? 0 : len < stickR * 0.88f ? 1 : 2;
+            if (zone != stickZone) {
+                if (zone == 1) vibrate(10);
+                else if (zone == 2) vibrate(22);
+                stickZone = zone;
+            }
+        }
         invalidate();
     }
 
@@ -344,8 +394,19 @@ public class TouchOverlay extends View {
         if (button < 0 || button >= held.length || held[button] == on) return;
         held[button] = on;
         nativeButton(button, on);
-        if (on) performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+        if (on && buttonHaptics) vibrate(10);
         invalidate();
+    }
+
+    private void vibrate(int ms) {
+        if (vibrator == null || !vibrator.hasVibrator()) {
+            performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= 26)
+            vibrator.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE));
+        else
+            vibrator.vibrate(ms);
     }
 
     public void resetState() {
@@ -353,10 +414,13 @@ public class TouchOverlay extends View {
         emptyAt.clear();
         emptyX.clear();
         emptyY.clear();
-        dpadPointer = -1;
+        stickPointer = -1;
         up = down = left = right = false;
         for (int i = 0; i < held.length; i++) held[i] = false;
         lastLx = lastLy = 128;
+        stickZone = 0;
+        knobX = stickX;
+        knobY = stickY;
         nativeReset();
         invalidate();
     }

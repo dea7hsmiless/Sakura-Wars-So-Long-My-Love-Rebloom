@@ -116,7 +116,7 @@ def main() -> int:
     shutil.copy2(HERE / "Info.plist", app / "Info.plist")
     (app / "PkgInfo").write_text("APPL????", encoding="ascii")
     shutil.copy2(HERE / "gamecontrollerdb.txt", app / "gamecontrollerdb.txt")
-    for name in ("play-banner.png", "rail-logo.png"):
+    for name in ("hero.jpg", "rail-logo.png"):
         shutil.copy2(HERE / name, app / name)
     icons = HERE / "icons"
     if icons.is_dir():
