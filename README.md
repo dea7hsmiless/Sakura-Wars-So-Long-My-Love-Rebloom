@@ -20,6 +20,19 @@ on an interpreted IOP; only disc reads and module loading are answered by the ho
 **Bring your own discs. No disc image, game data, saves, soundtrack or extracted files are
 included.** This is an unofficial fan project.
 
+## Screenshots
+
+A look at Rebloom’s opening dialogue, story scenes, and dialogue choices.
+
+| | |
+| --- | --- |
+| ![Opening dialogue with Shinjiro and Sakura](screenshots/01-opening-dialogue.png) | ![Shinjiro introduces himself through a dialogue choice](screenshots/02-dialogue-choices.png) |
+| **Opening dialogue** | **Dialogue choices** |
+| ![A green aircraft flies between city buildings](screenshots/03-city-arrival.png) | ![A masked red-haired character in an action scene](screenshots/04-action-scene.png) |
+| **City arrival** | **Action scene** |
+| ![A street conversation with three dialogue choices](screenshots/05-street-conversation.png) | ![Shinjiro stands among a crowd on a city street](screenshots/06-city-crowd.png) |
+| **Street conversation** | **Story scenes** |
+
 ## Which discs do I need?
 
 - **Disc 1** — `SLUS_219.27`, English voices.
