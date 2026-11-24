@@ -17,20 +17,20 @@ disc reads and module loading are answered by the runtime.
 
 | File | Size | Requirements |
 | --- | --- | --- |
-| Rebloom-0.1-Windows-x86_64.zip | 44.8 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
+| Rebloom-0.1-Windows-x86_64.zip | 42.9 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
 | Rebloom-0.1-Linux-x86_64.tar.gz | 33.6 MB | Linux x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland |
 | Rebloom-0.1-x86_64.AppImage | 32.8 MB | Linux x86-64, FUSE 2 (or `--appimage-extract-and-run`), Vulkan 1.1 |
 | Rebloom-0.1-android-arm64.apk | 49.8 MB | Android 9+ arm64, Vulkan GPU with 7+ storage buffers; debug-signed sideload |
-| Rebloom-0.1-ios-unsigned.ipa | 20.7 MB | iOS 16.4+ arm64; unsigned, needs your own signing |
+| Rebloom-0.1-ios-unsigned.ipa | 20.6 MB | iOS 16.4+ arm64; unsigned, needs your own signing |
 
 SHA-256:
 
 ```
-397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f  Rebloom-0.1-Windows-x86_64.zip
-cbf14569e28ea40cdbb4464c3cf34be23887b48f8230b17a55360198804c44e8  Rebloom-0.1-Linux-x86_64.tar.gz
-fa98a18db8412aa19ef3f81287f63a0fc169da0b3f1d4ef848f344cc8ffd1973  Rebloom-0.1-x86_64.AppImage
-a0a85227ca6b65fd544c43f5bec32c15c3b5f4a747023cf9789031e7f3fe54ca  Rebloom-0.1-android-arm64.apk
-338dbc067082503e459844605f677dcb99f1b995fe6772beaecc82c6f42b916c  Rebloom-0.1-ios-unsigned.ipa
+3c563685a3b83cfb78f96cfd66674f3c8cf2b0929e5aafcbd33582cfeb7f26bd  Rebloom-0.1-Windows-x86_64.zip
+d7dd7b7688c0ca135a555b30f7dab2dbed6c1a30a2f2f3e076d761d9b1d27d69  Rebloom-0.1-Linux-x86_64.tar.gz
+7f6466b52d0a1f486d6169df3cac563155dbc7420668bee1965161a3d91bb199  Rebloom-0.1-x86_64.AppImage
+b271fd6fa2372df179a2d283e9f1257d8a661749c6454c73cb1e8db4c77943ab  Rebloom-0.1-android-arm64.apk
+aa84048711e4ca1b9e86d61b787ae29d520cd935e14fe53a7d4863b80fd662c5  Rebloom-0.1-ios-unsigned.ipa
 ```
 
 `SHA256SUMS.txt` and the launcher source inside the Windows zip are also in the release.
@@ -45,7 +45,8 @@ a0a85227ca6b65fd544c43f5bec32c15c3b5f4a747023cf9789031e7f3fe54ca  Rebloom-0.1-an
 - Keyboard and gamepad bindings edited in the launcher; both files are re-read within a second
 - Android/iOS: real analog stick with stick/button haptics, configurable touch colour and opacity, on-screen controls On/Off, optional tap-to-advance, and Bluetooth controllers beside it
 - Android/iOS display modes: 16:9 (fit), 4:3 (original), Fill (stretch)
-- Android/iOS launchers: sakura palette, full-width key art, and an optional **Sakura petals** background (Settings -> Display, default On)
+- Android/iOS launchers: sakura palette, full-width key art, larger medium-weight text
+- Windows/Linux launchers: sakura palette by default, with **Settings -> Display -> Launcher colors** offering **Classic (gold)**
 - Linux: Windows-style 1200x800 launcher with the key-art hero banner and rail logo
 - iOS: the same hero banner and rail logo, with opaque app icons
 
@@ -95,7 +96,6 @@ The Linux game links against the system Vulkan loader and SDL2 is bundled.
 3. Press **Play**. The on-screen pad is on by default; **Settings -> Controls** turns it off or on,
    and **Tap to advance** sends Cross on a short tap. Pair a Bluetooth controller in Android's
    Bluetooth settings to use it beside the pad. Import Disc 2 for Japanese voices.
-   **Settings -> Display -> Sakura petals** turns the optional launcher petals On/Off.
 
 ### iOS
 
@@ -103,8 +103,7 @@ The Linux game links against the system Vulkan loader and SDL2 is bundled.
    and install it.
 2. Open **Rebloom**, import Disc 1 through the Files picker, and press **Play**.
 3. The on-screen pad and **Tap to advance** are under **Settings -> Controls**. Pair a Bluetooth
-   controller in iOS Settings > Bluetooth to use it beside the pad. **Settings -> Display ->
-   Sakura petals** turns the optional launcher petals On/Off.
+   controller in iOS Settings > Bluetooth to use it beside the pad.
 
 ## Settings
 
@@ -113,7 +112,9 @@ Documents folder (iOS/Android). The game's own keys live in `game\data\keys.ini`
 `game\data\gamepad.ini`. Delete the launcher settings to go back to defaults.
 
 The shipped defaults are fullscreen + exclusive, 16:9, 3× internal resolution, Crisp + edges,
-deinterlace off, VSync fifo, frame latency 2, Vulkan, and temporal de-dither on.
+deinterlace off, VSync fifo, frame latency 2, Vulkan, and temporal de-dither on. The Windows and
+Linux launchers default to the **Sakura** palette; **Settings → Display → Launcher colors**
+switches to **Classic (gold)** and applies when the launcher reopens.
 
 **Controls:** open **Settings → Controls** and click **Keyboard controls…** or **Gamepad
 controls…**. Keyboard: click Change, then press the new key — arrows, Tab and Enter work.

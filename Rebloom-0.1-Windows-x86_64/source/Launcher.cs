@@ -30,16 +30,55 @@ namespace SakuraLauncher
 {
     static class Palette
     {
-        public static readonly Color Bg = Color.FromArgb(18, 13, 11);
-        public static readonly Color Rail = Color.FromArgb(12, 9, 8);
-        public static readonly Color Card = Color.FromArgb(34, 25, 20);
-        public static readonly Color CardEdge = Color.FromArgb(62, 45, 36);
-        public static readonly Color Footer = Color.FromArgb(26, 18, 15);
-        public static readonly Color Gold = Color.FromArgb(232, 196, 106);
-        public static readonly Color Red = Color.FromArgb(176, 58, 72);
-        public static readonly Color Ink = Color.FromArgb(242, 236, 228);
-        public static readonly Color Muted = Color.FromArgb(169, 156, 142);
-        public static readonly Color Good = Color.FromArgb(120, 196, 150);
+        public static Color Bg, Rail, Card, CardEdge, Footer, Gold, Red, Ink, Muted, Good;
+        public static Color Field, BannerTop, BannerBottom, PrimaryHover, PrimaryPressed, CardHover, CardPressed;
+
+        static Palette() { Apply("sakura"); }
+
+        public static void Apply(string theme)
+        {
+            bool classic = string.Equals(theme, "classic", StringComparison.OrdinalIgnoreCase);
+            if (classic)
+            {
+                Bg = Color.FromArgb(18, 13, 11);
+                Rail = Color.FromArgb(12, 9, 8);
+                Card = Color.FromArgb(34, 25, 20);
+                CardEdge = Color.FromArgb(62, 45, 36);
+                Footer = Color.FromArgb(26, 18, 15);
+                Gold = Color.FromArgb(232, 196, 106);
+                Red = Color.FromArgb(176, 58, 72);
+                Ink = Color.FromArgb(242, 236, 228);
+                Muted = Color.FromArgb(169, 156, 142);
+                Good = Color.FromArgb(120, 196, 150);
+                Field = Color.FromArgb(22, 17, 14);
+                BannerTop = Color.FromArgb(62, 26, 30);
+                BannerBottom = Color.FromArgb(16, 12, 10);
+                PrimaryHover = Color.FromArgb(198, 70, 86);
+                PrimaryPressed = Color.FromArgb(150, 48, 60);
+                CardHover = Color.FromArgb(52, 39, 32);
+                CardPressed = Color.FromArgb(44, 32, 26);
+            }
+            else
+            {
+                Bg = Color.FromArgb(24, 11, 20);
+                Rail = Color.FromArgb(16, 7, 14);
+                Card = Color.FromArgb(43, 20, 35);
+                CardEdge = Color.FromArgb(91, 43, 65);
+                Footer = Color.FromArgb(32, 13, 26);
+                Gold = Color.FromArgb(245, 169, 193);
+                Red = Color.FromArgb(201, 79, 109);
+                Ink = Color.FromArgb(255, 244, 239);
+                Muted = Color.FromArgb(227, 189, 205);
+                Good = Color.FromArgb(120, 196, 150);
+                Field = Color.FromArgb(33, 16, 28);
+                BannerTop = Color.FromArgb(91, 43, 65);
+                BannerBottom = Color.FromArgb(24, 11, 20);
+                PrimaryHover = Color.FromArgb(218, 100, 128);
+                PrimaryPressed = Color.FromArgb(170, 60, 86);
+                CardHover = Color.FromArgb(57, 28, 46);
+                CardPressed = Color.FromArgb(47, 23, 38);
+            }
+        }
     }
 
     public class RoundButton : Control, IButtonControl
@@ -126,8 +165,8 @@ namespace SakuraLauncher
             {
                 Color fill = Primary ? Palette.Red : Selected ? Palette.CardEdge : Palette.Card;
                 if (!Enabled) fill = Palette.Card;
-                else if (pressed) fill = Primary ? Color.FromArgb(150, 48, 60) : Color.FromArgb(44, 32, 26);
-                else if (hover) fill = Primary ? Color.FromArgb(198, 70, 86) : Color.FromArgb(52, 39, 32);
+                else if (pressed) fill = Primary ? Palette.PrimaryPressed : Palette.CardPressed;
+                else if (hover) fill = Primary ? Palette.PrimaryHover : Palette.CardHover;
                 using (SolidBrush b = new SolidBrush(fill)) g.FillPath(b, path);
                 using (Pen p = new Pen(Selected || Primary ? Palette.Gold : Palette.CardEdge, Selected || Primary ? 1.6f : 1f))
                     g.DrawPath(p, path);
@@ -188,7 +227,7 @@ namespace SakuraLauncher
             g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
             g.SmoothingMode = SmoothingMode.AntiAlias;
             using (LinearGradientBrush bg = new LinearGradientBrush(ClientRectangle,
-                       Color.FromArgb(62, 26, 30), Color.FromArgb(16, 12, 10), 40f))
+                       Palette.BannerTop, Palette.BannerBottom, 40f))
                 g.FillRectangle(bg, ClientRectangle);
 
             if (hero != null)
@@ -852,6 +891,7 @@ namespace SakuraLauncher
             baseDir = AppDomain.CurrentDomain.BaseDirectory;
             iniPath = Path.Combine(baseDir, "launcher.ini");
             LoadIni();
+            Palette.Apply(Get("theme", "sakura"));
 
             Text = "Sakura Wars V: So Long, My Love \u2014 Rebloom Launcher";
             // Without this the window keeps the generic .NET form icon, even though the exe carries art\icon.ico.
@@ -1288,6 +1328,9 @@ namespace SakuraLauncher
                     shown.Text = labels[ix];
                     Append(name + " = " + labels[ix]);
                     if (key == "language") ShowSettingsFor(category);   // stay on this page; ReDUB re-renders rather than jumping home
+                    if (key == "theme")
+                        MessageBox.Show(this, "Launcher colors saved. Close and reopen Rebloom Launcher to apply them.",
+                                        "Launcher colors", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     UpdateStatus();
                 }
                 catch (Exception ex)
@@ -1622,7 +1665,7 @@ namespace SakuraLauncher
             TextBox box = new TextBox();
             box.Text = value;
             box.SetBounds(262, y, Math.Max(180, card.Width - 262 - 130), 28);
-            box.BackColor = Color.FromArgb(22, 17, 14);
+            box.BackColor = Palette.Field;
             box.ForeColor = Palette.Ink;
             box.BorderStyle = BorderStyle.FixedSingle;
             box.Font = new Font("Consolas", 9f);
@@ -1685,7 +1728,7 @@ namespace SakuraLauncher
             string help = cat == "Game" ? "Language, the memory card and where things live."
                         : cat == "Advanced" ? "Diagnostics. Change these only when something is wrong."
                         : cat == "Controls" ? "Keyboard and gamepad bindings. The game reads the files when you return to its window."
-                        : cat == "Display" ? "Display-side options. Exclusive full screen is the default; Borderless is the safer choice if it causes trouble."
+                        : cat == "Display" ? "Display-side options. Launcher colors apply when the launcher reopens. Exclusive full screen is the default; Borderless is the safer choice if it causes trouble."
                         : "Display-side options. The game's own picture is not modified.";
             Panel p = Standard("Settings", "Settings", help);
 
@@ -1702,7 +1745,8 @@ namespace SakuraLauncher
             card.BackColor = Palette.Card;
             // A row spans 760 px at most: past that the label and its stepper drift so far apart that the row reads as
             // two unrelated things, which is what happened at 1920 px wide.
-            card.SetBounds(228, 140, Math.Min(760, Math.Max(560, content.Width - 264)), 460);
+            card.SetBounds(228, 140, Math.Min(760, Math.Max(560, content.Width - 264)),
+                cat == "Display" ? 540 : 460);
             card.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             p.Controls.Add(card);
 
@@ -1723,6 +1767,8 @@ namespace SakuraLauncher
                     new string[] { "", "1", "2", "3", "4" }, "3");
                 Choice(card, ref y, "Deinterlace", "deinterlace", new string[] { "Blend (smooth)", "Off (sharper)" },
                     new string[] { "blend", "off" }, "off");
+                Choice(card, ref y, "Launcher colors", "theme", new string[] { "Sakura", "Classic (gold)" },
+                    new string[] { "sakura", "classic" }, "sakura");
             }
             else if (cat == "Graphics")
             {
@@ -1751,7 +1797,7 @@ namespace SakuraLauncher
                 TextBox texBox = new TextBox();
                 texBox.Text = Get("textures", "");
                 texBox.SetBounds(180, 406, Math.Max(180, card.Width - 310), 26);
-                texBox.BackColor = Color.FromArgb(22, 17, 14);
+                texBox.BackColor = Palette.Field;
                 texBox.ForeColor = Palette.Ink;
                 texBox.BorderStyle = BorderStyle.FixedSingle;
                 texBox.Font = new Font("Consolas", 9f);

@@ -37,6 +37,8 @@ running as guest code.
 - **Full screen mode.** Settings -> Display can use **Exclusive** (the default; changes the display
   mode like a classic full-screen game) or **Borderless** (keeps the desktop mode). F11 toggles full
   screen.
+- **Launcher colors.** Settings -> Display -> **Launcher colors** defaults to **Sakura** (plum and
+  rose) and offers **Classic (gold)** for the previous palette. Reopen the launcher to apply.
 - **Deinterlace.** Settings -> Display shows one field by default (`PS2_NO_DEINTERLACE=1`, sharper
   but may comb) or blends the two fields of 480i film and scenes (smooth, softer).
 - **Controls.** Settings -> Controls edits keyboard bindings (Change, then press the key; arrows,

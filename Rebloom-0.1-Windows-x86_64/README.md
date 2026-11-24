@@ -55,6 +55,10 @@ overrides; no texture pack is included.
 **Exclusive** (the default, changes the display mode like a classic full-screen game) or
 **Borderless** (keeps the desktop mode). **F11** toggles full screen.
 
+**Launcher colors:** Settings → Display → **Launcher colors** defaults to **Sakura**
+(plum and rose). Choose **Classic (gold)** for the previous palette. Reopen the launcher to apply
+the choice.
+
 **Deinterlace:** Settings → Display → **Deinterlace**. PS2 films and some scenes are 480i;
 **Blend** joins two fields, which is smooth but softens motion. **Off** (the default) shows one
 field: sharper, but can show comb edges.

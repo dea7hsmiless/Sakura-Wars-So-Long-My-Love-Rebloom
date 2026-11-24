@@ -22,17 +22,37 @@ APP = "Rebloom Launcher"
 TITLE = "Sakura Wars V: So Long, My Love - Rebloom"
 VERSION = "0.1"
 
-BG = "#120d0b"
-RAIL = "#0c0908"
-CARD = "#221914"
-EDGE = "#3e2d24"
-FOOT = "#1a120f"
-GOLD = "#e8c46a"
-RED = "#b03a48"
-INK = "#f2ece4"
-MUTED = "#a99c8e"
-GOOD = "#78c496"
-BAD = "#d06a6a"
+THEMES = {
+    "sakura": {
+        "BG": "#180b14", "RAIL": "#10070e", "CARD": "#2b1423", "EDGE": "#5b2b41",
+        "FOOT": "#200d1a", "GOLD": "#f5a9c1", "RED": "#c94f6d", "INK": "#fff4ef",
+        "MUTED": "#e3bdcd", "GOOD": "#78c496", "BAD": "#d06a6a", "FAINT": "#8f5a72",
+    },
+    "classic": {
+        "BG": "#120d0b", "RAIL": "#0c0908", "CARD": "#221914", "EDGE": "#3e2d24",
+        "FOOT": "#1a120f", "GOLD": "#e8c46a", "RED": "#b03a48", "INK": "#f2ece4",
+        "MUTED": "#a99c8e", "GOOD": "#78c496", "BAD": "#d06a6a", "FAINT": "#6f6156",
+    },
+}
+
+BG = RAIL = CARD = EDGE = FOOT = GOLD = RED = INK = MUTED = GOOD = BAD = FAINT = ""
+
+
+def apply_theme(name: str) -> None:
+    global BG, RAIL, CARD, EDGE, FOOT, GOLD, RED, INK, MUTED, GOOD, BAD, FAINT
+    palette = THEMES.get(name, THEMES["sakura"])
+    BG = palette["BG"]
+    RAIL = palette["RAIL"]
+    CARD = palette["CARD"]
+    EDGE = palette["EDGE"]
+    FOOT = palette["FOOT"]
+    GOLD = palette["GOLD"]
+    RED = palette["RED"]
+    INK = palette["INK"]
+    MUTED = palette["MUTED"]
+    GOOD = palette["GOOD"]
+    BAD = palette["BAD"]
+    FAINT = palette["FAINT"]
 
 SERIALS = {b"SLUS_219.27": "en", b"SLUS_219.30": "jp"}
 
@@ -148,6 +168,7 @@ class Launcher:
         self.nav_buttons: dict[str, tk.Button] = {}
         self.page = "home"
         self.load_ini()
+        apply_theme(self.get("theme", "sakura"))
         self.build()
         self.log(f"{APP} {VERSION} ready.")
         self.log(f"program: {self.resources}")
@@ -524,7 +545,7 @@ class Launcher:
         for text, key in (("Play", "home"), ("Install", "install"), ("Settings", "settings"), ("Support", "support"), ("About", "about")):
             self.nav(text, key)
         tk.Frame(self.rail, bg=RAIL).pack(fill="both", expand=True)
-        tk.Label(self.rail, text="Linux x86-64  ·  v" + VERSION, bg=RAIL, fg="#6f6156",
+        tk.Label(self.rail, text="Linux x86-64  ·  v" + VERSION, bg=RAIL, fg=FAINT,
                  font=("DejaVu Sans", 8)).pack(anchor="w", padx=24, pady=18)
 
         right = tk.Frame(self.root, bg=BG)
@@ -850,6 +871,9 @@ class Launcher:
                      "True Hor+ widescreen needs a game patch that does not exist for this disc.")
         self.stepper(inner, 4, "VSync", "vsync", [("On (fifo)", "fifo"), ("Off (immediate)", "immediate")], "fifo")
         self.stepper(inner, 5, "Frame latency", "latency", [("1", "1"), ("2", "2"), ("3", "3")], "2")
+        self.stepper(inner, 6, "Launcher colors", "theme",
+                     [("Sakura", "sakura"), ("Classic (gold)", "classic")], "sakura",
+                     "Reopen the launcher to apply.")
 
         card = self.card()
         inner = tk.Frame(card, bg=CARD)

@@ -7,20 +7,20 @@ Prepared 2026-11-23; mobile builds refreshed 2026-11-24. **Nothing has been publ
 | Asset | Path | Size |
 |---|---|---|
 | Release folder | `Desktop\Rebloom-0.1-release\` | — |
-| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,777,948 B |
+| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 42,911,619 B |
 | Extracted Windows tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | ~150 MB |
-| Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,608,332 B |
-| Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,807,416 B |
-| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,751,786 B |
-| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,663,984 B |
+| Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,609,963 B |
+| Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,811,512 B |
+| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,751,060 B |
+| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,641,152 B |
 
 Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that is present.
 
-- Windows: `397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f`
-- Linux: `cbf14569e28ea40cdbb4464c3cf34be23887b48f8230b17a55360198804c44e8`
-- AppImage: `fa98a18db8412aa19ef3f81287f63a0fc169da0b3f1d4ef848f344cc8ffd1973`
-- Android: `a0a85227ca6b65fd544c43f5bec32c15c3b5f4a747023cf9789031e7f3fe54ca`
-- iOS: `338dbc067082503e459844605f677dcb99f1b995fe6772beaecc82c6f42b916c`
+- Windows: `3c563685a3b83cfb78f96cfd66674f3c8cf2b0929e5aafcbd33582cfeb7f26bd`
+- Linux: `d7dd7b7688c0ca135a555b30f7dab2dbed6c1a30a2f2f3e076d761d9b1d27d69`
+- AppImage: `7f6466b52d0a1f486d6169df3cac563155dbc7420668bee1965161a3d91bb199`
+- Android: `b271fd6fa2372df179a2d283e9f1257d8a661749c6454c73cb1e8db4c77943ab`
+- iOS: `aa84048711e4ca1b9e86d61b787ae29d520cd935e14fe53a7d4863b80fd662c5`
 
 ## What was verified for this package
 
@@ -44,6 +44,9 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
   controller is seen. `game\data\keys.ini` and `gamepad.ini` ship with those defaults.
 - The Controls page wording was corrected: Start, Select and triggers stay standard; L3/R3 map
   the stick presses.
+- Settings -> Display -> **Launcher colors** defaults to **Sakura** (plum and rose) and offers
+  **Classic (gold)**. Both palettes rendered in the real launcher from `launcher.ini`; the setting
+  asks for a launcher reopen.
 - Settings defaults: fullscreen + exclusive, 16:9, 3×, Crisp + edges, deinterlace off, VSync
   fifo, latency 2, DX12, temporal de-dither on.
 - Boot-time work: lazy mipmap shader compilation cut a 2-frame 3× start from 11.9 s to 10.55 s
@@ -64,6 +67,9 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
   gamepad choices rewrite all twelve actions, and comments in `keys.ini` are preserved.
 - The launcher now uses the Windows key art: a 1200x800 window, the hero banner on Play, the
   logo in the rail, the corrected first-run summary, and `--play` starts without a bypass setting.
+- Settings -> Display -> **Launcher colors** defaults to **Sakura** and offers **Classic (gold)**;
+  the Sakura palette was rendered in the live launcher and Classic keeps the previous values. The
+  choice asks for a launcher reopen.
 - Audio was captured from WSLg's RDP sink (29.4 s, non-zero samples); a cold WSLg start now waits
   for the PulseAudio sink instead of falling back to silent ALSA.
 
@@ -74,7 +80,7 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - APK contains `lib/arm64-v8a/libSDL2.so`, `lib/arm64-v8a/libmain.so`, the shader asset and the
   Java launcher; launcher icons are packaged at all densities.
 - The launcher now uses the five-page rail (Play, Install, Settings, Support, About) with the
-  same dark/gold/red styling as Windows. Settings has touch controls and tap-to-advance.
+  sakura palette and mobile sizing from ReDUB. Settings has touch controls and tap-to-advance.
 - The game was run on the Android emulator with its host GPU (RTX 3070 Vulkan): the disc was read,
   nine shaders compiled, the touch overlay drew, its d-pad selected Yes, and its Cross button
   formatted an 8 MB memory card, created a game file, and reached the Sega and opening screens.
@@ -93,13 +99,14 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - The mobile palette now matches the sakura theme (plum panels, cream text, sakura-pink accents,
   deep-rose active nav). The hero is a 2400x600 composition with blurred sides, so it fills the
   pane without side bars, and the Play page puts the title, status and actions below it.
-- A tiled sakura-petal layer sits behind the launcher. **Settings -> Display -> Sakura petals**
-  turns it On/Off; default On. The setting switches the background immediately.
+- The mobile launcher text is larger and uses medium-weight type for small labels; the low-contrast
+  muted text was lightened. The iOS Play page now uses the ReDUB layout: a pane-wide hero at the top,
+  then status, title, subtitle, actions and cards, with no heading above the hero.
 - Android 15 edge-to-edge insets are handled on the launcher root, so the status bar and gesture
   bar no longer cover the rail, hero or footer.
 - The refreshed launcher was reinstalled on the same emulator on 2026-11-24: the sakura palette,
-  full-width hero, petal On/Off switch and Android 15 insets were checked, and Play booted the
-  game to its loaded-save screen.
+  larger medium-weight text, hero and Android 15 insets were checked, and Play booted the game to its
+  loaded-save screen.
 - Not installed on a phone; the host-GPU emulator run above is the only device test.
 
 ### iOS
@@ -114,7 +121,7 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - The rail uses 126 pt below 800 pt wide and 160 pt above, matching the Android launcher.
 - The launcher now carries the Windows hero banner on Play and the logo in the rail; the app
   icons are opaque RGB so iOS can display them. The mobile palette and full-width hero match
-  Android, and **Settings -> Display -> Sakura petals** shows or hides the optional petal layer.
+  Android, and the Play page follows ReDUB's layout (hero, status, title, actions, then cards).
 - The first device log showed the crash: `wgpuDeviceCreateBindGroupLayout` rejected the GS pass
   because Metal was requested with four storage buffers per stage while the pass binds seven.
   The runtime now asks for eight storage buffers (capped at the adapter's limit) on Apple and logs

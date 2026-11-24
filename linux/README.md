@@ -62,7 +62,8 @@ Settings are saved in `launcher.ini` beside the launcher and apply on the next
 game start.
 
 - **Display:** window/fullscreen, borderless/exclusive, 4:3 or 16:9 stretch,
-  VSync, frame latency.
+  VSync, frame latency, and launcher colors (**Sakura** by default, or
+  **Classic (gold)**; reopen the launcher to apply).
 - **Graphics:** picture look (Crisp/Soft/Sharp, with optional edge smoothing),
   render scale, deinterlace, GPU backend.
 - **Controls:** keyboard and gamepad binding editors. Changes are written to

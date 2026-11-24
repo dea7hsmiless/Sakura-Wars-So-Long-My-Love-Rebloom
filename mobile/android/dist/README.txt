@@ -2,8 +2,8 @@ Rebloom 0.1 - Android arm64
 ===========================
 
 File:  Rebloom-0.1-android-arm64.apk
-Size:  49,751,786 B
-SHA-256: a0a85227ca6b65fd544c43f5bec32c15c3b5f4a747023cf9789031e7f3fe54ca
+Size:  49,751,060 B
+SHA-256: b271fd6fa2372df179a2d283e9f1257d8a661749c6454c73cb1e8db4c77943ab
 
 Requirements
 ------------
@@ -20,8 +20,7 @@ Install
    turn it off, change its colour and opacity, enable button/stick haptics, and
    set the display to 16:9, 4:3 or Fill. "Tap to advance" sends Cross on a short
    tap. A Bluetooth controller can be paired in Android's Bluetooth settings and
-   works beside the pad. Settings -> Display -> Sakura petals turns the optional
-   launcher petal layer On/Off.
+   works beside the pad.
 
 The host-GPU emulator test reached the launcher, loaded the save, formatted the
 memory card and reached the Sega/opening screens. A physical phone is still

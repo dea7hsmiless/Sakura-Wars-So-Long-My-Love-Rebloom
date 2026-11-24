@@ -9,13 +9,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Insets;
-import android.graphics.Shader;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,7 +51,7 @@ public class LauncherActivity extends Activity {
     private static final int FOOT = Color.rgb(32, 13, 26);
     private static final int GOLD = Color.rgb(245, 169, 193);
     private static final int INK = Color.rgb(255, 244, 239);
-    private static final int MUTED = Color.rgb(211, 168, 185);
+    private static final int MUTED = Color.rgb(227, 189, 205);
     private static final int RED = Color.rgb(201, 79, 109);
     private static final String VERSION = "0.1";
     private static final String[] PAGES = { "Play", "Install", "Settings", "Support", "About" };
@@ -67,8 +62,6 @@ public class LauncherActivity extends Activity {
     private TextView heading;
     private TextView subheading;
     private LinearLayout content;
-    private LinearLayout railView;
-    private LinearLayout mainView;
     private final List<TextView> nav = new ArrayList<>();
     private String page = "Play";
 
@@ -98,24 +91,16 @@ public class LauncherActivity extends Activity {
 
     private TextView label(String text, float size, boolean bold, int color) {
         TextView v = new TextView(this);
+        float shown = size;
+        if (size <= 10f) shown = size + 1.5f;
+        else if (size <= 13f) shown = size + 1f;
         v.setText(text);
-        v.setTextSize(size);
+        v.setTextSize(shown);
         v.setTextColor(color);
-        if (bold) v.setTypeface(Typeface.DEFAULT_BOLD);
+        v.setTypeface(Typeface.create(bold ? "sans-serif-medium" : "sans-serif", Typeface.NORMAL));
+        if (bold && size <= 10.5f) v.setLetterSpacing(0.04f);
+        v.setLineSpacing(dp(2), 1f);
         return v;
-    }
-
-    private Drawable petals(int baseColor) {
-        Drawable base = new ColorDrawable(baseColor);
-        if (!"1".equals(pref("petals", "1"))) return base;
-        Bitmap art = asset("sakura_petals.png");
-        if (art == null) return base;
-        int density = getResources().getDisplayMetrics().densityDpi;
-        art.setDensity(density);
-        BitmapDrawable tile = new BitmapDrawable(getResources(), art);
-        tile.setTargetDensity(density);
-        tile.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-        return new LayerDrawable(new Drawable[] { base, tile });
     }
 
     private GradientDrawable box(int color, int stroke, float radius) {
@@ -127,7 +112,7 @@ public class LauncherActivity extends Activity {
     }
 
     private TextView button(String text, boolean primary, View.OnClickListener click) {
-        TextView b = label(text, 14, true, INK);
+        TextView b = label(text, 15, true, INK);
         b.setGravity(Gravity.CENTER);
         b.setPadding(dp(18), dp(10), dp(18), dp(10));
         b.setBackground(box(primary ? RED : CARD, primary ? 0 : EDGE, 9));
@@ -187,8 +172,7 @@ public class LauncherActivity extends Activity {
         int railWidth = dp(widthDp < 800 ? 126 : 160);
         LinearLayout rail = new LinearLayout(this);
         rail.setOrientation(LinearLayout.VERTICAL);
-        rail.setBackground(petals(RAIL));
-        railView = rail;
+        rail.setBackgroundColor(RAIL);
         rail.setPadding(dp(9), dp(16), dp(9), dp(8));
         root.addView(rail, new LinearLayout.LayoutParams(railWidth, LinearLayout.LayoutParams.MATCH_PARENT));
 
@@ -237,27 +221,28 @@ public class LauncherActivity extends Activity {
 
         LinearLayout main = new LinearLayout(this);
         main.setOrientation(LinearLayout.VERTICAL);
-        main.setBackground(petals(BG));
-        mainView = main;
-        main.setPadding(dp(22), dp(18), dp(22), 0);
+        main.setBackgroundColor(BG);
+        main.setPadding(0, dp(18), 0, 0);
         root.addView(main, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1));
 
-        heading = label("", 24, true, INK);
+        heading = label("", 26, true, INK);
+        heading.setPadding(dp(22), 0, dp(22), 0);
         main.addView(heading);
-        subheading = label("", 10, false, MUTED);
-        subheading.setPadding(0, dp(3), 0, dp(10));
+        subheading = label("", 11, false, MUTED);
+        subheading.setPadding(dp(22), dp(3), dp(22), dp(10));
         main.addView(subheading);
 
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dp(22), 0, dp(22), 0);
         scroll.addView(content, new ScrollView.LayoutParams(
                 ScrollView.LayoutParams.MATCH_PARENT, ScrollView.LayoutParams.WRAP_CONTENT));
         main.addView(scroll, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
 
-        status = label("", 10, false, MUTED);
+        status = label("", 11, false, MUTED);
         status.setBackgroundColor(FOOT);
         status.setGravity(Gravity.CENTER_VERTICAL);
         status.setPadding(dp(20), 0, dp(20), 0);
@@ -269,8 +254,6 @@ public class LauncherActivity extends Activity {
 
     private void show(String target) {
         page = target;
-        if (railView != null) railView.setBackground(petals(RAIL));
-        if (mainView != null) mainView.setBackground(petals(BG));
         boolean playPage = "Play".equals(target);
         if (heading != null) heading.setVisibility(playPage ? View.GONE : View.VISIBLE);
         if (subheading != null) subheading.setVisibility(playPage ? View.GONE : View.VISIBLE);
@@ -304,10 +287,13 @@ public class LauncherActivity extends Activity {
             int heroH = Math.max(dp(120), Math.min(dp(180),
                     getResources().getDisplayMetrics().heightPixels - dp(180)));
             hero.setPadding(0, 0, 0, dp(12));
-            content.addView(hero, new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, heroH));
+            LinearLayout.LayoutParams heroParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, heroH);
+            heroParams.leftMargin = -dp(22);
+            heroParams.rightMargin = -dp(22);
+            content.addView(hero, heroParams);
         }
-        TextView title = label("Sakura Wars V: So Long, My Love", 24, true, INK);
+        TextView title = label("Sakura Wars V: So Long, My Love", 26, true, INK);
         title.setPadding(0, dp(6), 0, 0);
         content.addView(title);
         content.addView(label(has ? "READY  /  ANDROID ARM64" : "NO DISC  /  ANDROID ARM64",
@@ -396,8 +382,6 @@ public class LauncherActivity extends Activity {
                 new String[] { "16:9", "4:3", "fill" }, "16:9");
         choiceRow(display, "Internal resolution", "scale", new String[] { "1x (native)", "2x", "3x" },
                 new String[] { "1", "2", "3" }, "3");
-        choiceRow(display, "Sakura petals", "petals", new String[] { "On", "Off" },
-                new String[] { "1", "0" }, "1");
         content.addView(display);
 
         LinearLayout graphics = card();

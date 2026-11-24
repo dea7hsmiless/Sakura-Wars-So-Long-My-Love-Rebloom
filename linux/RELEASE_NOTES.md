@@ -20,7 +20,9 @@ program as the Windows build, linked against SDL2 and Vulkan on Linux.
 - **Japanese voices.** Import Disc 2 and switch the voice language on the Play
   page.
 - **Settings.** Window/fullscreen, borderless/exclusive, 4:3 or 16:9 stretch,
-  VSync, frame latency, picture look, render scale, deinterlace, GPU backend.
+  VSync, frame latency, picture look, render scale, deinterlace, GPU backend,
+  and launcher colors (**Sakura** by default, or **Classic (gold)**; reopen the
+  launcher to apply).
   Defaults are fullscreen exclusive, 16:9, 3x, Crisp + edges, deinterlace off.
 - **Controls.** Settings -> Controls edits the keyboard and gamepad bindings in
   the launcher. The game reads the files again when its window has the focus.
