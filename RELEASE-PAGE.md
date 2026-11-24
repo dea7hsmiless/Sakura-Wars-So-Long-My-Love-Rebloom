@@ -18,7 +18,7 @@ only disc reads and module loading are answered by the runtime.
 | --- | --- | --- |
 | Rebloom-0.1-Windows-x86_64.zip | 44.7 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
 
-SHA-256: `b4f21be151370c5548e27ace351cca921fd90f32440db54a319387e833fcbe0f`
+SHA-256: `c03899fd450878e663ebfebdca34b4c3b86b4efc850a62a6ec053961f87a6bc7`
 
 Also in the release: `SHA256SUMS.txt`, the two screenshots above, and the launcher source inside the zip under `source\`.
 

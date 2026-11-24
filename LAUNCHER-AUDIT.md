@@ -46,6 +46,7 @@ something is missing) and tested by driving the real build through UI Automation
 | 36 | The existing smooth-edge AA and texture override support were not exposed. | **Picture look** exposes Crisp/Soft/Sharp with optional edge AA; **HD textures** selects a PNG override folder. |
 | 37 | Full screen was always SDL's borderless desktop mode. | Display now offers **Borderless** or **Exclusive** (`PS2_EXCLUSIVE_FULLSCREEN=1`); exclusive falls back to borderless if refused. |
 | 38 | Browse still left the game pointing at an external ISO. | Browse, a typed path and drag-and-drop all run the importer; only a file already in `discs\` is used in place. |
+| 39 | Game alpha fades show the PS2 dither pattern on a sharp LCD. | Added an optional **De-dither** shader (`game\blit-dedither.wgsl`), a light 3x3 average. |
 
 ## Open
 

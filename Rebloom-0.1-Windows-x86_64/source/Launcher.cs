@@ -1351,6 +1351,11 @@ namespace SakuraLauncher
                 speed.SetBounds(24, y2 + 58, Math.Max(380, card.Width - 48), 60);
                 speed.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
                 card.Controls.Add(speed);
+                ButtonAt(card, "De-dither: " + (Get("dedither", "0") == "1" ? "On (soften)" : "Off"), 24, 380, 260, delegate
+                {
+                    Set("dedither", Get("dedither", "0") == "1" ? "0" : "1");
+                    ShowSettingsFor("Advanced");
+                }, false);
                 ButtonAt(card, "Clear launcher settings", 24, 110, 230, delegate
                 {
                     if (MessageBox.Show(this, "Put every setting back to its default?", "Sakura Wars",
@@ -1618,6 +1623,12 @@ namespace SakuraLauncher
             psi.EnvironmentVariables["PS2_ASPECT"] = Get("aspect", "4:3");
             psi.EnvironmentVariables["PS2_EXCLUSIVE_FULLSCREEN"] = Get("fs_mode", "borderless") == "exclusive" ? "1" : "0";
             if (Get("deinterlace", "blend") == "off") psi.EnvironmentVariables["PS2_NO_DEINTERLACE"] = "1";
+            if (Get("dedither", "0") == "1")
+            {
+                string shader = Path.Combine(baseDir, @"game\blit-dedither.wgsl");
+                if (File.Exists(shader)) psi.EnvironmentVariables["PS2_BLIT_SHADER"] = shader;
+                else Append("de-dither shader missing: " + shader);
+            }
             psi.EnvironmentVariables["PS2_PRESENT_MODE"] = Get("vsync", "fifo");
             psi.EnvironmentVariables["PS2_FRAME_LATENCY"] = Get("latency", "2");
             psi.EnvironmentVariables["PS2_WINDOW_TITLE"] = "Sakura Wars V: So Long, My Love \u2014 Rebloom";

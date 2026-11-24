@@ -7,11 +7,11 @@ Prepared 2026-11-23. **Nothing has been published.**
 | Asset | Path | Size |
 |---|---|---|
 | Release folder | `Desktop\Rebloom-0.1-release\` | — |
-| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,730,133 B |
+| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,735,469 B |
 | Extracted tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | 150.7 MB |
 | Source drop (working copy) | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\source\` | — |
 
-Zip SHA-256: `b4f21be151370c5548e27ace351cca921fd90f32440db54a319387e833fcbe0f`
+Zip SHA-256: `c03899fd450878e663ebfebdca34b4c3b86b4efc850a62a6ec053961f87a6bc7`
 
 ## What was verified for this package
 
@@ -35,6 +35,8 @@ Zip SHA-256: `b4f21be151370c5548e27ace351cca921fd90f32440db54a319387e833fcbe0f`
   RTX 3070 and logs `[window] exclusive fullscreen 1920x1080`.
 - **Picture look** exposes the runtime's Crisp/Soft/Sharp scaling with optional smooth-edge AA;
   **HD textures** points at an optional folder of PNG overrides. No texture pack is included.
+- **De-dither** is available for the game's dithered alpha fades; it loads
+  `game\blit-dedither.wgsl` through `PS2_BLIT_SHADER` and was boot-tested.
 - Support reports the code/VU cache size and can clear or open it without touching saves.
 - An ISO can be dragged onto the launcher to import it.
 - The home, Install and Settings pages were rendered at 100%, 125%, 150% and 200%; all controls
