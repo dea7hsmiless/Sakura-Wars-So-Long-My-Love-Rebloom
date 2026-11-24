@@ -37,7 +37,7 @@ Two Windows snags, both fixed without editing the toolkit:
 ## Disc image
 
 The only Disc 1 copy on this machine is an extracted folder
-(`C:\Users\Donte\Desktop\Sakura Wars - So Long, My Love (USA) (Disc 1) (English Voice Over)`).
+(`<your Disc 1 ISO>`).
 `port.sh` wants an image, so `tools\make-iso.py` (this project, pycdlib) packs the
 folder into ISO 9660 level 1:
 

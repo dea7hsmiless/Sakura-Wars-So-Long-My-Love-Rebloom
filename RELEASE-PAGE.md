@@ -20,8 +20,8 @@ disc reads and module loading are answered by the runtime.
 | Rebloom-0.1-Windows-x86_64.zip | 42.9 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
 | Rebloom-0.1-Linux-x86_64.tar.gz | 33.6 MB | Linux x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland |
 | Rebloom-0.1-x86_64.AppImage | 32.8 MB | Linux x86-64, FUSE 2 (or `--appimage-extract-and-run`), Vulkan 1.1 |
-| Rebloom-0.1-android-arm64.apk | 49.8 MB | Android 9+ arm64, Vulkan GPU with 7+ storage buffers; debug-signed sideload |
-| Rebloom-0.1-ios-unsigned.ipa | 20.6 MB | iOS 16.4+ arm64; unsigned, needs your own signing |
+| Rebloom-0.1-android-arm64.apk | 50.0 MB | Android 9+ arm64, Vulkan GPU with 7+ storage buffers; debug-signed sideload |
+| Rebloom-0.1-ios-unsigned.ipa | 21.0 MB | iOS 16.4+ arm64; unsigned, needs your own signing |
 
 SHA-256:
 
@@ -61,12 +61,11 @@ d7dd7b7688c0ca135a555b30f7dab2dbed6c1a30a2f2f3e076d761d9b1d27d69  Rebloom-0.1-Li
 - Texture filtering/AA in the launcher covers the runtime's Crisp/Soft/Sharp looks and smooth-edge
   AA; no separate MSAA/anisotropic path yet.
 - HD texture overrides are supported, but no texture pack is included.
-- **Android has not been run on a phone; iOS was launched on an iPhone but crashed at the Metal
-  storage-buffer limit.** The Android game was run on an emulator with a host RTX 3070; the
-  SwiftShader emulator cannot run its 7-storage-buffer compute pass. The first iOS device log
-  found the limit; the current IPA raises it to eight (capped at the adapter's limit), but still needs a device
-  retest. The touch overlay and Bluetooth controller path are untested on hardware. Unseen code
-  cannot be translated on iOS, so some later scenes may not run there.
+- **2×/3× upscaling on Windows can show jagged edges or a ghost trail during fades.** 1× is
+  clean; mobile defaults to 1×. A fix is planned for a later release.
+- **Android has not been run on a physical phone.** The host-GPU emulator is the only device
+  test. The iOS launcher and game boot on an iPhone, but touch/haptics and later scenes remain
+  under test. The IPA raises Metal's storage-buffer limit to eight (the GS pass needs seven).
 
 ## Install
 
@@ -112,10 +111,11 @@ Documents folder (iOS/Android). The game's own keys live in `game\data\keys.ini`
 `game\data\gamepad.ini`. Delete the launcher settings to go back to defaults.
 
 The shipped defaults on Windows and Linux are fullscreen + exclusive, 16:9, 3× internal resolution,
-Crisp + edges, deinterlace off, VSync fifo, frame latency 2, Vulkan, and temporal de-dither on. The
-Android and iOS launchers default to **1× internal resolution**; the Windows and
-Linux launchers default to the **Sakura** palette; **Settings → Display → Launcher colors**
-switches to **Classic (gold)** and applies when the launcher reopens.
+Crisp + edges, deinterlace off, VSync fifo, frame latency 2, Direct3D 12 on Windows and Vulkan on
+Linux, with temporal de-dither on. The Android and iOS launchers default to **1× internal
+resolution**; the Windows and Linux launchers default to the **Sakura** palette;
+**Settings → Display → Launcher colors** switches to **Classic (gold)** and applies when the
+launcher reopens.
 
 **Controls:** open **Settings → Controls** and click **Keyboard controls…** or **Gamepad
 controls…**. Keyboard: click Change, then press the new key — arrows, Tab and Enter work.
