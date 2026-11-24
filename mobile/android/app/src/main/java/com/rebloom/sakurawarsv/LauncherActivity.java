@@ -7,12 +7,15 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StatFs;
 import android.provider.OpenableColumns;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -26,23 +29,35 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-/** Rebloom's Android start screen. The game itself is SDLActivity in GameActivity. */
+/**
+ * Rebloom's Android start screen. It follows the Windows launcher's five pages
+ * (Play, Install, Settings, Support, About) and the ReDUB mobile rail.
+ */
 public class LauncherActivity extends Activity {
     private static final int PICK_ISO = 1001;
     private static final int BG = Color.rgb(18, 13, 11);
+    private static final int RAIL = Color.rgb(12, 9, 8);
     private static final int CARD = Color.rgb(34, 25, 20);
+    private static final int EDGE = Color.rgb(62, 45, 36);
+    private static final int FOOT = Color.rgb(26, 18, 15);
     private static final int GOLD = Color.rgb(232, 196, 106);
     private static final int INK = Color.rgb(242, 236, 228);
     private static final int MUTED = Color.rgb(169, 156, 142);
     private static final int RED = Color.rgb(176, 58, 72);
+    private static final String VERSION = "0.1";
+    private static final String[] PAGES = { "Play", "Install", "Settings", "Support", "About" };
 
     private SharedPreferences prefs;
     private File discDir, dataDir;
-    private TextView discLabel, discDetail, status;
-    private Button play, voice, look, scale, aspect, dedither, deinterlace;
+    private TextView status;
+    private TextView heading;
+    private TextView subheading;
+    private LinearLayout content;
+    private final List<TextView> nav = new ArrayList<>();
+    private String page = "Play";
 
     @Override
     protected void onCreate(Bundle saved) {
@@ -54,13 +69,18 @@ public class LauncherActivity extends Activity {
         dataDir = new File(external, "data");
         discDir.mkdirs();
         dataDir.mkdirs();
-        buildUi();
+        buildFrame();
+        show("Play");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        refresh();
+        show(page);
+    }
+
+    private int dp(float value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private TextView label(String text, float size, boolean bold, int color) {
@@ -72,30 +92,31 @@ public class LauncherActivity extends Activity {
         return v;
     }
 
-    private Button action(String text, boolean primary) {
-        Button b = new Button(this);
-        b.setText(text);
-        b.setAllCaps(false);
-        b.setTextColor(INK);
-        b.setTextSize(15);
-        b.setTypeface(Typeface.DEFAULT_BOLD);
-        b.setBackgroundColor(primary ? RED : CARD);
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        p.rightMargin = 10;
-        b.setLayoutParams(p);
-        b.setPadding(28, 10, 28, 10);
+    private GradientDrawable box(int color, int stroke, float radius) {
+        GradientDrawable d = new GradientDrawable();
+        d.setColor(color);
+        d.setCornerRadius(dp(radius));
+        if (stroke != 0) d.setStroke(dp(1), stroke);
+        return d;
+    }
+
+    private TextView button(String text, boolean primary, View.OnClickListener click) {
+        TextView b = label(text, 14, true, INK);
+        b.setGravity(Gravity.CENTER);
+        b.setPadding(dp(18), dp(10), dp(18), dp(10));
+        b.setBackground(box(primary ? RED : EDGE, primary ? 0 : EDGE, 9));
+        b.setOnClickListener(click);
         return b;
     }
 
     private LinearLayout card() {
         LinearLayout c = new LinearLayout(this);
         c.setOrientation(LinearLayout.VERTICAL);
-        c.setBackgroundColor(CARD);
-        c.setPadding(22, 16, 22, 16);
+        c.setBackground(box(CARD, EDGE, 12));
+        c.setPadding(dp(20), dp(16), dp(20), dp(16));
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        p.bottomMargin = 14;
+        p.bottomMargin = dp(14);
         c.setLayoutParams(p);
         return c;
     }
@@ -107,114 +128,282 @@ public class LauncherActivity extends Activity {
         return r;
     }
 
-    private void buildUi() {
-        ScrollView scroll = new ScrollView(this);
-        scroll.setBackgroundColor(BG);
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(26, 22, 26, 22);
-        scroll.addView(root);
-
-        TextView brand = label("REBLOOM", 30, true, GOLD);
-        root.addView(brand);
-        root.addView(label("SAKURA WARS V  /  SO LONG, MY LOVE", 10, true, MUTED));
-        TextView tag = label("So Long, My Love, rebuilt for Android.", 14, false, INK);
-        tag.setPadding(0, 14, 0, 14);
-        root.addView(tag);
-
-        LinearLayout discCard = card();
-        discCard.addView(label("DISC", 10, true, MUTED));
-        discLabel = label("No disc imported yet", 17, true, INK);
-        discCard.addView(discLabel);
-        discDetail = label("Import your own Disc 1 ISO to begin.", 12, false, MUTED);
-        discCard.addView(discDetail);
-        LinearLayout actions = row();
-        play = action("Play", true);
-        play.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) { play(); }
-        });
-        Button imp = action("Import disc...", false);
-        imp.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) { chooseDisc(); }
-        });
-        actions.addView(play);
-        actions.addView(imp);
-        discCard.addView(actions);
-        root.addView(discCard);
-
-        LinearLayout voiceCard = card();
-        voiceCard.addView(label("VOICE LANGUAGE", 10, true, MUTED));
-        voice = action("", false);
-        voice.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                setPref("language", "jp".equals(pref("language", "en")) ? "en" : "jp");
-                refresh();
-            }
-        });
-        voiceCard.addView(voice);
-        voiceCard.addView(label("Japanese voices require importing Disc 2.", 11, false, MUTED));
-        root.addView(voiceCard);
-
-        LinearLayout settings = card();
-        settings.addView(label("SETTINGS (APPLIED NEXT LAUNCH)", 10, true, MUTED));
-        look = action("", false);
-        look.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                int n = Integer.parseInt(pref("look", "1"));
-                setPref("look", Integer.toString((n + 1) % 6));
-                refresh();
-            }
-        });
-        settings.addView(settingsRow("Picture look", look));
-        scale = action("", false);
-        scale.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                int n = Integer.parseInt(pref("scale", "2"));
-                setPref("scale", Integer.toString(n >= 3 ? 1 : n + 1));
-                refresh();
-            }
-        });
-        settings.addView(settingsRow("Internal resolution", scale));
-        aspect = action("", false);
-        aspect.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                setPref("aspect", "16:9".equals(pref("aspect", "16:9")) ? "4:3" : "16:9");
-                refresh();
-            }
-        });
-        settings.addView(settingsRow("Aspect", aspect));
-        dedither = action("", false);
-        dedither.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                setPref("dedither", "1".equals(pref("dedither", "1")) ? "0" : "1");
-                refresh();
-            }
-        });
-        settings.addView(settingsRow("De-dither", dedither));
-        deinterlace = action("", false);
-        deinterlace.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                setPref("deinterlace", "off".equals(pref("deinterlace", "off")) ? "blend" : "off");
-                refresh();
-            }
-        });
-        settings.addView(settingsRow("Deinterlace", deinterlace));
-        root.addView(settings);
-
-        status = label("Ready / Android arm64", 12, false, MUTED);
-        root.addView(status);
-        setContentView(scroll);
+    private void addButtonRow(LinearLayout card, TextView... buttons) {
+        LinearLayout r = row();
+        for (int i = 0; i < buttons.length; i++) {
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+            if (i > 0) p.leftMargin = dp(10);
+            r.addView(buttons[i], p);
+        }
+        card.addView(r);
     }
 
-    private LinearLayout settingsRow(String text, Button value) {
+    private void buildFrame() {
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.HORIZONTAL);
+        root.setBackgroundColor(BG);
+
+        int width = getResources().getDisplayMetrics().widthPixels;
+        int railWidth = Math.min(dp(310), (int) (width * 0.31f));
+        LinearLayout rail = new LinearLayout(this);
+        rail.setOrientation(LinearLayout.VERTICAL);
+        rail.setBackgroundColor(RAIL);
+        rail.setPadding(dp(18), dp(22), dp(18), dp(18));
+        root.addView(rail, new LinearLayout.LayoutParams(railWidth, LinearLayout.LayoutParams.MATCH_PARENT));
+
+        rail.addView(label("REBLOOM", 28, true, GOLD));
+        rail.addView(label("SAKURA WARS V", 9, true, MUTED));
+        rail.addView(label("SO LONG, MY LOVE", 9, false, MUTED));
+
+        LinearLayout links = new LinearLayout(this);
+        links.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams linksParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1);
+        linksParams.topMargin = dp(24);
+        rail.addView(links, linksParams);
+        for (String name : PAGES) {
+            final String target = name;
+            TextView b = label(name, 15, true, MUTED);
+            b.setGravity(Gravity.CENTER_VERTICAL);
+            b.setPadding(dp(16), dp(12), dp(16), dp(12));
+            b.setBackground(box(RAIL, 0, 8));
+            b.setOnClickListener(new View.OnClickListener() {
+                @Override public void onClick(View v) { show(target); }
+            });
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            p.bottomMargin = dp(4);
+            links.addView(b, p);
+            nav.add(b);
+        }
+        rail.addView(label("Rebloom Launcher " + VERSION, 9, false, MUTED));
+
+        LinearLayout main = new LinearLayout(this);
+        main.setOrientation(LinearLayout.VERTICAL);
+        main.setBackgroundColor(BG);
+        main.setPadding(dp(26), dp(20), dp(26), 0);
+        root.addView(main, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1));
+
+        heading = label("", 23, true, INK);
+        main.addView(heading);
+        subheading = label("", 10, false, MUTED);
+        subheading.setPadding(0, dp(3), 0, dp(12));
+        main.addView(subheading);
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.setFillViewport(true);
+        content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        scroll.addView(content, new ScrollView.LayoutParams(
+                ScrollView.LayoutParams.MATCH_PARENT, ScrollView.LayoutParams.WRAP_CONTENT));
+        main.addView(scroll, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
+
+        status = label("", 10, false, MUTED);
+        status.setBackgroundColor(FOOT);
+        status.setPadding(dp(14), dp(7), dp(14), dp(7));
+        main.addView(status, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        setContentView(root);
+    }
+
+    private void show(String target) {
+        page = target;
+        for (int i = 0; i < nav.size(); i++) {
+            boolean on = PAGES[i].equals(target);
+            nav.get(i).setTextColor(on ? GOLD : MUTED);
+            nav.get(i).setBackground(box(on ? CARD : RAIL, on ? EDGE : 0, 8));
+        }
+        content.removeAllViews();
+        if ("Play".equals(target)) pagePlay();
+        else if ("Install".equals(target)) pageInstall();
+        else if ("Settings".equals(target)) pageSettings();
+        else if ("Support".equals(target)) pageSupport();
+        else pageAbout();
+        updateStatus();
+    }
+
+    private void head(String title, String subtitle) {
+        heading.setText(title);
+        subheading.setText(subtitle);
+    }
+
+    private void pagePlay() {
+        String disc = findDisc();
+        boolean has = disc != null;
+        head("Play", "Your own discs, recompiled for this device. Nothing is uploaded.");
+        LinearLayout discCard = card();
+        discCard.addView(label("DISC", 9, true, MUTED));
+        discCard.addView(label(has ? new File(disc).getName() : "No disc imported yet", 16, true, INK));
+        discCard.addView(label(has ? ("jp".equals(pref("language", "en")) ? "Japanese voices (Disc 2)" : "English voices (Disc 1)")
+                : "Import your own Disc 1 ISO to begin.", 11, false, MUTED));
+        TextView play = button(has ? "Play" : "Import", true, new View.OnClickListener() {
+            @Override public void onClick(View v) { play(); }
+        });
+        TextView imp = button("Import disc...", false, new View.OnClickListener() {
+            @Override public void onClick(View v) { chooseDisc(); }
+        });
+        LinearLayout actions = row();
+        addButtonRow(discCard, play, imp);
+        content.addView(discCard);
+
+        LinearLayout voiceCard = card();
+        voiceCard.addView(label("VOICE LANGUAGE", 9, true, MUTED));
+        TextView voice = button("jp".equals(pref("language", "en")) ? "Japanese (Disc 2)" : "English (Disc 1)", false,
+                new View.OnClickListener() {
+                    @Override public void onClick(View v) {
+                        setPref("language", "jp".equals(pref("language", "en")) ? "en" : "jp");
+                        show("Play");
+                    }
+                });
+        voiceCard.addView(voice);
+        voiceCard.addView(label("Japanese voices require importing Disc 2. The launcher picks the matching disc from discs/.",
+                11, false, MUTED));
+        content.addView(voiceCard);
+
+        LinearLayout touchCard = card();
+        touchCard.addView(label("TOUCH CONTROLS", 9, true, MUTED));
+        touchCard.addView(label("1".equals(pref("touch", "1"))
+                ? "On-screen pad is shown during play. Settings -> Controls changes it."
+                : "Touch pad is off. Settings -> Controls turns it on.", 12, false, INK));
+        touchCard.addView(label("A Bluetooth controller works at the same time: pair it in Android's Bluetooth settings.",
+                10, false, MUTED));
+        content.addView(touchCard);
+    }
+
+    private void pageInstall() {
+        head("Install", "Import a copy of your own disc. The ISO is copied into app storage.");
+        LinearLayout card = card();
+        card.addView(label("DISC 1 (ENGLISH)", 9, true, MUTED));
+        card.addView(label("Choose a plain .iso. The launcher copies it into discs/ and checks the serial. "
+                + "The file you imported from can be deleted afterwards.", 12, false, INK));
+        TextView imp = button("Import disc...", true, new View.OnClickListener() {
+            @Override public void onClick(View v) { chooseDisc(); }
+        });
+        addButtonRow(card, imp);
+        content.addView(card);
+
+        LinearLayout card2 = card();
+        card2.addView(label("DISC 2 (JAPANESE)", 9, true, MUTED));
+        card2.addView(label("Import Disc 2 as well for Japanese voices. The voice switch is on the Play page.", 12, false, INK));
+        TextView imp2 = button("Import Disc 2...", false, new View.OnClickListener() {
+            @Override public void onClick(View v) { chooseDisc(); }
+        });
+        addButtonRow(card2, imp2);
+        content.addView(card2);
+
+        LinearLayout card3 = card();
+        card3.addView(label("STORAGE", 9, true, MUTED));
+        card3.addView(label("Free space: " + freeSpace() + "\nFolder: " + discDir.getAbsolutePath(), 10, false, MUTED));
+        content.addView(card3);
+    }
+
+    private void pageSettings() {
+        head("Settings", "Changes apply on the next game launch.");
+        LinearLayout display = card();
+        display.addView(label("DISPLAY", 10, true, GOLD));
+        choiceRow(display, "Aspect", "aspect", new String[] { "16:9 (stretch)", "4:3 (original)" },
+                new String[] { "16:9", "4:3" }, "16:9");
+        choiceRow(display, "Internal resolution", "scale", new String[] { "1x (native)", "2x", "3x" },
+                new String[] { "1", "2", "3" }, "3");
+        content.addView(display);
+
+        LinearLayout graphics = card();
+        graphics.addView(label("GRAPHICS", 10, true, GOLD));
+        choiceRow(graphics, "Picture look", "look",
+                new String[] { "Crisp", "Crisp + edges", "Soft", "Soft + edges", "Sharp", "Sharp + edges" },
+                new String[] { "0", "1", "2", "3", "4", "5" }, "1");
+        choiceRow(graphics, "Deinterlace", "deinterlace", new String[] { "Off (sharp)", "Blend" },
+                new String[] { "off", "blend" }, "off");
+        content.addView(graphics);
+
+        LinearLayout controls = card();
+        controls.addView(label("CONTROLS", 10, true, GOLD));
+        choiceRow(controls, "Touch controls", "touch", new String[] { "On", "Off" },
+                new String[] { "1", "0" }, "1");
+        choiceRow(controls, "Tap to advance", "tap_advance", new String[] { "On", "Off" },
+                new String[] { "1", "0" }, "1");
+        controls.addView(label("On: a short tap on an empty part of the screen sends Cross, which advances dialogue. "
+                + "Keyboard and gamepad bindings live in game/data/keys.ini and gamepad.ini. "
+                + "A Bluetooth controller uses the standard mapping and works beside the touch pad.", 10, false, MUTED));
+        content.addView(controls);
+
+        LinearLayout advanced = card();
+        advanced.addView(label("ADVANCED", 10, true, GOLD));
+        choiceRow(advanced, "De-dither", "dedither", new String[] { "On (temporal)", "Off" },
+                new String[] { "1", "0" }, "1");
+        TextView clear = button("Clear game cache", false, new View.OnClickListener() {
+            @Override public void onClick(View v) { clearCache(); }
+        });
+        addButtonRow(advanced, clear);
+        advanced.addView(label("Removes logs, states and translated-code caches. Memory cards are kept.", 10, false, MUTED));
+        content.addView(advanced);
+    }
+
+    private void choiceRow(LinearLayout card, String title, String key, String[] labels, String[] values, String fallback) {
         LinearLayout r = row();
-        TextView t = label(text, 14, false, INK);
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0,
-                LinearLayout.LayoutParams.WRAP_CONTENT, 1);
-        t.setLayoutParams(p);
-        r.addView(t);
+        TextView name = label(title, 13, false, INK);
+        name.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        r.addView(name);
+        final String[] options = labels;
+        final String[] tokens = values;
+        final String k = key;
+        String current = pref(key, fallback);
+        int index = 0;
+        for (int i = 0; i < tokens.length; i++) if (tokens[i].equals(current)) index = i;
+        final int[] at = { index };
+        TextView value = button(labels[index], false, new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                at[0] = (at[0] + 1) % tokens.length;
+                setPref(k, tokens[at[0]]);
+                show(page);
+            }
+        });
+        value.setPadding(dp(14), dp(8), dp(14), dp(8));
         r.addView(value);
-        return r;
+        r.setPadding(0, dp(5), 0, dp(5));
+        card.addView(r);
+    }
+
+    private void pageSupport() {
+        head("Support", "What the launcher did, and where things are. Nothing is uploaded.");
+        LinearLayout card = card();
+        card.addView(label("DIAGNOSTICS", 9, true, MUTED));
+        String disc = findDisc();
+        card.addView(label("Rebloom " + VERSION + " / Android arm64\n"
+                + "disc: " + (disc != null ? new File(disc).getName() : "none") + "\n"
+                + "language: " + (("jp".equals(pref("language", "en"))) ? "Japanese" : "English") + "\n"
+                + "touch: " + ("1".equals(pref("touch", "1")) ? "on" : "off") + "\n"
+                + "folder: " + dataDir.getAbsolutePath(), 11, false, INK));
+        TextView share = button("Share diagnostics", false, new View.OnClickListener() {
+            @Override public void onClick(View v) { shareDiagnostics(); }
+        });
+        addButtonRow(card, share);
+        content.addView(card);
+
+        LinearLayout card2 = card();
+        card2.addView(label("CONTROLS", 9, true, MUTED));
+        card2.addView(label("Pair a Bluetooth controller in Android's Bluetooth settings before or during play. "
+                + "The game opens it automatically. Use Settings -> Controls to turn the on-screen pad on or off.", 11, false, INK));
+        content.addView(card2);
+    }
+
+    private void pageAbout() {
+        head("About", "Rebloom " + VERSION);
+        LinearLayout card = card();
+        card.addView(label("Sakura Wars V: So Long, My Love - Rebloom", 15, true, INK));
+        card.addView(label("A native Android build made by static recompilation. No emulator, no BIOS; "
+                + "the game's own code is translated ahead of time.\n\n"
+                + "This package contains the port only. You need your own discs; no game data is included or uploaded.\n\n"
+                + "Rebloom is a fan project. Sakura Wars is a trademark of SEGA. "
+                + "Launcher design follows the ReDUB launcher's model.", 11, false, MUTED));
+        content.addView(card);
+        LinearLayout card2 = card();
+        card2.addView(label("VERSION", 9, true, MUTED));
+        card2.addView(label(VERSION, 14, true, GOLD));
+        content.addView(card2);
     }
 
     private String pref(String key, String fallback) {
@@ -231,7 +420,7 @@ public class LauncherActivity extends Activity {
         List<File> isos = new ArrayList<File>();
         for (File f : files) if (f.getName().toLowerCase().endsWith(".iso")) isos.add(f);
         if (isos.isEmpty()) return null;
-        java.util.Collections.sort(isos);
+        Collections.sort(isos);
         String lang = pref("language", "en");
         String[] prefer = "jp".equals(lang)
                 ? new String[] { "disc 2", "disc2", "japanese" }
@@ -263,22 +452,23 @@ public class LauncherActivity extends Activity {
         return "";
     }
 
-    private void refresh() {
-        if (discLabel == null) return;
+    private String freeSpace() {
+        try {
+            StatFs stat = new StatFs(discDir.getAbsolutePath());
+            long bytes = stat.getAvailableBytes();
+            return String.format(java.util.Locale.US, "%.1f GB", bytes / 1e9);
+        } catch (Exception e) {
+            return "unknown";
+        }
+    }
+
+    private void updateStatus() {
         String disc = findDisc();
-        boolean has = disc != null;
-        discLabel.setText(has ? new File(disc).getName() : "No disc imported yet");
-        discDetail.setText(has ? ("jp".equals(pref("language", "en")) ? "Japanese voices (Disc 2)" : "English voices (Disc 1)")
-                : "Import your own Disc 1 ISO to begin.");
-        play.setText(has ? "Play" : "Import");
-        voice.setText("jp".equals(pref("language", "en")) ? "Japanese (Disc 2)" : "English (Disc 1)");
-        String[] looks = { "Crisp", "Crisp + edges", "Soft", "Soft + edges", "Sharp", "Sharp + edges" };
-        int li = Integer.parseInt(pref("look", "1"));
-        look.setText(looks[Math.max(0, Math.min(5, li))]);
-        scale.setText(pref("scale", "2") + "x");
-        aspect.setText("16:9".equals(pref("aspect", "16:9")) ? "16:9 (stretch)" : "4:3 (original)");
-        dedither.setText("1".equals(pref("dedither", "1")) ? "On (temporal)" : "Off");
-        deinterlace.setText("off".equals(pref("deinterlace", "off")) ? "Off (sharper)" : "Blend");
+        String lang = "jp".equals(pref("language", "en")) ? "Japanese voices" : "English voices";
+        String look = pref("look", "1");
+        status.setText((disc != null ? "Ready" : "No disc") + "  /  " + lang + "  /  " + pref("aspect", "16:9")
+                + "  /  " + pref("scale", "3") + "x  /  touch " + ("1".equals(pref("touch", "1")) ? "on" : "off")
+                + "  /  look " + look);
     }
 
     private void chooseDisc() {
@@ -316,7 +506,6 @@ public class LauncherActivity extends Activity {
         progress.setMessage("Importing " + name + "...");
         progress.setCancelable(false);
         progress.show();
-        status.setText("Importing " + name + "...");
         new Thread(new Runnable() {
             @Override public void run() {
                 File target = new File(discDir, name);
@@ -348,12 +537,9 @@ public class LauncherActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override public void run() {
                         if (progress.isShowing()) progress.dismiss();
-                        if (good) {
-                            Toast.makeText(LauncherActivity.this, "Imported " + name, Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(LauncherActivity.this, "Import failed: " + why, Toast.LENGTH_LONG).show();
-                        }
-                        refresh();
+                        if (good) Toast.makeText(LauncherActivity.this, "Imported " + name, Toast.LENGTH_LONG).show();
+                        else Toast.makeText(LauncherActivity.this, "Import failed: " + why, Toast.LENGTH_LONG).show();
+                        show(page);
                     }
                 });
             }
@@ -387,13 +573,43 @@ public class LauncherActivity extends Activity {
             i.putExtra("memcard", new File(dataDir, "jp".equals(lang) ? "play-japanese.ps2" : "play-english.ps2").getAbsolutePath());
             i.putExtra("look", pref("look", "1"));
             i.putExtra("aspect", pref("aspect", "16:9"));
-            i.putExtra("scale", pref("scale", "2"));
+            i.putExtra("scale", pref("scale", "3"));
             i.putExtra("dedither", pref("dedither", "1"));
             i.putExtra("deinterlace", pref("deinterlace", "off"));
+            i.putExtra("touch", pref("touch", "1"));
+            i.putExtra("tap", pref("tap_advance", "1"));
             i.putExtra("shader", shader.getAbsolutePath());
             startActivity(i);
         } catch (Exception e) {
             Toast.makeText(this, "The game could not start: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void clearCache() {
+        for (String name : new String[] { "logs", "states", "vu1-live", "ee-live", "cache" }) {
+            deleteTree(new File(dataDir, name));
+        }
+        Toast.makeText(this, "Game cache cleared. Memory cards were kept.", Toast.LENGTH_LONG).show();
+        show(page);
+    }
+
+    private static void deleteTree(File file) {
+        if (file == null || !file.exists()) return;
+        File[] children = file.listFiles();
+        if (children != null) for (File child : children) deleteTree(child);
+        file.delete();
+    }
+
+    private void shareDiagnostics() {
+        String disc = findDisc();
+        String text = "Rebloom " + VERSION + " / Android arm64\n"
+                + "disc: " + (disc != null ? disc : "none") + "\n"
+                + "language: " + pref("language", "en") + "\n"
+                + "touch: " + pref("touch", "1") + "\n"
+                + "folder: " + dataDir.getAbsolutePath();
+        Intent send = new Intent(Intent.ACTION_SEND);
+        send.setType("text/plain");
+        send.putExtra(Intent.EXTRA_TEXT, text);
+        startActivity(Intent.createChooser(send, "Share diagnostics"));
     }
 }

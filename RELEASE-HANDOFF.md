@@ -7,18 +7,20 @@ Prepared 2026-11-23. **Nothing has been published.**
 | Asset | Path | Size |
 |---|---|---|
 | Release folder | `Desktop\Rebloom-0.1-release\` | — |
-| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,777,758 B |
+| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,777,948 B |
 | Extracted Windows tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | ~150 MB |
-| Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,087,282 B |
-| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,184,208 B |
-| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,413,211 B |
+| Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,089,075 B |
+| Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,279,032 B |
+| Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,206,880 B |
+| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,436,100 B |
 
 Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that is present.
 
-- Windows: `fcbd368a0d831fb60d9cb4ef32bdfd0275eede41160f7f4927fd595006e87e3d`
-- Linux: `bea8104e9c68d7ace4b301d95dfe956dd9b9a3206caafccaa76ae7d1aedbdd14`
-- Android: `4da9c29e4945e335cbf758b8e08256698c85926648bf1ccbf5b62fda3883bff5`
-- iOS: `20b7a16e5e5742ab6ad788bbdc68280670b40f20aaafda4b45c951cc3337bede`
+- Windows: `397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f`
+- Linux: `e01930fb124fa41d2386d92aef432a7978192a02d4299543cd89cd7109f56dc0`
+- AppImage: `4b538a6c224b410409d0d4242dc99e9afd4da03949538d8d1a89fc08c4941306`
+- Android: `b9d7c8979d333ac237e350463eb8d29ca9f9f8c55abeda0552da53781980c1a8`
+- iOS: `706d5964b22bcd86aa552e64bcab4c12106808f22f0c9da02d0c2d627d12990b`
 
 ## What was verified for this package
 
@@ -52,6 +54,10 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - Runtime rebuilt with the same controls/reload changes; the packaged binary boots two frames
   under WSLg (`[ee] stopped after 2 frames`), and the self-contained launcher starts and stays
   open.
+- The AppImage was assembled with appimagetool and run under WSLg with
+  `--appimage-extract-and-run`; the launcher stayed open and the AppDir has the launcher, game,
+  shader, icon, desktop file and AppRun. Its user data goes to `REBLOOM_HOME` or
+  `~/.local/share/rebloom`.
 - Package refreshed with the new runtime, temporal shader, default `keys.ini`/`gamepad.ini`, and
   the new Controls editors.
 - Linux launcher editors were tested on a throwaway copy: keyboard capture stores `Left`,
@@ -60,16 +66,24 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 ### Android
 
 - arm64 runtime and generated game static libraries built with NDK 30 at API 28; Gradle
-  `assembleDebug` succeeds.
+  `assembleDebug` succeeds from a clean build.
 - APK contains `lib/arm64-v8a/libSDL2.so`, `lib/arm64-v8a/libmain.so`, the shader asset and the
   Java launcher; launcher icons are packaged at all densities.
+- The launcher now uses the five-page rail (Play, Install, Settings, Support, About) with the
+  same dark/gold/red styling as Windows. Settings has touch controls and tap-to-advance.
+- `TouchOverlay` exports its JNI entry points (`nativeButton`, `nativeStick`, `nativeTrigger`,
+  `nativeTap`, `nativeReset`); a Bluetooth pad still uses the normal SDL path in port 1 and
+  works alongside the overlay.
 - Not installed on a phone or emulator.
 
 ### iOS
 
-- arm64 static runtime/game, SDL2 and the native UIKit launcher link into a thin arm64 Mach-O.
-- IPA contains 13 entries, nine app icons, the Info.plist icon dictionary, the shader and the
-  executable at mode 755; the zip is valid.
+- arm64 static runtime/game, SDL2, the native UIKit launcher and the touch overlay link into a
+  thin arm64 Mach-O; `rebloom_touch_tap` and `rebloom_touch_install` are exported.
+- The launcher uses the same rail and five pages as Android/Windows, with touch controls and
+  tap-to-advance under Settings.
+- IPA contains 13 entries and nine app icons; `GCSupportedGameControllers` and
+  `GCSupportsControllerUserInteraction` are set for Bluetooth pads.
 - Unsigned, not signed or installed on a device.
 
 ## What is NOT verified
@@ -82,9 +96,9 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 | In-game F1 menu driven by hand | aspect row checked once |
 | Second machine / clean Windows account | not tested |
 | Disc 2 past boot | boots and detects layer 1; rest unplayed |
-| Android on a device | build only; no touch overlay yet |
-| iOS on a device | unsigned; signing and install not done; no touch overlay |
-| Linux on a clean distro | WSLg only |
+| Android on a device | build only; overlay, tap and Bluetooth pad not run on hardware |
+| iOS on a device | unsigned; signing/install and overlay/tap not run on hardware |
+| Linux on a clean distro | WSLg only; AppImage run with --appimage-extract-and-run |
 
 ## Before publishing
 

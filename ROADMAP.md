@@ -23,7 +23,7 @@ translated code; only Windows has been played past the opening.
 - [x] Native Tk launcher: import, language, display/graphics, controls editors, play
 - [x] Vulkan path, keyboard and controller input
 - [x] Portable layout: `discs/`, `game/`, `launcher.ini`
-- [x] Tar.gz package, checksums, README; runtime boot-tested under WSLg
+- [x] Tar.gz + AppImage packages, checksums, README; boot-tested under WSLg
 - [ ] Install on a clean distro and play a chapter
 - [ ] Keep the same no-ISO, own-disc rules
 
@@ -33,8 +33,8 @@ translated code; only Windows has been played past the opening.
 - [x] SDL2 + wgpu Vulkan Android surface
 - [x] Controller support
 - [x] SAF file picker that copies the ISO into app storage
-- [x] Gradle project, icons, debug-signed APK
-- [ ] Touch overlay (stick, face buttons, Start/Select)
+- [x] Gradle project, icons, five-page rail launcher, debug-signed APK
+- [x] Touch overlay (stick, face buttons, shoulders, Start/Select, tap-to-advance)
 - [ ] Remove the runtime `clang++` path; ship precompiled code/VU coverage for unseen code
 - [ ] Test 1x/720p on a real phone, then a mid-range device
 - [ ] Install and sign-off notes for sideloading
@@ -45,7 +45,7 @@ translated code; only Windows has been played past the opening.
 - [x] Native UIKit launcher, Files import, local storage
 - [x] Icons, Info.plist, unsigned IPA and packaging script
 - [ ] Signing and install on a device (needs the user's certificate)
-- [ ] Touch overlay and controller support
+- [x] Touch overlay (stick, face buttons, shoulders, Start/Select, tap-to-advance) and controller support
 - [ ] No JIT and no compiler on device: all reachable EE/VU code must be precompiled
 - [ ] Memory/thermal testing on device
 - [ ] Install notes; no App Store claim

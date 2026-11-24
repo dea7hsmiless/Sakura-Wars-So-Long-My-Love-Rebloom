@@ -19,16 +19,18 @@ disc reads and module loading are answered by the runtime.
 | --- | --- | --- |
 | Rebloom-0.1-Windows-x86_64.zip | 44.8 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
 | Rebloom-0.1-Linux-x86_64.tar.gz | 33.1 MB | Linux x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland |
+| Rebloom-0.1-x86_64.AppImage | 32.3 MB | Linux x86-64, FUSE 2 (or `--appimage-extract-and-run`), Vulkan 1.1 |
 | Rebloom-0.1-android-arm64.apk | 49.2 MB | Android 9+ arm64, Vulkan; debug-signed sideload |
 | Rebloom-0.1-ios-unsigned.ipa | 20.4 MB | iOS 16.4+ arm64; unsigned, needs your own signing |
 
 SHA-256:
 
 ```
-fcbd368a0d831fb60d9cb4ef32bdfd0275eede41160f7f4927fd595006e87e3d  Rebloom-0.1-Windows-x86_64.zip
-bea8104e9c68d7ace4b301d95dfe956dd9b9a3206caafccaa76ae7d1aedbdd14  Rebloom-0.1-Linux-x86_64.tar.gz
-4da9c29e4945e335cbf758b8e08256698c85926648bf1ccbf5b62fda3883bff5  Rebloom-0.1-android-arm64.apk
-20b7a16e5e5742ab6ad788bbdc68280670b40f20aaafda4b45c951cc3337bede  Rebloom-0.1-ios-unsigned.ipa
+397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f  Rebloom-0.1-Windows-x86_64.zip
+e01930fb124fa41d2386d92aef432a7978192a02d4299543cd89cd7109f56dc0  Rebloom-0.1-Linux-x86_64.tar.gz
+4b538a6c224b410409d0d4242dc99e9afd4da03949538d8d1a89fc08c4941306  Rebloom-0.1-x86_64.AppImage
+b9d7c8979d333ac237e350463eb8d29ca9f9f8c55abeda0552da53781980c1a8  Rebloom-0.1-android-arm64.apk
+706d5964b22bcd86aa552e64bcab4c12106808f22f0c9da02d0c2d627d12990b  Rebloom-0.1-ios-unsigned.ipa
 ```
 
 `SHA256SUMS.txt` and the launcher source inside the Windows zip are also in the release.
@@ -41,6 +43,7 @@ bea8104e9c68d7ace4b301d95dfe956dd9b9a3206caafccaa76ae7d1aedbdd14  Rebloom-0.1-Li
   discs differ by 28 bytes, so one build plays either
 - 60 fps at 1080p on an RTX 3070 with about 14% CPU use
 - Keyboard and gamepad bindings edited in the launcher; both files are re-read within a second
+- Android/iOS: on-screen pad (d-pad/stick, four face buttons, shoulders, Start/Select), optional tap-to-advance, and Bluetooth controllers beside it
 
 ## What is not done yet
 
@@ -70,8 +73,9 @@ bea8104e9c68d7ace4b301d95dfe956dd9b9a3206caafccaa76ae7d1aedbdd14  Rebloom-0.1-Li
 
 ### Linux
 
-1. Extract the tar.gz anywhere.
+1. Extract the tar.gz anywhere, or mark the AppImage executable and run it.
 2. Run `./Rebloom.sh` (or `Rebloom Launcher`), open **Install**, and import your Disc 1 ISO.
+   The AppImage stores discs, saves and settings in `~/.local/share/rebloom`.
 3. Press **Play**. Import Disc 2 too for Japanese voices.
 
 The Linux game links against the system Vulkan loader and SDL2 is bundled.
@@ -81,13 +85,17 @@ The Linux game links against the system Vulkan loader and SDL2 is bundled.
 1. Sideload `Rebloom-0.1-android-arm64.apk` (debug-signed).
 2. Open **Sakura Wars V - Rebloom**, press **Import disc...**, and choose your ISO; it is copied
    into app storage, so the source can be deleted.
-3. Press **Play**. Import Disc 2 for Japanese voices.
+3. Press **Play**. The on-screen pad is on by default; **Settings -> Controls** turns it off or on,
+   and **Tap to advance** sends Cross on a short tap. Pair a Bluetooth controller in Android's
+   Bluetooth settings to use it beside the pad. Import Disc 2 for Japanese voices.
 
 ### iOS
 
 1. Sign `Rebloom-0.1-ios-unsigned.ipa` with your own certificate (Sideloadly, AltStore, or Xcode)
    and install it.
 2. Open **Rebloom**, import Disc 1 through the Files picker, and press **Play**.
+3. The on-screen pad and **Tap to advance** are under **Settings -> Controls**. Pair a Bluetooth
+   controller in iOS Settings > Bluetooth to use it beside the pad.
 
 ## Settings
 

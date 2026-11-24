@@ -118,10 +118,28 @@ def app_dir() -> Path:
     return Path(__file__).resolve().parent
 
 
+def resource_dir() -> Path:
+    """The read-only program files. Inside an AppImage these sit in the mount."""
+    env = os.environ.get("REBLOOM_RESOURCES")
+    return Path(env) if env else app_dir()
+
+
+def state_dir() -> Path:
+    """Where discs, saves and launcher.ini live. An AppImage cannot write inside itself."""
+    env = os.environ.get("REBLOOM_HOME")
+    if env:
+        return Path(env)
+    if os.environ.get("APPIMAGE"):
+        return Path.home() / ".local" / "share" / "rebloom"
+    return app_dir()
+
+
 class Launcher:
     def __init__(self, root: tk.Tk, auto_play: bool = False, import_path: str | None = None):
         self.root = root
-        self.base = app_dir()
+        self.resources = resource_dir()
+        self.base = state_dir()
+        self.base.mkdir(parents=True, exist_ok=True)
         self.ini_path = self.base / "launcher.ini"
         self.discs = self.base / "discs"
         self.ini: dict[str, str] = {}
@@ -132,7 +150,8 @@ class Launcher:
         self.load_ini()
         self.build()
         self.log(f"{APP} {VERSION} ready.")
-        self.log(f"folder: {self.base}")
+        self.log(f"program: {self.resources}")
+        self.log(f"data: {self.base}")
 
         if import_path:
             self.root.after(250, lambda: self.import_from(import_path))
@@ -144,10 +163,10 @@ class Launcher:
     @property
     def runner(self) -> Path:
         for name in ("SakuraWarsV", "ps2run"):
-            p = self.base / "game" / name
+            p = self.resources / "game" / name
             if p.is_file():
                 return p
-        return self.base / "game" / "SakuraWarsV"
+        return self.resources / "game" / "SakuraWarsV"
 
     @property
     def game_dir(self) -> Path:
@@ -424,7 +443,7 @@ class Launcher:
         env["PS2_EXCLUSIVE_FULLSCREEN"] = "1" if self.get("fs_mode", "exclusive") == "exclusive" else "0"
         if self.get("deinterlace", "off") == "off":
             env["PS2_NO_DEINTERLACE"] = "1"
-        shader = self.base / "game" / "blit-dedither.wgsl"
+        shader = self.resources / "game" / "blit-dedither.wgsl"
         if self.get("dedither", "1") == "1" and shader.is_file():
             env["PS2_BLIT_SHADER"] = str(shader)
         env["PS2_PRESENT_MODE"] = self.get("vsync", "fifo")
@@ -449,7 +468,7 @@ class Launcher:
         self.log("starting: " + " ".join(args))
         try:
             self.game_dir.mkdir(parents=True, exist_ok=True)
-            subprocess.Popen(args, cwd=str(self.base), env=self.launch_env(),
+            subprocess.Popen(args, cwd=str(self.resources / "game"), env=self.launch_env(),
                              stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                              stderr=subprocess.DEVNULL, start_new_session=True)
         except OSError as exc:
@@ -874,7 +893,7 @@ class Launcher:
         inner.pack(fill="x", padx=22, pady=16)
         row = tk.Frame(inner, bg=CARD)
         row.pack(fill="x")
-        self.button(row, "Open game folder", lambda: self.open_path(self.base / "game"), width=17).pack(side="left")
+        self.button(row, "Open game folder", lambda: self.open_path(self.game_dir), width=17).pack(side="left")
         self.button(row, "Open logs", self.open_logs, width=12).pack(side="left", padx=8)
         self.button(row, "Copy diagnostics", self.copy_diag, width=16).pack(side="left")
         tk.Label(inner, text=self.diagnostics(), bg=CARD, fg=MUTED, font=("DejaVu Sans", 8),
@@ -882,7 +901,8 @@ class Launcher:
 
     def diagnostics(self) -> str:
         return (f"{APP} {VERSION}\n"
-                f"folder: {self.base}\n"
+                f"data: {self.base}\n"
+                f"program: {self.resources}\n"
                 f"runner: {self.runner} ({'found' if self.runner.is_file() else 'MISSING'})\n"
                 f"disc: {self.disc_for() or 'none'}\n"
                 f"language: {self.language}\n"

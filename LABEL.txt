@@ -1,9 +1,10 @@
 Rebloom 0.1 - release assets
-Prepared 2026-11-23 (controls editors, temporal de-dither default, Windows/Linux/iOS/Android builds)
+Prepared 2026-11-23 (controls, mobile touch pads, AppImage, Windows/Linux/iOS/Android builds)
 
 In this folder:
-  Rebloom-0.1-Windows-x86_64.zip       44,777,758 B  sha256 fcbd368a0d831fb60d9cb4ef32bdfd0275eede41160f7f4927fd595006e87e3d
-  Rebloom-0.1-Linux-x86_64.tar.gz      33,087,282 B  sha256 bea8104e9c68d7ace4b301d95dfe956dd9b9a3206caafccaa76ae7d1aedbdd14
+  Rebloom-0.1-Windows-x86_64.zip       44,777,948 B  sha256 397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f
+  Rebloom-0.1-Linux-x86_64.tar.gz      33,089,075 B  sha256 e01930fb124fa41d2386d92aef432a7978192a02d4299543cd89cd7109f56dc0
+  Rebloom-0.1-x86_64.AppImage          32,279,032 B  sha256 4b538a6c224b410409d0d4242dc99e9afd4da03949538d8d1a89fc08c4941306
   Rebloom-0.1-Windows-x86_64\          the same files as the zip, extracted for review
   SHA256SUMS.txt                       hashes of every release download
   RELEASE-PAGE.md                      the release body, ready to publish
@@ -14,11 +15,14 @@ In this folder:
   screenshots\                         launcher.png and game.png for the release page
 
 Mobile builds:
-  mobile\android\dist\Rebloom-0.1-android-arm64.apk   49,184,208 B  sha256 4da9c29e4945e335cbf758b8e08256698c85926648bf1ccbf5b62fda3883bff5
-  mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa        20,413,211 B  sha256 20b7a16e5e5742ab6ad788bbdc68280670b40f20aaafda4b45c951cc3337bede
+  mobile\android\dist\Rebloom-0.1-android-arm64.apk   49,206,880 B  sha256 b9d7c8979d333ac237e350463eb8d29ca9f9f8c55abeda0552da53781980c1a8
+  mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa        20,436,100 B  sha256 706d5964b22bcd86aa552e64bcab4c12106808f22f0c9da02d0c2d627d12990b
 
 The Android APK is debug-signed and installs by sideloading. The iOS IPA is
 unsigned and needs the user's own signing (Sideloadly, AltStore, or Xcode).
+Both mobile builds have an on-screen pad, a "Tap to advance" switch, and use
+Bluetooth controllers through SDL beside the pad. The Windows build does not
+include the tap-to-advance feature.
 
 Inside the Windows zip:
   Rebloom Launcher.exe                 the launcher

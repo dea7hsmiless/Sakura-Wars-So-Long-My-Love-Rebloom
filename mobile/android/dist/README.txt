@@ -2,8 +2,8 @@ Rebloom 0.1 - Android arm64
 ===========================
 
 File:  Rebloom-0.1-android-arm64.apk
-Size:  49,184,208 B
-SHA-256: 4da9c29e4945e335cbf758b8e08256698c85926648bf1ccbf5b62fda3883bff5
+Size:  49,206,880 B
+SHA-256: b9d7c8979d333ac237e350463eb8d29ca9f9f8c55abeda0552da53781980c1a8
 
 Requirements
 ------------
@@ -16,7 +16,10 @@ Install
 2. Press "Import disc..." and choose Disc 1 (.iso). The file is copied into the
    app's external files folder, so the original can be deleted. Import Disc 2
    too for Japanese voices.
-3. Press Play. A controller is the intended input; there is no touch overlay yet.
+3. Press Play. The on-screen pad is shown by default; Settings -> Controls can
+   turn it off, and "Tap to advance" sends Cross on a short tap. A Bluetooth
+   controller can be paired in Android's Bluetooth settings and works beside
+   the pad.
 
 This build has not been run on a physical device or emulator. Unseen game code
 is translated at run time, which needs the host compiler; later scenes may stop

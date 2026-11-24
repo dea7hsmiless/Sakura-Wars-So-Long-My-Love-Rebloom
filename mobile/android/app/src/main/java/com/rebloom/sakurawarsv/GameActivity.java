@@ -2,10 +2,13 @@ package com.rebloom.sakurawarsv;
 
 import android.os.Bundle;
 import android.system.Os;
+import android.widget.RelativeLayout;
 import org.libsdl.app.SDLActivity;
 
 /** SDL's activity: libmain.so receives the disc and settings from the environment. */
 public class GameActivity extends SDLActivity {
+    private TouchOverlay overlay;
+
     @Override
     protected String[] getLibraries() {
         return new String[] { "SDL2", "main" };
@@ -24,7 +27,29 @@ public class GameActivity extends SDLActivity {
         set("PS2_WINDOW_TITLE", "Sakura Wars V: So Long, My Love - Rebloom");
         if ("1".equals(i.getStringExtra("dedither"))) set("PS2_BLIT_SHADER", i.getStringExtra("shader"));
         if ("off".equals(i.getStringExtra("deinterlace"))) set("PS2_NO_DEINTERLACE", "1");
+        boolean touch = !"0".equals(i.getStringExtra("touch"));
+        boolean tap = !"0".equals(i.getStringExtra("tap"));
+        set("REBLOOM_TOUCH", touch ? "1" : "0");
+        set("REBLOOM_TAP", tap ? "1" : "0");
         super.onCreate(state);
+        if (touch) {
+            overlay = new TouchOverlay(this, tap);
+            mLayout.addView(overlay, new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT,
+                    RelativeLayout.LayoutParams.MATCH_PARENT));
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (overlay != null) overlay.resetState();
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (overlay != null) overlay.resetState();
+        super.onDestroy();
     }
 
     private static void set(String key, String value) {

@@ -94,22 +94,33 @@ static unsigned long long FreeBytes(NSString *path) {
     [[NSURL fileURLWithPath:path] getResourceValue:&n forKey:NSURLVolumeAvailableCapacityForImportantUsageKey error:nil];
     return n.unsignedLongLongValue;
 }
-static void ExcludeFromBackup(NSString *path) {
-    NSURL *u = [NSURL fileURLWithPath:path];
-    [u setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:nil];
-}
-
 static NSString *LookName(NSString *value) {
     NSArray *names = @[@"Crisp", @"Crisp + edges", @"Soft", @"Soft + edges", @"Sharp", @"Sharp + edges"];
     NSInteger i = value.integerValue;
-    return (i >= 0 && i < (NSInteger)names.count) ? names[i] : names[5];
+    return (i >= 0 && i < (NSInteger)names.count) ? names[i] : names[1];
 }
 static NSString *NextLook(NSString *value) {
     NSInteger i = (value.integerValue + 1) % 6;
     return [NSString stringWithFormat:@"%ld", (long)i];
 }
+static NSString *ScaleName(NSString *value) {
+    if ([value isEqual:@"1"]) return @"1x (native)";
+    if ([value isEqual:@"3"]) return @"3x";
+    if ([value isEqual:@"2"]) return @"2x";
+    return @"3x";
+}
+static NSString *NextScale(NSString *value) {
+    if ([value isEqual:@"2"]) return @"3";
+    if ([value isEqual:@"3"] || value.length == 0) return @"1";
+    return @"2";
+}
 
 @interface RebloomLauncher : UIViewController <UIDocumentPickerDelegate>
+@property(nonatomic, strong) UIStackView *rail;
+@property(nonatomic, strong) UIStackView *navStack;
+@property(nonatomic, copy) NSString *page;
+@property(nonatomic, strong) UILabel *heading;
+@property(nonatomic, strong) UILabel *subheading;
 @property(nonatomic, strong) UIScrollView *scroll;
 @property(nonatomic, strong) UIStackView *stack;
 @property(nonatomic, strong) UILabel *status;
@@ -121,6 +132,8 @@ static NSString *NextLook(NSString *value) {
 @property(nonatomic, strong) UIButton *aspect;
 @property(nonatomic, strong) UIButton *deinterlace;
 @property(nonatomic, strong) UIButton *scale;
+@property(nonatomic, strong) UIButton *touch;
+@property(nonatomic, strong) UIButton *tapAdvance;
 @property(nonatomic, strong) UISegmentedControl *language;
 @property(nonatomic, strong) UIProgressView *progress;
 @property(nonatomic, strong) NSURL *pendingISO;
@@ -132,6 +145,7 @@ static NSString *NextLook(NSString *value) {
 
 static __weak RebloomLauncher *g_active;
 static NSURL *g_pendingURL;
+static NSArray<NSString *> *g_pages;
 
 void ios_launcher_receive_url(void *nsurl) {
     NSURL *url = (__bridge NSURL *)nsurl;
@@ -164,10 +178,10 @@ void ios_launcher_receive_url(void *nsurl) {
     b.layer.borderWidth = primary ? 0 : 1;
     [b setTitle:title forState:UIControlStateNormal];
     [b setTitleColor:RGB(0xF2ECE4) forState:UIControlStateNormal];
-    b.titleLabel.font = [UIFont boldSystemFontOfSize:15];
-    b.contentEdgeInsets = UIEdgeInsetsMake(10, 16, 10, 16);
+    b.titleLabel.font = [UIFont boldSystemFontOfSize:14];
+    b.contentEdgeInsets = UIEdgeInsetsMake(9, 14, 9, 14);
     [b addTarget:self action:action forControlEvents:UIControlEventTouchUpInside];
-    [b.heightAnchor constraintGreaterThanOrEqualToConstant:44].active = YES;
+    [b.heightAnchor constraintGreaterThanOrEqualToConstant:42].active = YES;
     return b;
 }
 
@@ -180,9 +194,24 @@ void ios_launcher_receive_url(void *nsurl) {
     return v;
 }
 
+- (UIStackView *)cardStack:(UIView *)card spacing:(CGFloat)spacing {
+    UIStackView *s = [[UIStackView alloc] init];
+    s.axis = UILayoutConstraintAxisVertical;
+    s.spacing = spacing;
+    s.translatesAutoresizingMaskIntoConstraints = NO;
+    [card addSubview:s];
+    [NSLayoutConstraint activateConstraints:@[
+        [s.topAnchor constraintEqualToAnchor:card.topAnchor constant:16],
+        [s.leadingAnchor constraintEqualToAnchor:card.leadingAnchor constant:16],
+        [s.trailingAnchor constraintEqualToAnchor:card.trailingAnchor constant:-16],
+        [s.bottomAnchor constraintEqualToAnchor:card.bottomAnchor constant:-16]
+    ]];
+    return s;
+}
+
 - (UIStackView *)row:(NSString *)title value:(UIButton *)value {
     UIStackView *row = [[UIStackView alloc] initWithArrangedSubviews:@[
-        [self label:title size:15 bold:NO color:RGB(0xF2ECE4)],
+        [self label:title size:14 bold:NO color:RGB(0xF2ECE4)],
         [UIView new],
         value
     ]];
@@ -192,122 +221,330 @@ void ios_launcher_receive_url(void *nsurl) {
     return row;
 }
 
+- (UIButton *)navButton:(NSString *)title {
+    UIButton *b = [UIButton buttonWithType:UIButtonTypeSystem];
+    b.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+    b.contentEdgeInsets = UIEdgeInsetsMake(10, 16, 10, 16);
+    b.layer.cornerRadius = 8;
+    [b setTitle:title forState:UIControlStateNormal];
+    b.titleLabel.font = [UIFont boldSystemFontOfSize:15];
+    [b addTarget:self action:@selector(nav:) forControlEvents:UIControlEventTouchUpInside];
+    [b.heightAnchor constraintEqualToConstant:44].active = YES;
+    return b;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = RGB(0x120D0B);
     LoadSettings();
     g_active = self;
+    g_pages = @[@"Play", @"Install", @"Settings", @"Support", @"About"];
+    self.page = @"Play";
     [NSFileManager.defaultManager createDirectoryAtPath:DiscsDir() withIntermediateDirectories:YES attributes:nil error:nil];
     [NSFileManager.defaultManager createDirectoryAtPath:GameData() withIntermediateDirectories:YES attributes:nil error:nil];
 
+    UIView *rail = [UIView new];
+    rail.backgroundColor = RGB(0x0C0908);
+    rail.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:rail];
+    UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
+    NSLayoutConstraint *railWidth = [rail.widthAnchor constraintEqualToAnchor:self.view.widthAnchor multiplier:0.32];
+    railWidth.priority = 750;
+    [NSLayoutConstraint activateConstraints:@[
+        [rail.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [rail.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [rail.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        railWidth,
+        [rail.widthAnchor constraintGreaterThanOrEqualToConstant:220],
+        [rail.widthAnchor constraintLessThanOrEqualToConstant:330],
+    ]];
+
+    UIStackView *railStack = [[UIStackView alloc] init];
+    railStack.axis = UILayoutConstraintAxisVertical;
+    railStack.spacing = 4;
+    railStack.translatesAutoresizingMaskIntoConstraints = NO;
+    [rail addSubview:railStack];
+    [NSLayoutConstraint activateConstraints:@[
+        [railStack.topAnchor constraintEqualToAnchor:safe.topAnchor constant:22],
+        [railStack.leadingAnchor constraintEqualToAnchor:rail.leadingAnchor constant:16],
+        [railStack.trailingAnchor constraintEqualToAnchor:rail.trailingAnchor constant:-16],
+        [railStack.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor constant:-16],
+    ]];
+
+    [railStack addArrangedSubview:[self label:@"REBLOOM" size:28 bold:YES color:RGB(0xE8C46A)]];
+    [railStack addArrangedSubview:[self label:@"SAKURA WARS V" size:9 bold:YES color:RGB(0xA99C8E)]];
+    [railStack addArrangedSubview:[self label:@"SO LONG, MY LOVE" size:9 bold:NO color:RGB(0xA99C8E)]];
+    UIView *gap = [UIView new];
+    [gap.heightAnchor constraintEqualToConstant:18].active = YES;
+    [railStack addArrangedSubview:gap];
+
+    self.navStack = [UIStackView new];
+    self.navStack.axis = UILayoutConstraintAxisVertical;
+    self.navStack.spacing = 4;
+    for (NSString *name in g_pages) [self.navStack addArrangedSubview:[self navButton:name]];
+    [railStack addArrangedSubview:self.navStack];
+    UIView *push = [UIView new];
+    push.userInteractionEnabled = NO;
+    [push setContentHuggingPriority:1 forAxis:UILayoutConstraintAxisVertical];
+    [railStack addArrangedSubview:push];
+    [railStack addArrangedSubview:[self label:[NSString stringWithFormat:@"Rebloom Launcher %s", REBLOOM_VERSION]
+                                        size:9 bold:NO color:RGB(0xA99C8E)]];
+
+    UIView *pane = [UIView new];
+    pane.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:pane];
+    [NSLayoutConstraint activateConstraints:@[
+        [pane.leadingAnchor constraintEqualToAnchor:rail.trailingAnchor constant:26],
+        [pane.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor constant:-26],
+        [pane.topAnchor constraintEqualToAnchor:safe.topAnchor constant:18],
+        [pane.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor],
+    ]];
+
+    self.heading = [self label:@"" size:23 bold:YES color:RGB(0xF2ECE4)];
+    self.subheading = [self label:@"" size:10 bold:NO color:RGB(0xA99C8E)];
+    [pane addSubview:self.heading];
+    [pane addSubview:self.subheading];
     self.scroll = [UIScrollView new];
     self.scroll.alwaysBounceVertical = YES;
     self.scroll.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.scroll];
+    [pane addSubview:self.scroll];
+    self.status = [self label:@"" size:10 bold:NO color:RGB(0xA99C8E)];
+    self.status.backgroundColor = RGB(0x1A120F);
+    self.status.translatesAutoresizingMaskIntoConstraints = NO;
+    [pane addSubview:self.status];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [self.heading.topAnchor constraintEqualToAnchor:pane.topAnchor],
+        [self.heading.leadingAnchor constraintEqualToAnchor:pane.leadingAnchor],
+        [self.heading.trailingAnchor constraintEqualToAnchor:pane.trailingAnchor],
+        [self.subheading.topAnchor constraintEqualToAnchor:self.heading.bottomAnchor constant:3],
+        [self.subheading.leadingAnchor constraintEqualToAnchor:pane.leadingAnchor],
+        [self.subheading.trailingAnchor constraintEqualToAnchor:pane.trailingAnchor],
+        [self.scroll.topAnchor constraintEqualToAnchor:self.subheading.bottomAnchor constant:12],
+        [self.scroll.leadingAnchor constraintEqualToAnchor:pane.leadingAnchor],
+        [self.scroll.trailingAnchor constraintEqualToAnchor:pane.trailingAnchor],
+        [self.scroll.bottomAnchor constraintEqualToAnchor:self.status.topAnchor constant:-8],
+        [self.status.leadingAnchor constraintEqualToAnchor:pane.leadingAnchor],
+        [self.status.trailingAnchor constraintEqualToAnchor:pane.trailingAnchor],
+        [self.status.bottomAnchor constraintEqualToAnchor:pane.bottomAnchor],
+        [self.status.heightAnchor constraintGreaterThanOrEqualToConstant:28],
+    ]];
 
     self.stack = [UIStackView new];
     self.stack.axis = UILayoutConstraintAxisVertical;
     self.stack.spacing = 14;
     self.stack.translatesAutoresizingMaskIntoConstraints = NO;
     [self.scroll addSubview:self.stack];
-
-    UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
     [NSLayoutConstraint activateConstraints:@[
-        [self.scroll.topAnchor constraintEqualToAnchor:safe.topAnchor],
-        [self.scroll.leadingAnchor constraintEqualToAnchor:safe.leadingAnchor],
-        [self.scroll.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor],
-        [self.scroll.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor],
-        [self.stack.topAnchor constraintEqualToAnchor:self.scroll.contentLayoutGuide.topAnchor constant:22],
-        [self.stack.leadingAnchor constraintEqualToAnchor:self.scroll.contentLayoutGuide.leadingAnchor constant:28],
-        [self.stack.trailingAnchor constraintEqualToAnchor:self.scroll.contentLayoutGuide.trailingAnchor constant:-28],
-        [self.stack.bottomAnchor constraintEqualToAnchor:self.scroll.contentLayoutGuide.bottomAnchor constant:-22],
-        [self.stack.widthAnchor constraintEqualToAnchor:self.scroll.frameLayoutGuide.widthAnchor constant:-56]
+        [self.stack.topAnchor constraintEqualToAnchor:self.scroll.contentLayoutGuide.topAnchor],
+        [self.stack.leadingAnchor constraintEqualToAnchor:self.scroll.contentLayoutGuide.leadingAnchor],
+        [self.stack.trailingAnchor constraintEqualToAnchor:self.scroll.contentLayoutGuide.trailingAnchor],
+        [self.stack.bottomAnchor constraintEqualToAnchor:self.scroll.contentLayoutGuide.bottomAnchor constant:-8],
+        [self.stack.widthAnchor constraintEqualToAnchor:self.scroll.frameLayoutGuide.widthAnchor],
     ]];
 
-    UILabel *brand = [self label:@"REBLOOM" size:30 bold:YES color:RGB(0xE8C46A)];
-    UILabel *sub = [self label:@"SAKURA WARS V  /  SO LONG, MY LOVE" size:10 bold:YES color:RGB(0xA99C8E)];
-    [self.stack addArrangedSubview:brand];
-    [self.stack addArrangedSubview:sub];
+    [self render];
+    if (g_pendingURL) [self acceptISO:g_pendingURL];
+}
 
+- (void)nav:(UIButton *)sender {
+    if (self.busy) return;
+    self.page = sender.currentTitle;
+    [self render];
+}
+
+- (void)render {
+    for (UIView *v in [self.stack.arrangedSubviews copy]) {
+        [self.stack removeArrangedSubview:v];
+        [v removeFromSuperview];
+    }
+    self.discLabel = nil;
+    self.discDetail = nil;
+    self.play = nil;
+    self.dedither = nil;
+    self.look = nil;
+    self.aspect = nil;
+    self.deinterlace = nil;
+    self.scale = nil;
+    self.touch = nil;
+    self.tapAdvance = nil;
+    self.language = nil;
+    self.progress = nil;
+
+    for (UIButton *b in self.navStack.arrangedSubviews) {
+        BOOL on = [b.currentTitle isEqual:self.page];
+        b.backgroundColor = on ? RGB(0x221914) : UIColor.clearColor;
+        b.layer.borderWidth = on ? 1 : 0;
+        b.layer.borderColor = RGB(0x3E2D24).CGColor;
+        [b setTitleColor:on ? RGB(0xE8C46A) : RGB(0xA99C8E) forState:UIControlStateNormal];
+    }
+
+    if ([self.page isEqual:@"Play"]) [self pagePlay];
+    else if ([self.page isEqual:@"Install"]) [self pageInstall];
+    else if ([self.page isEqual:@"Settings"]) [self pageSettings];
+    else if ([self.page isEqual:@"Support"]) [self pageSupport];
+    else [self pageAbout];
+    [self refresh];
+}
+
+- (void)head:(NSString *)title subtitle:(NSString *)subtitle {
+    self.heading.text = title;
+    self.subheading.text = subtitle;
+}
+
+- (void)pagePlay {
+    [self head:@"Play" subtitle:@"Your own discs, recompiled for this device. Nothing is uploaded."];
     UIView *discCard = [self card];
-    UIStackView *discStack = [[UIStackView alloc] init];
-    discStack.axis = UILayoutConstraintAxisVertical;
-    discStack.spacing = 8;
-    discStack.translatesAutoresizingMaskIntoConstraints = NO;
-    [discCard addSubview:discStack];
-    [NSLayoutConstraint activateConstraints:@[
-        [discStack.topAnchor constraintEqualToAnchor:discCard.topAnchor constant:16],
-        [discStack.leadingAnchor constraintEqualToAnchor:discCard.leadingAnchor constant:16],
-        [discStack.trailingAnchor constraintEqualToAnchor:discCard.trailingAnchor constant:-16],
-        [discStack.bottomAnchor constraintEqualToAnchor:discCard.bottomAnchor constant:-16]
-    ]];
-    [discStack addArrangedSubview:[self label:@"DISC" size:10 bold:YES color:RGB(0xA99C8E)]];
-    self.discLabel = [self label:@"No disc imported yet" size:17 bold:YES color:RGB(0xF2ECE4)];
-    [discStack addArrangedSubview:self.discLabel];
-    self.discDetail = [self label:@"Import your own Disc 1 ISO to begin." size:12 bold:NO color:RGB(0xA99C8E)];
-    [discStack addArrangedSubview:self.discDetail];
+    UIStackView *disc = [self cardStack:discCard spacing:8];
+    [disc addArrangedSubview:[self label:@"DISC" size:9 bold:YES color:RGB(0xA99C8E)]];
+    self.discLabel = [self label:@"" size:16 bold:YES color:RGB(0xF2ECE4)];
+    self.discDetail = [self label:@"" size:11 bold:NO color:RGB(0xA99C8E)];
+    [disc addArrangedSubview:self.discLabel];
+    [disc addArrangedSubview:self.discDetail];
+    self.play = [self button:@"Play" action:@selector(playPressed) primary:YES];
     UIStackView *actions = [[UIStackView alloc] initWithArrangedSubviews:@[
-        [self button:@"Play" action:@selector(playPressed) primary:YES],
-        [self button:@"Import disc..." action:@selector(chooseDisc) primary:NO]
+        self.play, [self button:@"Import disc..." action:@selector(chooseDisc) primary:NO]
     ]];
     actions.axis = UILayoutConstraintAxisHorizontal;
     actions.spacing = 10;
-    [discStack addArrangedSubview:actions];
+    [disc addArrangedSubview:actions];
     self.progress = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
     self.progress.hidden = YES;
-    [discStack addArrangedSubview:self.progress];
+    [disc addArrangedSubview:self.progress];
     [self.stack addArrangedSubview:discCard];
 
     UIView *voiceCard = [self card];
-    UIStackView *voiceStack = [[UIStackView alloc] init];
-    voiceStack.axis = UILayoutConstraintAxisVertical;
-    voiceStack.spacing = 8;
-    voiceStack.translatesAutoresizingMaskIntoConstraints = NO;
-    [voiceCard addSubview:voiceStack];
-    [NSLayoutConstraint activateConstraints:@[
-        [voiceStack.topAnchor constraintEqualToAnchor:voiceCard.topAnchor constant:16],
-        [voiceStack.leadingAnchor constraintEqualToAnchor:voiceCard.leadingAnchor constant:16],
-        [voiceStack.trailingAnchor constraintEqualToAnchor:voiceCard.trailingAnchor constant:-16],
-        [voiceStack.bottomAnchor constraintEqualToAnchor:voiceCard.bottomAnchor constant:-16]
-    ]];
-    [voiceStack addArrangedSubview:[self label:@"VOICE LANGUAGE" size:10 bold:YES color:RGB(0xA99C8E)]];
+    UIStackView *voice = [self cardStack:voiceCard spacing:8];
+    [voice addArrangedSubview:[self label:@"VOICE LANGUAGE" size:9 bold:YES color:RGB(0xA99C8E)]];
     self.language = [[UISegmentedControl alloc] initWithItems:@[@"English (Disc 1)", @"Japanese (Disc 2)"]];
     self.language.selectedSegmentIndex = [Language() isEqual:@"jp"] ? 1 : 0;
     [self.language addTarget:self action:@selector(languageChanged) forControlEvents:UIControlEventValueChanged];
-    [voiceStack addArrangedSubview:self.language];
-    [voiceStack addArrangedSubview:[self label:@"Japanese voices require importing Disc 2. Import both discs to switch freely." size:11 bold:NO color:RGB(0xA99C8E)]];
+    [voice addArrangedSubview:self.language];
+    [voice addArrangedSubview:[self label:@"Japanese voices require importing Disc 2. Import both discs to switch freely."
+                                     size:11 bold:NO color:RGB(0xA99C8E)]];
     [self.stack addArrangedSubview:voiceCard];
 
-    UIView *settingsCard = [self card];
-    UIStackView *settings = [[UIStackView alloc] init];
-    settings.axis = UILayoutConstraintAxisVertical;
-    settings.spacing = 10;
-    settings.translatesAutoresizingMaskIntoConstraints = NO;
-    [settingsCard addSubview:settings];
-    [NSLayoutConstraint activateConstraints:@[
-        [settings.topAnchor constraintEqualToAnchor:settingsCard.topAnchor constant:16],
-        [settings.leadingAnchor constraintEqualToAnchor:settingsCard.leadingAnchor constant:16],
-        [settings.trailingAnchor constraintEqualToAnchor:settingsCard.trailingAnchor constant:-16],
-        [settings.bottomAnchor constraintEqualToAnchor:settingsCard.bottomAnchor constant:-16]
-    ]];
-    [settings addArrangedSubview:[self label:@"SETTINGS (APPLIED NEXT LAUNCH)" size:10 bold:YES color:RGB(0xA99C8E)]];
-    self.dedither = [self button:@"" action:@selector(toggleDedither) primary:NO];
-    self.look = [self button:@"" action:@selector(cycleLook) primary:NO];
+    UIView *touchCard = [self card];
+    UIStackView *touchStack = [self cardStack:touchCard spacing:6];
+    [touchStack addArrangedSubview:[self label:@"TOUCH AND CONTROLLERS" size:9 bold:YES color:RGB(0xA99C8E)]];
+    [touchStack addArrangedSubview:[self label:([Get(@"touch", @"1") isEqual:@"1"]
+        ? @"The on-screen pad is shown during play. Settings -> Controls changes it."
+        : @"The on-screen pad is off. Settings -> Controls turns it on.")
+        size:12 bold:NO color:RGB(0xF2ECE4)]];
+    [touchStack addArrangedSubview:[self label:@"A Bluetooth controller works at the same time: pair it in iOS Settings > Bluetooth."
+        size:10 bold:NO color:RGB(0xA99C8E)]];
+    [self.stack addArrangedSubview:touchCard];
+}
+
+- (void)pageInstall {
+    [self head:@"Install" subtitle:@"Import a copy of your own disc. The ISO is copied into app storage."];
+    UIView *one = [self card];
+    UIStackView *s1 = [self cardStack:one spacing:8];
+    [s1 addArrangedSubview:[self label:@"DISC 1 (ENGLISH)" size:9 bold:YES color:RGB(0xA99C8E)]];
+    [s1 addArrangedSubview:[self label:@"Choose a plain .iso. The launcher copies it into discs/ and checks the serial. "
+        "The file you imported from can be deleted afterwards." size:12 bold:NO color:RGB(0xF2ECE4)]];
+    [s1 addArrangedSubview:[self button:@"Import disc..." action:@selector(chooseDisc) primary:YES]];
+    [self.stack addArrangedSubview:one];
+
+    UIView *two = [self card];
+    UIStackView *s2 = [self cardStack:two spacing:8];
+    [s2 addArrangedSubview:[self label:@"DISC 2 (JAPANESE)" size:9 bold:YES color:RGB(0xA99C8E)]];
+    [s2 addArrangedSubview:[self label:@"Import Disc 2 as well for Japanese voices. The voice switch is on the Play page."
+        size:12 bold:NO color:RGB(0xF2ECE4)]];
+    [s2 addArrangedSubview:[self button:@"Import Disc 2..." action:@selector(chooseDisc) primary:NO]];
+    [self.stack addArrangedSubview:two];
+
+    UIView *three = [self card];
+    UIStackView *s3 = [self cardStack:three spacing:6];
+    [s3 addArrangedSubview:[self label:@"STORAGE" size:9 bold:YES color:RGB(0xA99C8E)]];
+    [s3 addArrangedSubview:[self label:[NSString stringWithFormat:@"Free space: %.1f GB\nFolder: %@",
+        FreeBytes(DiscsDir()) / 1e9, DiscsDir()] size:10 bold:NO color:RGB(0xA99C8E)]];
+    [self.stack addArrangedSubview:three];
+}
+
+- (void)pageSettings {
+    [self head:@"Settings" subtitle:@"Changes apply on the next game launch."];
+    UIView *display = [self card];
+    UIStackView *d = [self cardStack:display spacing:10];
+    [d addArrangedSubview:[self label:@"DISPLAY" size:10 bold:YES color:RGB(0xE8C46A)]];
     self.aspect = [self button:@"" action:@selector(toggleAspect) primary:NO];
-    self.deinterlace = [self button:@"" action:@selector(toggleDeinterlace) primary:NO];
     self.scale = [self button:@"" action:@selector(cycleScale) primary:NO];
-    [settings addArrangedSubview:[self row:@"De-dither" value:self.dedither]];
-    [settings addArrangedSubview:[self row:@"Picture look" value:self.look]];
-    [settings addArrangedSubview:[self row:@"Aspect" value:self.aspect]];
-    [settings addArrangedSubview:[self row:@"Deinterlace" value:self.deinterlace]];
-    [settings addArrangedSubview:[self row:@"Render scale" value:self.scale]];
-    [self.stack addArrangedSubview:settingsCard];
+    [d addArrangedSubview:[self row:@"Aspect" value:self.aspect]];
+    [d addArrangedSubview:[self row:@"Internal resolution" value:self.scale]];
+    [self.stack addArrangedSubview:display];
 
-    self.status = [self label:@"" size:12 bold:NO color:RGB(0xA99C8E)];
-    [self.stack addArrangedSubview:self.status];
-    [self refresh];
+    UIView *graphics = [self card];
+    UIStackView *g = [self cardStack:graphics spacing:10];
+    [g addArrangedSubview:[self label:@"GRAPHICS" size:10 bold:YES color:RGB(0xE8C46A)]];
+    self.look = [self button:@"" action:@selector(cycleLook) primary:NO];
+    self.deinterlace = [self button:@"" action:@selector(toggleDeinterlace) primary:NO];
+    [g addArrangedSubview:[self row:@"Picture look" value:self.look]];
+    [g addArrangedSubview:[self row:@"Deinterlace" value:self.deinterlace]];
+    [self.stack addArrangedSubview:graphics];
 
-    if (g_pendingURL) [self acceptISO:g_pendingURL];
+    UIView *controls = [self card];
+    UIStackView *c = [self cardStack:controls spacing:8];
+    [c addArrangedSubview:[self label:@"CONTROLS" size:10 bold:YES color:RGB(0xE8C46A)]];
+    self.touch = [self button:@"" action:@selector(toggleTouch) primary:NO];
+    [c addArrangedSubview:[self row:@"Touch controls" value:self.touch]];
+    self.tapAdvance = [self button:@"" action:@selector(toggleTapAdvance) primary:NO];
+    [c addArrangedSubview:[self row:@"Tap to advance" value:self.tapAdvance]];
+    [c addArrangedSubview:[self label:@"On: a short tap on an empty part of the screen sends Cross, which advances dialogue. "
+        "Keyboard and gamepad bindings live in game-data/keys.ini and gamepad.ini. "
+        "A Bluetooth controller uses the standard mapping and works beside the touch pad." size:10 bold:NO color:RGB(0xA99C8E)]];
+    [self.stack addArrangedSubview:controls];
+
+    UIView *advanced = [self card];
+    UIStackView *a = [self cardStack:advanced spacing:8];
+    [a addArrangedSubview:[self label:@"ADVANCED" size:10 bold:YES color:RGB(0xE8C46A)]];
+    self.dedither = [self button:@"" action:@selector(toggleDedither) primary:NO];
+    [a addArrangedSubview:[self row:@"De-dither" value:self.dedither]];
+    [a addArrangedSubview:[self button:@"Clear game cache" action:@selector(clearCache) primary:NO]];
+    [a addArrangedSubview:[self label:@"Removes logs, states and translated-code caches. Memory cards are kept."
+        size:10 bold:NO color:RGB(0xA99C8E)]];
+    [self.stack addArrangedSubview:advanced];
+}
+
+- (void)pageSupport {
+    [self head:@"Support" subtitle:@"What the launcher did, and where things are. Nothing is uploaded."];
+    UIView *diag = [self card];
+    UIStackView *d = [self cardStack:diag spacing:8];
+    [d addArrangedSubview:[self label:@"DIAGNOSTICS" size:9 bold:YES color:RGB(0xA99C8E)]];
+    NSString *disc = DiscFor(Language());
+    [d addArrangedSubview:[self label:[NSString stringWithFormat:
+        @"Rebloom %s / iOS arm64\ndisc: %@\nlanguage: %@\ntouch: %@\nfolder: %@",
+        REBLOOM_VERSION, disc ? disc.lastPathComponent : @"none", [Language() isEqual:@"jp"] ? @"Japanese" : @"English",
+        [Get(@"touch", @"1") isEqual:@"1"] ? @"on" : @"off", GameData()]
+        size:11 bold:NO color:RGB(0xF2ECE4)]];
+    [d addArrangedSubview:[self button:@"Share diagnostics" action:@selector(shareDiagnostics) primary:NO]];
+    [self.stack addArrangedSubview:diag];
+
+    UIView *pad = [self card];
+    UIStackView *p = [self cardStack:pad spacing:6];
+    [p addArrangedSubview:[self label:@"CONTROLLERS" size:9 bold:YES color:RGB(0xA99C8E)]];
+    [p addArrangedSubview:[self label:@"Pair a Bluetooth controller in iOS Settings > Bluetooth before or during play. "
+        "The game opens it automatically. Settings -> Controls turns the on-screen pad on or off."
+        size:11 bold:NO color:RGB(0xF2ECE4)]];
+    [self.stack addArrangedSubview:pad];
+}
+
+- (void)pageAbout {
+    [self head:@"About" subtitle:[NSString stringWithFormat:@"Rebloom %s", REBLOOM_VERSION]];
+    UIView *card = [self card];
+    UIStackView *s = [self cardStack:card spacing:10];
+    [s addArrangedSubview:[self label:@"Sakura Wars V: So Long, My Love - Rebloom" size:15 bold:YES color:RGB(0xF2ECE4)]];
+    [s addArrangedSubview:[self label:@"A native iOS build made by static recompilation. No emulator, no BIOS; "
+        "the game's own code is translated ahead of time.\n\n"
+        "This package contains the port only. You need your own discs; no game data is included or uploaded.\n\n"
+        "Rebloom is a fan project. Sakura Wars is a trademark of SEGA. Launcher design follows the ReDUB launcher's model."
+        size:11 bold:NO color:RGB(0xA99C8E)]];
+    [self.stack addArrangedSubview:card];
+
+    UIView *version = [self card];
+    UIStackView *v = [self cardStack:version spacing:4];
+    [v addArrangedSubview:[self label:@"VERSION" size:9 bold:YES color:RGB(0xA99C8E)]];
+    [v addArrangedSubview:[self label:@REBLOOM_VERSION size:14 bold:YES color:RGB(0xE8C46A)]];
+    [self.stack addArrangedSubview:version];
 }
 
 - (void)refresh {
@@ -318,13 +555,22 @@ void ios_launcher_receive_url(void *nsurl) {
         : @"Import your own Disc 1 ISO to begin.";
     self.play.enabled = disc != nil;
     self.play.alpha = disc ? 1.0 : 0.45;
-    [self.dedither setTitle:([Get(@"dedither", @"1") isEqual:@"1"] ? @"On (soften)" : @"Off") forState:UIControlStateNormal];
-    [self.look setTitle:LookName(Get(@"look", @"5")) forState:UIControlStateNormal];
-    [self.aspect setTitle:([Get(@"aspect", @"4:3") isEqual:@"16:9"] ? @"16:9 (stretch)" : @"4:3 (original)") forState:UIControlStateNormal];
-    [self.deinterlace setTitle:([Get(@"deinterlace", @"blend") isEqual:@"off"] ? @"Off (sharp)" : @"Blend") forState:UIControlStateNormal];
-    [self.scale setTitle:([Get(@"scale", @"") isEqual:@"2"] ? @"2x" : @"1x (native)") forState:UIControlStateNormal];
-    self.status.text = self.busy ? self.status.text : [NSString stringWithFormat:@"Ready  /  iOS arm64  /  Rebloom %s", REBLOOM_VERSION];
+    [self.play setTitle:(disc ? @"Play" : @"Import") forState:UIControlStateNormal];
+    [self.dedither setTitle:([Get(@"dedither", @"1") isEqual:@"1"] ? @"On (temporal)" : @"Off") forState:UIControlStateNormal];
+    [self.look setTitle:LookName(Get(@"look", @"1")) forState:UIControlStateNormal];
+    [self.aspect setTitle:([Get(@"aspect", @"16:9") isEqual:@"16:9"] ? @"16:9 (stretch)" : @"4:3 (original)") forState:UIControlStateNormal];
+    [self.deinterlace setTitle:([Get(@"deinterlace", @"off") isEqual:@"off"] ? @"Off (sharp)" : @"Blend") forState:UIControlStateNormal];
+    [self.scale setTitle:ScaleName(Get(@"scale", @"3")) forState:UIControlStateNormal];
+    [self.touch setTitle:([Get(@"touch", @"1") isEqual:@"1"] ? @"On (on-screen pad)" : @"Off") forState:UIControlStateNormal];
+    [self.tapAdvance setTitle:([Get(@"tap_advance", @"1") isEqual:@"1"] ? @"On (tap the screen)" : @"Off") forState:UIControlStateNormal];
+    if (!self.busy) {
+        self.status.text = [NSString stringWithFormat:@"  %@  /  %@  /  %@  /  %@x  /  touch %@  /  Rebloom %s",
+            disc ? @"Ready" : @"No disc", [Language() isEqual:@"jp"] ? @"Japanese voices" : @"English voices",
+            Get(@"aspect", @"16:9"), Get(@"scale", @"3"),
+            [Get(@"touch", @"1") isEqual:@"1"] ? @"on" : @"off", REBLOOM_VERSION];
+    }
 }
+
 - (void)languageChanged {
     Set(@"language", self.language.selectedSegmentIndex == 1 ? @"jp" : @"en");
     [self refresh];
@@ -334,19 +580,27 @@ void ios_launcher_receive_url(void *nsurl) {
     [self refresh];
 }
 - (void)cycleLook {
-    Set(@"look", NextLook(Get(@"look", @"5")));
+    Set(@"look", NextLook(Get(@"look", @"1")));
     [self refresh];
 }
 - (void)toggleAspect {
-    Set(@"aspect", [Get(@"aspect", @"4:3") isEqual:@"4:3"] ? @"16:9" : @"4:3");
+    Set(@"aspect", [Get(@"aspect", @"16:9") isEqual:@"16:9"] ? @"4:3" : @"16:9");
     [self refresh];
 }
 - (void)toggleDeinterlace {
-    Set(@"deinterlace", [Get(@"deinterlace", @"blend") isEqual:@"off"] ? @"blend" : @"off");
+    Set(@"deinterlace", [Get(@"deinterlace", @"off") isEqual:@"off"] ? @"blend" : @"off");
     [self refresh];
 }
 - (void)cycleScale {
-    Set(@"scale", [Get(@"scale", @"") isEqual:@"2"] ? @"" : @"2");
+    Set(@"scale", NextScale(Get(@"scale", @"3")));
+    [self refresh];
+}
+- (void)toggleTouch {
+    Set(@"touch", [Get(@"touch", @"1") isEqual:@"1"] ? @"0" : @"1");
+    [self render];
+}
+- (void)toggleTapAdvance {
+    Set(@"tap_advance", [Get(@"tap_advance", @"1") isEqual:@"1"] ? @"0" : @"1");
     [self refresh];
 }
 
@@ -435,16 +689,33 @@ void ios_launcher_receive_url(void *nsurl) {
                 self.progress.hidden = YES;
                 self.pendingISO = nil;
                 if (ok) {
-                    self.language.selectedSegmentIndex = [Language() isEqual:@"jp"] ? 1 : 0;
                     self.status.text = [NSString stringWithFormat:@"Imported %@", name];
                 } else {
-                    self.status.text = @"Import failed";
                     [self alert:@"The disc image could not be copied. Check free space and try again."];
                 }
-                [self refresh];
+                [self render];
             });
         }
     });
+}
+
+- (void)clearCache {
+    NSFileManager *fm = NSFileManager.defaultManager;
+    for (NSString *name in @[@"logs", @"states", @"vu1-live", @"ee-live", @"cache"]) {
+        [fm removeItemAtPath:[GameData() stringByAppendingPathComponent:name] error:nil];
+    }
+    [self alert:@"Game cache cleared. Memory cards were kept."];
+    [self render];
+}
+
+- (void)shareDiagnostics {
+    NSString *disc = DiscFor(Language());
+    NSString *text = [NSString stringWithFormat:@"Rebloom %s / iOS arm64\ndisc: %@\nlanguage: %@\ntouch: %@\nfolder: %@",
+        REBLOOM_VERSION, disc ? disc : @"none", Language(), Get(@"touch", @"1"), GameData()];
+    UIActivityViewController *share = [[UIActivityViewController alloc] initWithActivityItems:@[text] applicationActivities:nil];
+    share.popoverPresentationController.sourceView = self.view;
+    share.popoverPresentationController.sourceRect = CGRectMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2, 1, 1);
+    [self presentViewController:share animated:YES completion:nil];
 }
 
 - (void)playPressed {
@@ -454,17 +725,18 @@ void ios_launcher_receive_url(void *nsurl) {
     NSString *data = GameData();
     [NSFileManager.defaultManager createDirectoryAtPath:data withIntermediateDirectories:YES attributes:nil error:nil];
     NSString *memcard = [data stringByAppendingPathComponent:([Language() isEqual:@"jp"] ? @"play-japanese.ps2" : @"play-english.ps2")];
-    NSMutableArray<NSString *> *args = [NSMutableArray arrayWithObjects:
+    g_arguments = [NSMutableArray arrayWithObjects:
         @"SakuraWarsV", @"--disc", disc, @"--game-dir", data, @"--memcard", memcard, @"--window", nil];
-    (void)args;
-    g_arguments = args;
 
-    setenv("PS2_LOOK", Get(@"look", @"5").UTF8String, 1);
-    setenv("PS2_ASPECT", Get(@"aspect", @"4:3").UTF8String, 1);
+    setenv("PS2_LOOK", Get(@"look", @"1").UTF8String, 1);
+    setenv("PS2_ASPECT", Get(@"aspect", @"16:9").UTF8String, 1);
     setenv("PS2_PRESENT_MODE", "fifo", 1);
     setenv("PS2_WINDOW_TITLE", "Sakura Wars V: So Long, My Love - Rebloom", 1);
-    if ([Get(@"deinterlace", @"blend") isEqual:@"off"]) setenv("PS2_NO_DEINTERLACE", "1", 1);
-    if ([Get(@"scale", @"") isEqual:@"2"]) setenv("PS2_SCALE", "2", 1);
+    setenv("REBLOOM_TOUCH", [Get(@"touch", @"1") isEqual:@"1"] ? "1" : "0", 1);
+    setenv("REBLOOM_TAP", [Get(@"tap_advance", @"1") isEqual:@"1"] ? "1" : "0", 1);
+    if ([Get(@"deinterlace", @"off") isEqual:@"off"]) setenv("PS2_NO_DEINTERLACE", "1", 1);
+    NSString *scale = Get(@"scale", @"3");
+    if (scale.length) setenv("PS2_SCALE", scale.UTF8String, 1);
     if ([Get(@"dedither", @"1") isEqual:@"1"] && Exists(ShaderPath()))
         setenv("PS2_BLIT_SHADER", ShaderPath().fileSystemRepresentation, 1);
     [UIApplication sharedApplication].idleTimerDisabled = YES;

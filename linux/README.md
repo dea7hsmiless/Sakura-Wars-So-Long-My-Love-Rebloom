@@ -13,6 +13,7 @@ or both.
 - Linux x86-64, glibc 2.39 or newer (Ubuntu 24.04, Fedora 40, Arch and similar)
 - A Vulkan 1.1 driver and a working desktop (X11 or Wayland)
 - About 4 GB free for each imported disc image
+- AppImage: FUSE 2, or run with `--appimage-extract-and-run`
 
 The package carries SDL2 beside the game. The rest of the libraries (Vulkan
 loader, X11/Wayland, audio) come from your distribution.
@@ -26,6 +27,19 @@ loader, X11/Wayland, audio) come from your distribution.
 or run `Rebloom Launcher` directly. On the first run, open **Install** and
 import your Disc 1 ISO. The launcher copies the image into `discs/`; after
 that, the copy you imported from can be deleted. **Play** starts the game.
+
+### AppImage
+
+```
+chmod +x Rebloom-0.1-x86_64.AppImage
+./Rebloom-0.1-x86_64.AppImage
+```
+
+The AppImage cannot write inside itself, so discs, saves and `launcher.ini`
+live in `~/.local/share/rebloom`. Set `REBLOOM_HOME=/some/folder` to keep them
+elsewhere. If FUSE 2 is unavailable, run it with
+`--appimage-extract-and-run`. The tar.gz stays portable: its data lives beside
+the launcher.
 
 Japanese voices require Disc 2. Import both discs and use the voice switch on
 the Play page.

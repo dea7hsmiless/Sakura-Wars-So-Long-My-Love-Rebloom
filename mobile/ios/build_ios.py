@@ -36,8 +36,10 @@ TARGET = f"arm64-apple-ios{DEPLOY}"
 
 BASE = [
     "-target", TARGET, "-isysroot", str(SDK), "-O2", "-DNDEBUG", "-D_GNU_SOURCE",
+    "-DREBLOOM_TOUCH_INPUT",
     "-ffp-contract=off", "-I", str(RECOMP / "runtime" / "include"),
     "-I", str(RECOMP / "generated" / "sakura5"),
+    "-I", str(RECOMP / "host"),
     "-I", str(SDL_SOURCE / "include"), "-I", str(WGPU / "include"),
 ]
 
@@ -81,13 +83,15 @@ def main() -> int:
         (RECOMP / "host" / "keymap.cpp", []),
         (RECOMP / "host" / "quickmenu.cpp", []),
         (RECOMP / "host" / "stretch.cpp", []),
+        (RECOMP / "host" / "touch.cpp", []),
     ]
     objs: list[Path] = []
     for src, extra in sources:
         obj = host / (src.stem + ".o")
         compile_cpp(src, obj, extra)
         objs.append(obj)
-    for src, arc in ((HERE / "ios_main.mm", False), (HERE / "ios_launcher.m", True), (HERE / "ios_scene.m", True)):
+    for src, arc in ((HERE / "ios_main.mm", False), (HERE / "ios_launcher.m", True), (HERE / "ios_scene.m", True),
+                     (HERE / "ios_touch.m", True)):
         obj = objc / (src.stem + ".o")
         compile_objc(src, obj, arc)
         objs.append(obj)

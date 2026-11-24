@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Sakura Wars V - Rebloom
+Comment=Native recompilation of Sakura Wars V: So Long, My Love
+Exec="Rebloom Launcher"
+Icon=rebloom
+Terminal=false
+Categories=Game;RolePlaying;
+X-AppImage-Version=0.1

@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+HERE="${APPDIR:-$(dirname "$(readlink -f "$0")")}"
+export REBLOOM_RESOURCES="$HERE"
+export REBLOOM_HOME="${REBLOOM_HOME:-$HOME/.local/share/rebloom}"
+mkdir -p "$REBLOOM_HOME"
+exec "$HERE/Rebloom Launcher" "$@"

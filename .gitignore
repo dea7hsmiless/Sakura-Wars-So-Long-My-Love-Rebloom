@@ -1,6 +1,7 @@
 # Build and release artifacts
 *.zip
 *.tar.gz
+*.AppImage
 Rebloom-0.1-Linux-x86_64/
 Rebloom-0.1-Windows-x86_64/game/*.exe
 Rebloom-0.1-Windows-x86_64/game/*.dll

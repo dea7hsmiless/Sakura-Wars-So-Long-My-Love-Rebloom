@@ -30,6 +30,8 @@ program as the Windows build, linked against SDL2 and Vulkan on Linux.
 - **Portable layout.** `launcher.ini`, `discs/` and `game/data/` live beside the
   launcher. Paths inside the folder are stored relative to it.
 - **No telemetry.** Nothing is uploaded.
+- **AppImage.** A single-file build stores discs, saves and `launcher.ini` in
+  `~/.local/share/rebloom` (or `REBLOOM_HOME`); the tar.gz stays portable.
 
 ## Known issues
 
@@ -46,7 +48,8 @@ program as the Windows build, linked against SDL2 and Vulkan on Linux.
 ## Requirements
 
 Linux x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland, and your own discs. No
-game data is included.
+game data is included. The AppImage needs FUSE 2, or run it with
+`--appimage-extract-and-run`.
 
 ## Credits
 
