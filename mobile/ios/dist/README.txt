@@ -34,6 +34,8 @@ From Windows with the iPhoneOS SDK and the Swift toolchain's clang:
   python mobile/ios/build_ios.py
 
 The script links the arm64 runtime, SDL2, wgpu-native and the UIKit launcher,
-copies the icons, shader and touch overlay, and writes this IPA.
+copies the icons, shader and touch overlay, and writes this IPA. The runtime must
+include the Apple storage-buffer fix in runtime/src/gs/gpu/gpu.cpp: request eight
+storage buffers per stage, capped at the adapter limit.
 
 No game data is included. You need your own disc.
