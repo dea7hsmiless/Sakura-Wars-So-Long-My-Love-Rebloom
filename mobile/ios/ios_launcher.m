@@ -734,6 +734,8 @@ void ios_launcher_receive_url(void *nsurl) {
     setenv("PS2_WINDOW_TITLE", "Sakura Wars V: So Long, My Love - Rebloom", 1);
     setenv("REBLOOM_TOUCH", [Get(@"touch", @"1") isEqual:@"1"] ? "1" : "0", 1);
     setenv("REBLOOM_TAP", [Get(@"tap_advance", @"1") isEqual:@"1"] ? "1" : "0", 1);
+    NSString *db = [NSBundle.mainBundle pathForResource:@"gamecontrollerdb" ofType:@"txt"];
+    if (db.length) setenv("SDL_GAMECONTROLLERCONFIG_FILE", db.fileSystemRepresentation, 1);
     if ([Get(@"deinterlace", @"off") isEqual:@"off"]) setenv("PS2_NO_DEINTERLACE", "1", 1);
     NSString *scale = Get(@"scale", @"3");
     if (scale.length) setenv("PS2_SCALE", scale.UTF8String, 1);

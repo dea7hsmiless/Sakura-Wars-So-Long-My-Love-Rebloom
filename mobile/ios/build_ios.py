@@ -115,6 +115,7 @@ def main() -> int:
 
     shutil.copy2(HERE / "Info.plist", app / "Info.plist")
     (app / "PkgInfo").write_text("APPL????", encoding="ascii")
+    shutil.copy2(HERE / "gamecontrollerdb.txt", app / "gamecontrollerdb.txt")
     icons = HERE / "icons"
     if icons.is_dir():
         for icon in sorted(icons.glob("*.png")):
