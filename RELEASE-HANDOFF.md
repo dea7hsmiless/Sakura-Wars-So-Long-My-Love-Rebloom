@@ -79,6 +79,8 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
   gamepad choices rewrite all twelve actions, and comments in `keys.ini` are preserved.
 - The launcher now uses the Windows key art: a 1200x800 window, the hero banner on Play, the
   logo in the rail, the corrected first-run summary, and `--play` starts without a bypass setting.
+  The Play hero is the full key art stretched to 3:1 (850x283), not the cropped letterbox strip;
+  the display summary moved into the subtitle so the page fits at 1200x800.
 - Settings -> Display -> **Launcher colors** defaults to **Sakura** and offers **Classic (gold)**;
   the Sakura palette was rendered in the live launcher and Classic keeps the previous values. The
   choice asks for a launcher reopen.
