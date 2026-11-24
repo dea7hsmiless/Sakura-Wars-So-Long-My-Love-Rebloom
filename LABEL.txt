@@ -1,0 +1,35 @@
+Rebloom 0.1 - release assets
+Prepared 2026-11-23 (launcher audit, ReDUB parity, full source)
+
+In this folder:
+  Rebloom-0.1-Windows-x86_64.zip    44,727,200 B   sha256 25f0e044bf219d107ad38fe3870043e6636dfe6759125706221c038de61604ee
+  Rebloom-0.1-Windows-x86_64\       the same files, extracted for review
+  SHA256SUMS.txt                    the zip's SHA-256
+  RELEASE-PAGE.md                   the release body, ready to publish
+  RELEASE-HANDOFF.md                what was checked, and what is still open
+  LAUNCHER-AUDIT.md                 launcher findings, fixed and open
+  store-icon-512.png                icon for a store or release page
+  screenshots\                      launcher.png and game.png for the release page
+
+Inside the Windows zip:
+  Rebloom Launcher.exe               the launcher
+  Launch Rebloom.cmd                starts it, rebuilding it from source\ if missing
+  game\SakuraWarsV.exe              the recompiled game (56 MB) and its DLLs
+  game\SDL2.dll, dxcompiler.dll, dxil.dll
+  discs\                            empty: the user's own .iso goes here
+  art\hero.jpg, logo.png, mark.png, icon.ico
+  source\                           full rebuild source:
+      Launcher.cs, Build-Launcher.ps1
+      recomp\generated\sakura5\     257 C++ files the translator produced (62.6 MB)
+      recomp\vu1\, vu0\             recorded vector-unit programs
+      recomp\entries.txt            the 66 entry points
+      recomp\rebloom-changes.patch  the only toolkit changes
+      recomp\build-notes.md, REBUILD.md, BUILDING.md, RESULTS.md
+      tools\make-iso.py, tools\find-entry-tables.py
+  launcher-source.zip               Launcher.cs + Build-Launcher.ps1
+  .rebloom-source-manifest.txt      SHA-256 of every file under source\
+  README.md, RELEASE_NOTES.md, LICENSE, THIRD-PARTY.md, SHA256SUMS.txt
+
+No disc image and no extracted disc files are in this package. The game executable and the
+translated sources are derived from the owner's own disc; both are useless without the
+matching disc. Nothing has been published.
