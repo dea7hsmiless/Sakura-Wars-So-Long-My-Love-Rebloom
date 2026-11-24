@@ -1,0 +1,17 @@
+# Build and release artifacts
+*.zip
+Rebloom-0.1-Windows-x86_64/game/*.exe
+Rebloom-0.1-Windows-x86_64/game/*.dll
+Rebloom-0.1-Windows-x86_64/game/data/
+Rebloom-0.1-Windows-x86_64/discs/*.iso
+Rebloom-0.1-Windows-x86_64/discs/*.bin
+Rebloom-0.1-Windows-x86_64/discs/*.cue
+Rebloom-0.1-Windows-x86_64/launcher.ini
+Rebloom-0.1-Windows-x86_64/startup-error.txt
+Rebloom-0.1-Windows-x86_64/import-trace.txt
+Rebloom-0.1-Windows-x86_64/import-error.txt
+Rebloom-0.1-Windows-x86_64/source/.build/
+
+# Local caches
+__pycache__/
+*.pyc

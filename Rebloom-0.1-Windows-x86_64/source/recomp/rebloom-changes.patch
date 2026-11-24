@@ -1,0 +1,343 @@
+diff --git a/host/quickmenu.cpp b/host/quickmenu.cpp
+index dc0c9d7..47f6c21 100644
+--- a/host/quickmenu.cpp
++++ b/host/quickmenu.cpp
+@@ -107,11 +107,11 @@ constexpr const char *kFont[95] = {
+     "..... ..... .#... #.#.# ...#. ..... ..... .....",  // ~
+ };
+ 
+-constexpr int kEntries = 10;
++constexpr int kEntries = 11;
+ constexpr Command kCommands[kEntries] = {Command::resume,   Command::save,       Command::load, Command::look,        Command::scale,
+-                                         Command::sharp_2d, Command::fullscreen, Command::keys, Command::change_keys, Command::quit};
++                                         Command::aspect,   Command::sharp_2d,   Command::fullscreen, Command::keys, Command::change_keys, Command::quit};
+ // the program's key for the same thing, shown dim at the right end of the entry
+-constexpr const char *kKeys[kEntries] = {"F1", "F5", "F8", "F2", "", "", "F11", "", "", ""};
++constexpr const char *kKeys[kEntries] = {"F1", "F5", "F8", "F2", "", "", "", "F11", "", "", ""};
+ constexpr int kVisibleRows = 11;  // lines of the keys page shown at once; the page scrolls
+ constexpr int kKeysPageChars = 58;
+ 
+@@ -150,6 +150,11 @@ std::string entry_text(int i, const Values &v, bool quit_armed) {
+         const char *label = v.scale_next == 1 ? "1x (480p)" : v.scale_next == 2 ? "2x (720p)" : v.scale_next == 3 ? "3x (1080p)" : "4x (4K)";
+         return std::string("Resolution:  < ") + label + " >";
+     }
++    case Command::aspect: {
++        static const char *const kNames[] = {"automatic", "4:3", "16:9", "stretch"};
++        const int now = v.aspect_now >= 0 && v.aspect_now <= 3 ? v.aspect_now : 0;
++        return std::string("Aspect:  < ") + kNames[now] + " >";
++    }
+     case Command::sharp_2d: {
+         static const char *const kNames[] = {"soft", "sharp", "sharpest"};
+         const auto name = [](int n) { return kNames[n >= 0 && n <= 2 ? n : 1]; };
+@@ -240,7 +245,7 @@ Command Menu::choose() {
+ Command Menu::side() const {
+     if (page_ == Page::keys) return Command::none;
+     const Command c = kCommands[selected_];
+-    return c == Command::look || c == Command::scale || c == Command::sharp_2d || c == Command::fullscreen ? c : Command::none;
++    return c == Command::look || c == Command::scale || c == Command::aspect || c == Command::sharp_2d || c == Command::fullscreen ? c : Command::none;
+ }
+ 
+ bool Menu::select_at(int x, int y) {
+diff --git a/host/quickmenu.hpp b/host/quickmenu.hpp
+index 0d7f486..abfdac3 100644
+--- a/host/quickmenu.hpp
++++ b/host/quickmenu.hpp
+@@ -13,7 +13,7 @@
+ namespace quickmenu {
+ 
+ enum class Command {
+-    none, resume, save, load, look, scale, sharp_2d, fullscreen, keys, quit,
++    none, resume, save, load, look, scale, aspect, sharp_2d, fullscreen, keys, quit,
+     change_keys,   // the main menu's entry that opens the keys page (the menu switches page by itself)
+     key_edit,      // keys page: the highlighted line waits for a key (capturing() is true from now on)
+     key_defaults   // keys page: put back the default keys (asked once, like Quit)
+@@ -25,6 +25,7 @@ struct Values {
+     int scale_now = 1;      // the inner resolution the game runs at
+     int scale_next = 1;     // the one written in keys.ini for the next start
+     bool scale_locked = false;  // PS2_SCALE is set: keys.ini does not count
++    int aspect_now = 0;      // 0 automatic, 1 4:3, 2 16:9, 3 fill (stretch)
+     int sharp_now = 1, sharp_next = 1;  // the 2D art filter (0 soft, 1 sharp, 2 sharpest): this run's, and keys.ini's for the next start
+     bool sharp_locked = false;  // PS2_SHARP_2D is set
+     bool fullscreen = false;
+diff --git a/host/window.cpp b/host/window.cpp
+index d984894..3b8a458 100644
+--- a/host/window.cpp
++++ b/host/window.cpp
+@@ -166,9 +166,13 @@ bool g_overlay_on = false;  // g_menu_picture is laid over the game's picture (t
+ std::uint64_t g_script_extra = 0;  // the pad script's clock goes on while the menu is open (the game's frames stand still)
+ 
+ void refresh_title() {
++    // A name supplied by the launcher is the whole title: no notice, speed or statistics after it.
++    if (!g_game_title.empty()) {
++        SDL_SetWindowTitle(g_window, g_game_title.c_str());
++        return;
++    }
+     std::string title = g_speed_title;
+     if (!g_notice_text.empty()) title = g_notice_text + "   |   " + title;
+-    if (!g_game_title.empty()) title = g_game_title + "   |   " + title;
+     SDL_SetWindowTitle(g_window, title.c_str());
+ }
+ 
+@@ -760,6 +764,25 @@ void read_keyboard(std::uint16_t &pressed, std::uint8_t &lx, std::uint8_t &ly, s
+     }
+ }
+ 
++// PS2_MENU_CHORD: what opens the quick menu on a controller.
++//   off (default): no controller chord; F1 (or the key bound to "menu" in keys.ini) is the only way in, and Select
++//                  belongs to the game at once
++//   on:            hold Select and press Start, or press Guide
++//   guide:         only the Guide button; Select and Start belong to the game
++enum class MenuChord { both, guide, off };
++
++MenuChord menu_chord() {
++    static const MenuChord value = [] {
++        const std::string wanted = ps2::os::env("PS2_MENU_CHORD");
++        if (wanted == "on" || wanted == "both") return MenuChord::both;
++        if (wanted == "guide") return MenuChord::guide;
++        if (!wanted.empty() && wanted != "off")
++            std::fprintf(stderr, "[menu] PS2_MENU_CHORD=%s is not off, on or guide: using off\n", wanted.c_str());
++        return MenuChord::off;
++    }();
++    return value;
++}
++
+ void poll_port(int port) {
+     static bool plugged[2] = {};
+     SDL_GameController *pad = g_pads[port];
+@@ -782,17 +805,24 @@ void poll_port(int port) {
+         const bool sel = SDL_GameControllerGetButton(pad, SDL_CONTROLLER_BUTTON_BACK), st = SDL_GameControllerGetButton(pad, SDL_CONTROLLER_BUTTON_START);
+         const Uint32 now = SDL_GetTicks();
+         bool select_to_game = false;
+-        if (sel) {
+-            if (!select_since[port]) select_since[port] = now ? now : 1;
+-            if (st) select_combo[port] = true;
+-            select_to_game = !select_combo[port] && now - select_since[port] >= 300;
+-        } else {
+-            if (select_since[port] && !select_combo[port]) select_tap_until[port] = now + 80;
++        if (menu_chord() == MenuChord::off) {
++            // No controller chord: Select is the game's at once, with no hold-back and no withheld Start.
+             select_since[port] = 0;
+             select_combo[port] = false;
++            if (sel) pressed |= kSelect;
++        } else {
++            if (sel) {
++                if (!select_since[port]) select_since[port] = now ? now : 1;
++                if (st) select_combo[port] = true;
++                select_to_game = !select_combo[port] && now - select_since[port] >= 300;
++            } else {
++                if (select_since[port] && !select_combo[port]) select_tap_until[port] = now + 80;
++                select_since[port] = 0;
++                select_combo[port] = false;
++            }
++            if (select_to_game || static_cast<Sint32>(select_tap_until[port] - now) > 0) pressed |= kSelect;
++            if (sel && st) pressed &= ~kStart;
+         }
+-        if (select_to_game || static_cast<Sint32>(select_tap_until[port] - now) > 0) pressed |= kSelect;
+-        if (sel && st) pressed &= ~kStart;
+         const auto trigger = [&](SDL_GameControllerAxis a, std::uint16_t bit, std::uint8_t &pressure) {
+             const int v = SDL_GameControllerGetAxis(pad, a);
+             if (v <= 2000 || (pressed & bit)) return;
+@@ -905,6 +935,7 @@ void menu_paint(bool show_again = true) {
+         v.scale_now = g_scale_now;
+         v.scale_next = g_scale_next;
+         v.scale_locked = false;
++        v.aspect_now = static_cast<int>(ps2::video_aspect());
+         v.sharp_now = g_sharp_now;
+         v.sharp_next = g_sharp_next;
+         v.sharp_locked = g_sharp_locked;
+@@ -1092,6 +1123,14 @@ void menu_command(quickmenu::Command c, int step) {
+         set_notice("Resolution " + std::to_string(g_scale_next) + "x" + (g_scale_locked ? " (PS2_SCALE still sets the next start)" : ""));
+         std::fprintf(stderr, "[menu] resolution switched live to %dx\n", g_scale_next);
+         break;
++    case Command::aspect: {
++        const int now = (static_cast<int>(ps2::video_aspect()) + step + 4) % 4;
++        ps2::set_video_aspect(static_cast<std::uint32_t>(now));
++        static const char *const kNames[] = {"automatic", "4:3", "16:9", "stretch"};
++        set_notice(std::string("Aspect: ") + kNames[now]);
++        std::fprintf(stderr, "[menu] aspect %s\n", kNames[now]);
++        break;
++    }
+     case Command::sharp_2d:
+         if (g_sharp_locked) {
+             set_notice("Text and menus are set by PS2_SHARP_2D; remove it to choose here");
+@@ -1156,11 +1195,12 @@ bool menu_event(const SDL_Event &e) {
+             return true;
+         }
+         if (e.type == SDL_CONTROLLERBUTTONDOWN) {
++            if (menu_chord() == MenuChord::off) return false;
+             SDL_GameController *pad = SDL_GameControllerFromInstanceID(e.cbutton.which);
+             const int b = e.cbutton.button;
+             const bool both = pad && ((b == SDL_CONTROLLER_BUTTON_START && SDL_GameControllerGetButton(pad, SDL_CONTROLLER_BUTTON_BACK)) ||
+                                       (b == SDL_CONTROLLER_BUTTON_BACK && SDL_GameControllerGetButton(pad, SDL_CONTROLLER_BUTTON_START)));
+-            if (b == SDL_CONTROLLER_BUTTON_GUIDE || both) {
++            if (b == SDL_CONTROLLER_BUTTON_GUIDE || (both && menu_chord() == MenuChord::both)) {
+                 open_menu(b == SDL_CONTROLLER_BUTTON_GUIDE ? "the controller's Guide button" : "Select + Start on the controller");
+                 return true;
+             }
+@@ -1870,12 +1910,21 @@ bool open_window(bool fullscreen) {
+     if (!std::getenv("PS2_SDL_RENDERER")) flags |= SDL_WINDOW_METAL;
+ #endif
+     g_game_title = ps2::os::env("PS2_WINDOW_TITLE");
+-    const std::string initial_title = g_game_title.empty() ? g_speed_title : g_game_title + "   |   " + g_speed_title;
++    const std::string initial_title = g_game_title.empty() ? g_speed_title : g_game_title;
+     g_window = SDL_CreateWindow(initial_title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, ps2::g_options.widescreen ? 1280 : 960, 720, flags);
+     if (!g_window) {
+         std::fprintf(stderr, "SDL: %s\n", SDL_GetError());
+         return false;
+     }
++    // The launcher can point at its own icon; a direct run uses icon.bmp beside the game.
++    {
++        std::string icon_path = ps2::os::env("PS2_WINDOW_ICON");
++        if (icon_path.empty()) icon_path = "icon.bmp";
++        if (SDL_Surface *icon = SDL_LoadBMP(icon_path.c_str())) {
++            SDL_SetWindowIcon(g_window, icon);
++            SDL_FreeSurface(icon);
++        }
++    }
+     SDL_ShowWindow(g_window);
+     SDL_RaiseWindow(g_window);
+ #ifdef _WIN32
+@@ -1930,8 +1979,11 @@ bool open_window(bool fullscreen) {
+         if (SDL_IsGameController(i)) open_pad(i);
+     SDL_ShowCursor(SDL_DISABLE);  // no pointer over the game (the title bar and the window's edge still show it)
+     g_notice_text = kStartNotice;
+-    std::fprintf(stderr, "[menu] the quick menu: F1%s on the keyboard, hold Select then press Start (or Guide) on a controller\n",
+-                 g_keys.inputs[keymap::Menu].empty() ? "" : (" or " + keymap::input_name(g_keys.inputs[keymap::Menu][0])).c_str());
++    std::fprintf(stderr, "[menu] the quick menu: F1%s on the keyboard%s\n",
++                 g_keys.inputs[keymap::Menu].empty() ? "" : (" or " + keymap::input_name(g_keys.inputs[keymap::Menu][0])).c_str(),
++                 menu_chord() == MenuChord::off ? " (no controller chord: PS2_MENU_CHORD=on or guide adds one)"
++                 : menu_chord() == MenuChord::guide ? ", the Guide button on a controller"
++                 : ", hold Select then press Start (or Guide) on a controller");
+     g_notice_until = SDL_GetTicks() + 30000;
+     refresh_title();
+     apply_mouse_mode();
+diff --git a/runtime/include/ps2/video.hpp b/runtime/include/ps2/video.hpp
+index 6f9cdb4..9eb7cd8 100644
+--- a/runtime/include/ps2/video.hpp
++++ b/runtime/include/ps2/video.hpp
+@@ -10,4 +10,7 @@ void set_video_options(std::uint32_t options);
+ std::uint32_t video_options();
+ void set_video_scale(std::uint32_t scale);
+ std::uint32_t video_scale();
++// The shape of the picture inside the window: 0 automatic, 1 4:3, 2 16:9, 3 fill (stretch). PS2_ASPECT sets the start value.
++void set_video_aspect(std::uint32_t mode);
++std::uint32_t video_aspect();
+ }
+diff --git a/runtime/src/gs/gpu/gpu.cpp b/runtime/src/gs/gpu/gpu.cpp
+index da32dee..27ce80c 100644
+--- a/runtime/src/gs/gpu/gpu.cpp
++++ b/runtime/src/gs/gpu/gpu.cpp
+@@ -82,6 +82,9 @@ WGPUSurface g_surface = nullptr;
+ WGPUTextureFormat g_surface_format = WGPUTextureFormat_Undefined;
+ WGPUPresentMode g_present_mode = WGPUPresentMode_Fifo;
+ std::uint32_t g_frame_latency = 0;  // pictures the swap chain may keep in flight; 0 = the library's default (2)
++// PS2_ASPECT: the shape of the game's picture inside the window. 0 auto (4:3, or 16:9 with --widescreen), 1 4:3, 2 16:9,
++// 3 fill (stretch to the window, no bars). Read once at startup; the quick menu can change it while playing.
++std::uint32_t g_aspect_mode = 0;
+ std::uint32_t g_surface_width = 0, g_surface_height = 0;
+ WGPURenderPipeline g_blit = nullptr;
+ // PS2_BLIT_CHECK=<file>: a second present pass from that WGSL file (the blit to compare with, e.g. blit.wgsl before a change), drawn
+@@ -2674,6 +2677,22 @@ void ensure_capacity() {
+ 
+ // The picture onto the window's texture: the blit (blit.wgsl) and the overlay panel, one render pass. With `pipeline` (PS2_BLIT_CHECK)
+ // that present pass instead of g_blit, and no overlay.
++// The rectangle the game's picture is drawn into, inside the window (see g_aspect_mode). Filling the window wastes no bars but
++// changes the picture's shape; the fixed shapes keep it and leave black at the sides or top.
++void present_extent(float &vw, float &vh) {
++    const float w = static_cast<float>(g_surface_width), h = static_cast<float>(g_surface_height);
++    if (g_aspect_mode == 3u) {
++        vw = w;
++        vh = h;
++        return;
++    }
++    const float aspect = g_aspect_mode == 1u ? 4.0f / 3.0f
++                       : g_aspect_mode == 2u ? 16.0f / 9.0f
++                       : (g_options.widescreen ? 16.0f / 9.0f : 4.0f / 3.0f);
++    vw = std::min(w, h * aspect);
++    vh = vw / aspect;
++}
++
+ void encode_present(WGPUCommandEncoder enc, WGPUTextureView view, const WGPUPassTimestampWrites *timestamps, WGPURenderPipeline pipeline = nullptr) {
+     WGPURenderPassColorAttachment color = WGPU_RENDER_PASS_COLOR_ATTACHMENT_INIT;
+     color.view = view;
+@@ -2686,8 +2705,8 @@ void encode_present(WGPUCommandEncoder enc, WGPUTextureView view, const WGPUPass
+     rd.timestampWrites = timestamps;
+     WGPURenderPassEncoder rp = wgpuCommandEncoderBeginRenderPass(enc, &rd);
+     const float w = static_cast<float>(g_surface_width), h = static_cast<float>(g_surface_height);
+-    const float aspect = g_options.widescreen ? 16.0f / 9.0f : 4.0f / 3.0f;
+-    const float vw = std::min(w, h * aspect), vh = vw / aspect;
++    float vw = 0.0f, vh = 0.0f;
++    present_extent(vw, vh);
+     wgpuRenderPassEncoderSetViewport(rp, (w - vw) * 0.5f, (h - vh) * 0.5f, vw, vh, 0.0f, 1.0f);
+     wgpuRenderPassEncoderSetPipeline(rp, pipeline ? pipeline : g_blit);
+     wgpuRenderPassEncoderSetBindGroup(rp, 0, g_blit_group, 0, nullptr);
+@@ -4116,9 +4135,23 @@ bool init(Mode m) {
+     }
+     if (const char *scale = std::getenv("PS2_SCALE")) g_scale = std::clamp<std::uint32_t>(static_cast<std::uint32_t>(std::atoi(scale)), 1u, 4u);
+     ps2::set_video_scale(g_scale);
++    // PS2_ASPECT=4:3 | 16:9 | fill (stretch) asks for a fixed picture shape; anything else keeps the automatic one.
++    if (const char *aspect = std::getenv("PS2_ASPECT")) {
++        const std::string a = aspect;
++        g_aspect_mode = a == "4:3" ? 1u : a == "16:9" ? 2u : (a == "fill" || a == "stretch") ? 3u : 0u;
++        ps2::set_video_aspect(g_aspect_mode);
++    }
+     // PS2_SHARP_2D: how upscaled 2D art (text, icons, menus) is filtered, see SHARP in gs.wgsl: 0 plain bilinear, 1 sharp (the
+     // default), 2 sharpest
+     if (const char *sharp = std::getenv("PS2_SHARP_2D")) g_sharp_2d = std::clamp<std::uint32_t>(static_cast<std::uint32_t>(std::atoi(sharp)), 0u, 2u);
++    {
++        // One line that says what the display settings came out as, so a report or a launcher setting can be checked
++        // against the log instead of guessed from the picture.
++        static const char *const kAspectNames[] = {"automatic", "4:3", "16:9", "stretch"};
++        static const char *const kSharpNames[] = {"soft", "sharp", "sharpest"};
++        std::fprintf(stderr, "[gpu] display: resolution %ux, 2D filter %s, aspect %s\n", g_scale,
++                     kSharpNames[std::min(g_sharp_2d, 2u)], kAspectNames[std::min(g_aspect_mode, 3u)]);
++    }
+     g_copy_words = (1u << 20) * g_scale * g_scale;
+     if (const int tile = std::atoi(os::env("PS2_TILE").c_str()); tile == 4 || tile == 8 || tile == 16) g_tile = tile;
+     g_strips = os::env("PS2_GPU_STRIPS") == "1";
+@@ -5370,9 +5403,8 @@ void set_scale(std::uint32_t new_scale) {
+         const std::uint32_t current = field_base(g_field), previous = field_base(g_field + 1);
+         const std::uint32_t param = display_params(g_last_src, current);
+         push_display(g_last_src, current, param);
+-        const float sw = static_cast<float>(g_surface_width), sh = static_cast<float>(g_surface_height);
+-        const float aspect = g_options.widescreen ? 16.0f / 9.0f : 4.0f / 3.0f;
+-        const float vw = std::min(sw, sh * aspect), vh = vw / aspect;
++        float vw = 0.0f, vh = 0.0f;
++        present_extent(vw, vh);
+         const std::uint32_t blit[8] = {g_last_src.width * g_scale, g_last_src.height * g_scale, current, previous, 0u, static_cast<std::uint32_t>(vw), static_cast<std::uint32_t>(vh), ps2::video_options()};
+         wgpuQueueWriteBuffer(g_queue, g_blit_params, 0, blit, sizeof blit);
+         ++g_field;
+@@ -5384,6 +5416,12 @@ void set_scale(std::uint32_t new_scale) {
+ }
+ 
+ void apply_pending_scale() {
++    // The quick menu's aspect entry (PS2_ASPECT sets the value the run starts with). Read here, once per frame, next to the scale.
++    const std::uint32_t aspect = std::min<std::uint32_t>(ps2::video_aspect(), 3u);
++    if (aspect != g_aspect_mode) {
++        g_aspect_mode = aspect;
++        ++g_picture_epoch;  // the last picture is drawn again with the new shape
++    }
+     const std::uint32_t wanted = std::clamp<std::uint32_t>(ps2::video_scale(), 1u, 4u);
+     if (wanted != g_scale) set_scale(wanted);
+ }
+diff --git a/runtime/src/system.cpp b/runtime/src/system.cpp
+index 72d3d52..3dff270 100644
+--- a/runtime/src/system.cpp
++++ b/runtime/src/system.cpp
+@@ -120,6 +120,7 @@ void (*g_state_complete)(bool, bool) = nullptr;
+ 
+ std::atomic<std::uint32_t> g_video_options{0};
+ std::atomic<std::uint32_t> g_video_scale{1};
++std::atomic<std::uint32_t> g_video_aspect{0};
+ 
+ std::uint64_t next_event_time() {
+     std::uint64_t t = UINT64_MAX;
+@@ -499,6 +500,8 @@ void set_video_options(std::uint32_t options) { g_video_options.store(options, s
+ std::uint32_t video_options() { return g_video_options.load(std::memory_order_relaxed); }
+ void set_video_scale(std::uint32_t scale) { g_video_scale.store(scale, std::memory_order_relaxed); }
+ std::uint32_t video_scale() { return g_video_scale.load(std::memory_order_relaxed); }
++void set_video_aspect(std::uint32_t mode) { g_video_aspect.store(mode, std::memory_order_relaxed); }
++std::uint32_t video_aspect() { return g_video_aspect.load(std::memory_order_relaxed); }
+ 
+ namespace {
+ 
