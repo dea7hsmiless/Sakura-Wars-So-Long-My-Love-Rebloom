@@ -1332,11 +1332,16 @@ namespace SakuraLauncher
             }
             else
             {
-                int y2 = 190;
+                int y2 = 150;
+                ButtonAt(card, "De-dither: " + (Get("dedither", "0") == "1" ? "On (soften)" : "Off"), 24, 24, 260, delegate
+                {
+                    Set("dedither", Get("dedither", "0") == "1" ? "0" : "1");
+                    ShowSettingsFor("Advanced");
+                }, false);
                 Label note = LabelAt("The runner is started with the settings above. If the game will not start, use " +
                                      "Support to read the log, and Install to point the launcher at the toolkit.", 9.5f, false);
                 note.ForeColor = Palette.Muted;
-                note.SetBounds(24, 24, Math.Max(380, card.Width - 48), 70);
+                note.SetBounds(24, 80, Math.Max(380, card.Width - 48), 64);
                 note.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
                 card.Controls.Add(note);
                 Choice(card, ref y2, "Controller menu", "menu_chord", new string[] { "Off", "Select + Start", "Guide only" },
@@ -1351,12 +1356,7 @@ namespace SakuraLauncher
                 speed.SetBounds(24, y2 + 58, Math.Max(380, card.Width - 48), 60);
                 speed.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
                 card.Controls.Add(speed);
-                ButtonAt(card, "De-dither: " + (Get("dedither", "0") == "1" ? "On (soften)" : "Off"), 24, 380, 260, delegate
-                {
-                    Set("dedither", Get("dedither", "0") == "1" ? "0" : "1");
-                    ShowSettingsFor("Advanced");
-                }, false);
-                ButtonAt(card, "Clear launcher settings", 24, 110, 230, delegate
+                ButtonAt(card, "Clear launcher settings", 24, 400, 230, delegate
                 {
                     if (MessageBox.Show(this, "Put every setting back to its default?", "Sakura Wars",
                                         MessageBoxButtons.YesNo) != DialogResult.Yes) return;
@@ -1365,7 +1365,7 @@ namespace SakuraLauncher
                     Append("settings cleared");
                     ShowSettings("Display");
                 }, false);
-                ButtonAt(card, "Open launcher.ini", 264, 110, 200, delegate { OpenPath(iniPath); }, false);
+                ButtonAt(card, "Open launcher.ini", 264, 400, 200, delegate { OpenPath(iniPath); }, false);
             }
         }
 
