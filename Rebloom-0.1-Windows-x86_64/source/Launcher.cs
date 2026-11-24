@@ -1287,11 +1287,6 @@ namespace SakuraLauncher
                 card.Controls.Add(note);
                 ButtonAt(card, "Performance preset", 24, 350, 210, delegate { ApplyGraphicsPreset(false); }, false);
                 ButtonAt(card, "Quality preset", 250, 350, 190, delegate { ApplyGraphicsPreset(true); }, false);
-                ButtonAt(card, "De-dither: " + (Get("dedither", "0") == "1" ? "On (soften)" : "Off"), 460, 350, 250, delegate
-                {
-                    Set("dedither", Get("dedither", "0") == "1" ? "0" : "1");
-                    ShowSettingsFor("Graphics");
-                }, false);
 
                 Label texLabel = LabelAt("HD textures", 9.5f, false);
                 texLabel.SetBounds(24, 408, 150, 24);
@@ -1356,6 +1351,11 @@ namespace SakuraLauncher
                 speed.SetBounds(24, y2 + 58, Math.Max(380, card.Width - 48), 60);
                 speed.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
                 card.Controls.Add(speed);
+                ButtonAt(card, "De-dither: " + (Get("dedither", "0") == "1" ? "On (soften)" : "Off"), 24, 380, 260, delegate
+                {
+                    Set("dedither", Get("dedither", "0") == "1" ? "0" : "1");
+                    ShowSettingsFor("Advanced");
+                }, false);
                 ButtonAt(card, "Clear launcher settings", 24, 110, 230, delegate
                 {
                     if (MessageBox.Show(this, "Put every setting back to its default?", "Sakura Wars",
