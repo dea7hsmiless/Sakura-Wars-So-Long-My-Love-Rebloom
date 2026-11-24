@@ -9,16 +9,16 @@ Prepared 2026-11-23; mobile builds refreshed 2026-11-24. **Published on GitHub:*
 | Release folder | `Desktop\Rebloom-0.1-release\` | — |
 | Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 36,481,838 B |
 | Extracted Windows tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | ~150 MB |
-| Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,593,785 B |
-| Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,815,608 B |
+| Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,614,996 B |
+| Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,836,088 B |
 | Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 50,034,100 B |
 | iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,969,301 B |
 
 Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that is present.
 
 - Windows: `f03adf533f56e90733ba0547e23f862847770b8710b24b93b117377f374f9a35`
-- Linux: `e1d2b57dcfdd269043efb5e9d4134232d90dc4da4f4df8b0e313726439225e06`
-- AppImage: `b3b2ec9ad4b054d0c54d3aa6c9771cf3ac78f1dda60ad2d62e71dff6720d6fbb`
+- Linux: `8d9a9372c3d3a65b6204a199a972e21bd54972f7902a9aaa6c135f23b5812a83`
+- AppImage: `07fcb11755ef32766b2cb273f1745666666ce22e7d9dfbae81a2654989b9feca`
 - Android: `33606b015243fed6292971ec39172f3c0e0c0506bec9948ce0d7d9787ea417ee`
 - iOS: `0f8f178eb5fc189817d24a922671cc22bf3bcfbc55cd71bd05aea683d4db7344`
 
