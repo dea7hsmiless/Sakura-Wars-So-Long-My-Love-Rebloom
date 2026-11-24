@@ -18,7 +18,7 @@ only disc reads and module loading are answered by the runtime.
 | --- | --- | --- |
 | Rebloom-0.1-Windows-x86_64.zip | 44.7 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
 
-SHA-256: `25f0e044bf219d107ad38fe3870043e6636dfe6759125706221c038de61604ee`
+SHA-256: `b4ba0f3f37a09b000ead71942946f43c91810d0fa3624ac4bbc485147a49462d`
 
 Also in the release: `SHA256SUMS.txt`, the two screenshots above, and the launcher source inside the zip under `source\`.
 
@@ -66,6 +66,8 @@ Settings live in `launcher.ini` beside `Rebloom Launcher.exe`; the game's own ke
 - **F1** opens the port's menu: quick save/load, picture look, aspect, resolution, keys, quit.
   **F11** is full screen. The controller chord for the menu is off by default; turn it on under
   Settings → Advanced if you play with a pad.
+- Settings → Display offers **Borderless** full screen (default, keeps the desktop mode) or
+  **Exclusive** full screen (changes the display mode).
 - The game window's title bar is just the game name; the title bar and taskbar use the key art.
 - Logs: the launcher's under Support; the game's in `game\data\logs\`.
 

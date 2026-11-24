@@ -33,6 +33,8 @@ running as guest code.
   **Quality** (2x, sharpest 2D, V-Sync) presets; every value can still be changed individually.
   **Picture look** exposes the runtime's Crisp/Soft/Sharp scaling and smooth-edge AA, and **HD
   textures** can point at a folder of PNG overrides (no pack ships).
+- **Full screen mode.** Settings -> Display can use **Borderless** (desktop mode, safe default) or
+  **Exclusive** (changes the display mode). F11 toggles full screen.
 - **Support -> Clear cache** removes the translated-code/VU caches without touching saves or replays.
 - **Rebloom Launcher** is the app's name, with the key art as its window and file icon. The game
   window title is just the game name, and its title bar and taskbar use the same art.

@@ -7,11 +7,11 @@ Prepared 2026-11-23. **Nothing has been published.**
 | Asset | Path | Size |
 |---|---|---|
 | Release folder | `Desktop\Rebloom-0.1-release\` | — |
-| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,727,200 B |
+| Windows zip | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64.zip` | 44,729,210 B |
 | Extracted tree | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\` | 150.7 MB |
 | Source drop (working copy) | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Windows-x86_64\source\` | — |
 
-Zip SHA-256: `25f0e044bf219d107ad38fe3870043e6636dfe6759125706221c038de61604ee`
+Zip SHA-256: `b4ba0f3f37a09b000ead71942946f43c91810d0fa3624ac4bbc485147a49462d`
 
 ## What was verified for this package
 
@@ -31,6 +31,8 @@ Zip SHA-256: `25f0e044bf219d107ad38fe3870043e6636dfe6759125706221c038de61604ee`
   `--launcher` keeps the window open. Both paths were tested.
 - Settings -> Graphics -> **Performance/Quality** presets write the resolution, 2D filter, picture
   look, V-Sync, frames-in-flight, graphics API, pacing and speed-limit values together.
+- **Fullscreen mode** offers Borderless or Exclusive. Exclusive was tested at 1920x1080 on the
+  RTX 3070 and logs `[window] exclusive fullscreen 1920x1080`.
 - **Picture look** exposes the runtime's Crisp/Soft/Sharp scaling with optional smooth-edge AA;
   **HD textures** points at an optional folder of PNG overrides. No texture pack is included.
 - Support reports the code/VU cache size and can clear or open it without touching saves.

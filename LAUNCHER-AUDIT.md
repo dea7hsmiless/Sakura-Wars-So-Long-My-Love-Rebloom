@@ -44,6 +44,7 @@ something is missing) and tested by driving the real build through UI Automation
 | 34 | Adding a disc meant opening Install and finding the importer. | An `.iso` can be dragged onto the launcher; Install is the default action when no disc is present. |
 | 35 | First-run stutter could only be fixed by deleting folders by hand. | Support shows the code/VU cache size and offers **Clear cache** / **Open cache**. |
 | 36 | The existing smooth-edge AA and texture override support were not exposed. | **Picture look** exposes Crisp/Soft/Sharp with optional edge AA; **HD textures** selects a PNG override folder. |
+| 37 | Full screen was always SDL's borderless desktop mode. | Display now offers **Borderless** or **Exclusive** (`PS2_EXCLUSIVE_FULLSCREEN=1`); exclusive falls back to borderless if refused. |
 
 ## Open
 

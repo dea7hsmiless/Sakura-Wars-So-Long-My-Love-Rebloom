@@ -60,7 +60,7 @@ index 0d7f486..abfdac3 100644
      bool sharp_locked = false;  // PS2_SHARP_2D is set
      bool fullscreen = false;
 diff --git a/host/window.cpp b/host/window.cpp
-index d984894..3b8a458 100644
+index d984894..c05e9e7 100644
 --- a/host/window.cpp
 +++ b/host/window.cpp
 @@ -166,9 +166,13 @@ bool g_overlay_on = false;  // g_menu_picture is laid over the game's picture (t
@@ -137,7 +137,43 @@ index d984894..3b8a458 100644
          const auto trigger = [&](SDL_GameControllerAxis a, std::uint16_t bit, std::uint8_t &pressure) {
              const int v = SDL_GameControllerGetAxis(pad, a);
              if (v <= 2000 || (pressed & bit)) return;
-@@ -905,6 +935,7 @@ void menu_paint(bool show_again = true) {
+@@ -875,9 +905,34 @@ void cycle_look(int step = 1) {
+ 
+ // --- the quick menu ---
+ 
++// Exclusive full screen changes the display mode; the borderless mode keeps the desktop mode. The launcher asks for
++// exclusive with PS2_EXCLUSIVE_FULLSCREEN=1 and falls back to borderless if the driver refuses it.
++bool exclusive_fullscreen() {
++    const std::string value = ps2::os::env("PS2_EXCLUSIVE_FULLSCREEN");
++    return !value.empty() && value != "0";
++}
++
++void set_fullscreen(bool full) {
++    if (!full) {
++        SDL_SetWindowFullscreen(g_window, 0);
++        return;
++    }
++    if (exclusive_fullscreen()) {
++        const int display = SDL_GetWindowDisplayIndex(g_window);
++        SDL_DisplayMode mode{};
++        if (display >= 0 && SDL_GetDesktopDisplayMode(display, &mode) == 0) SDL_SetWindowDisplayMode(g_window, &mode);
++        if (SDL_SetWindowFullscreen(g_window, SDL_WINDOW_FULLSCREEN) == 0) {
++            std::fprintf(stderr, "[window] exclusive fullscreen %dx%d\n", mode.w, mode.h);
++            return;
++        }
++        std::fprintf(stderr, "[window] exclusive fullscreen was refused (%s); using borderless\n", SDL_GetError());
++    }
++    SDL_SetWindowFullscreen(g_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
++}
++
+ void toggle_fullscreen() {
+     const bool full = SDL_GetWindowFlags(g_window) & SDL_WINDOW_FULLSCREEN;
+-    SDL_SetWindowFullscreen(g_window, full ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
++    set_fullscreen(!full);
+ }
+ 
+ void window_pixels(int &w, int &h) {
+@@ -905,6 +960,7 @@ void menu_paint(bool show_again = true) {
          v.scale_now = g_scale_now;
          v.scale_next = g_scale_next;
          v.scale_locked = false;
@@ -145,7 +181,7 @@ index d984894..3b8a458 100644
          v.sharp_now = g_sharp_now;
          v.sharp_next = g_sharp_next;
          v.sharp_locked = g_sharp_locked;
-@@ -1092,6 +1123,14 @@ void menu_command(quickmenu::Command c, int step) {
+@@ -1092,6 +1148,14 @@ void menu_command(quickmenu::Command c, int step) {
          set_notice("Resolution " + std::to_string(g_scale_next) + "x" + (g_scale_locked ? " (PS2_SCALE still sets the next start)" : ""));
          std::fprintf(stderr, "[menu] resolution switched live to %dx\n", g_scale_next);
          break;
@@ -160,7 +196,7 @@ index d984894..3b8a458 100644
      case Command::sharp_2d:
          if (g_sharp_locked) {
              set_notice("Text and menus are set by PS2_SHARP_2D; remove it to choose here");
-@@ -1156,11 +1195,12 @@ bool menu_event(const SDL_Event &e) {
+@@ -1156,11 +1220,12 @@ bool menu_event(const SDL_Event &e) {
              return true;
          }
          if (e.type == SDL_CONTROLLERBUTTONDOWN) {
@@ -174,7 +210,13 @@ index d984894..3b8a458 100644
                  open_menu(b == SDL_CONTROLLER_BUTTON_GUIDE ? "the controller's Guide button" : "Select + Start on the controller");
                  return true;
              }
-@@ -1870,12 +1910,21 @@ bool open_window(bool fullscreen) {
+@@ -1865,19 +1930,29 @@ bool open_window(bool fullscreen) {
+     if (!g_sharp_locked && g_keys.sharp_2d >= 0) ps2::os::set_env("PS2_SHARP_2D", std::to_string(g_keys.sharp_2d));
+     g_sharp_now = ps2::os::env("PS2_SHARP_2D").empty() ? 1 : std::clamp(std::atoi(ps2::os::env("PS2_SHARP_2D").c_str()), 0, 2);
+     g_sharp_next = g_sharp_locked ? g_sharp_now : (g_keys.sharp_2d >= 0 ? g_keys.sharp_2d : g_sharp_now);
+-    Uint32 flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0u);
++    Uint32 flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+ #ifdef __APPLE__
      if (!std::getenv("PS2_SDL_RENDERER")) flags |= SDL_WINDOW_METAL;
  #endif
      g_game_title = ps2::os::env("PS2_WINDOW_TITLE");
@@ -196,8 +238,11 @@ index d984894..3b8a458 100644
 +    }
      SDL_ShowWindow(g_window);
      SDL_RaiseWindow(g_window);
++    if (fullscreen) set_fullscreen(true);
  #ifdef _WIN32
-@@ -1930,8 +1979,11 @@ bool open_window(bool fullscreen) {
+     SDL_SysWMinfo wm_info;
+     SDL_VERSION(&wm_info.version);
+@@ -1930,8 +2005,11 @@ bool open_window(bool fullscreen) {
          if (SDL_IsGameController(i)) open_pad(i);
      SDL_ShowCursor(SDL_DISABLE);  // no pointer over the game (the title bar and the window's edge still show it)
      g_notice_text = kStartNotice;

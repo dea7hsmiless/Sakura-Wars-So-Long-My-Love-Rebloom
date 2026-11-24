@@ -50,6 +50,10 @@ window again. The same page has **Performance** and **Quality** graphics presets
 smooth-edge AA) and **Text and menus** filtering. An optional **HD textures** folder can load PNG
 overrides; no texture pack is included.
 
+**Full screen:** Settings → Display has **Windowed/Fullscreen** and **Fullscreen mode** —
+**Borderless** (the safe default, keeps the desktop mode) or **Exclusive** (changes the display
+mode, like a classic full-screen game). **F11** toggles full screen.
+
 ## Controls
 
 | Key | Action |

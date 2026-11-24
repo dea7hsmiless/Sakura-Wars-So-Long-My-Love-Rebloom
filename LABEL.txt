@@ -2,7 +2,7 @@ Rebloom 0.1 - release assets
 Prepared 2026-11-23 (launcher audit, ReDUB parity, full source)
 
 In this folder:
-  Rebloom-0.1-Windows-x86_64.zip    44,727,200 B   sha256 25f0e044bf219d107ad38fe3870043e6636dfe6759125706221c038de61604ee
+  Rebloom-0.1-Windows-x86_64.zip    44,729,210 B   sha256 b4ba0f3f37a09b000ead71942946f43c91810d0fa3624ac4bbc485147a49462d
   Rebloom-0.1-Windows-x86_64\       the same files, extracted for review
   SHA256SUMS.txt                    the zip's SHA-256
   RELEASE-PAGE.md                   the release body, ready to publish

@@ -1229,12 +1229,19 @@ namespace SakuraLauncher
                     new string[] { "4:3", "16:9", "fill" }, "4:3");
                 Choice(card, ref y, "Window", "fullscreen", new string[] { "Windowed", "Fullscreen" },
                     new string[] { "0", "1" }, "0");
+                Choice(card, ref y, "Fullscreen mode", "fs_mode", new string[] { "Borderless", "Exclusive" },
+                    new string[] { "borderless", "exclusive" }, "borderless");
                 Choice(card, ref y, "V-Sync", "vsync", new string[] { "On", "Adaptive", "Off" },
                     new string[] { "fifo", "relaxed", "immediate" }, "fifo");
                 Choice(card, ref y, "Frames in flight", "latency", new string[] { "1", "2", "3", "4" },
                     new string[] { "1", "2", "3", "4" }, "2");
                 Choice(card, ref y, "Internal resolution", "scale", new string[] { "Game's own", "1x", "2x", "3x", "4x" },
                     new string[] { "", "1", "2", "3", "4" }, "");
+                Label fsNote = LabelAt("Borderless keeps the desktop mode and is the safe default; Exclusive changes the display mode and may alt-tab worse.", 9.5f, false);
+                fsNote.ForeColor = Palette.Muted;
+                fsNote.SetBounds(24, 400, Math.Max(380, card.Width - 48), 40);
+                fsNote.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+                card.Controls.Add(fsNote);
             }
             else if (cat == "Graphics")
             {
@@ -1586,6 +1593,7 @@ namespace SakuraLauncher
                 else Append("texture folder missing: " + full);
             }
             psi.EnvironmentVariables["PS2_ASPECT"] = Get("aspect", "4:3");
+            psi.EnvironmentVariables["PS2_EXCLUSIVE_FULLSCREEN"] = Get("fs_mode", "borderless") == "exclusive" ? "1" : "0";
             psi.EnvironmentVariables["PS2_PRESENT_MODE"] = Get("vsync", "fifo");
             psi.EnvironmentVariables["PS2_FRAME_LATENCY"] = Get("latency", "2");
             psi.EnvironmentVariables["PS2_WINDOW_TITLE"] = "Sakura Wars V: So Long, My Love \u2014 Rebloom";
