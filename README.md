@@ -10,8 +10,8 @@ Nothing has been published. The release downloads in this folder are:
 | `Rebloom-0.1-Windows-x86_64.zip` | Windows 10/11 x64 | 44.8 MB |
 | `Rebloom-0.1-Linux-x86_64.tar.gz` | Linux x86-64 (glibc 2.39+) | 33.6 MB |
 | `Rebloom-0.1-x86_64.AppImage` | Linux x86-64, self-contained | 32.8 MB |
-| `mobile/android/dist/Rebloom-0.1-android-arm64.apk` | Android 9+ arm64, debug-signed | 50.0 MB |
-| `mobile/ios/dist/Rebloom-0.1-ios-unsigned.ipa` | iOS 16.4+ arm64, unsigned | 20.9 MB |
+| `mobile/android/dist/Rebloom-0.1-android-arm64.apk` | Android 9+ arm64, debug-signed | 49.8 MB |
+| `mobile/ios/dist/Rebloom-0.1-ios-unsigned.ipa` | iOS 16.4+ arm64, unsigned | 20.7 MB |
 
 `SHA256SUMS.txt` has the hashes; `Verify-Rebloom.ps1` checks every download that is present.
 The Android build installs by sideloading. The iOS IPA needs the user's own signing.

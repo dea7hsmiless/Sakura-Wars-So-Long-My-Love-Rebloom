@@ -8,14 +8,22 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Insets;
+import android.graphics.Shader;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StatFs;
 import android.provider.OpenableColumns;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowInsets;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -41,15 +49,15 @@ import java.util.List;
  */
 public class LauncherActivity extends Activity {
     private static final int PICK_ISO = 1001;
-    private static final int BG = Color.rgb(18, 13, 11);
-    private static final int RAIL = Color.rgb(12, 9, 8);
-    private static final int CARD = Color.rgb(34, 25, 20);
-    private static final int EDGE = Color.rgb(62, 45, 36);
-    private static final int FOOT = Color.rgb(26, 18, 15);
-    private static final int GOLD = Color.rgb(232, 196, 106);
-    private static final int INK = Color.rgb(242, 236, 228);
-    private static final int MUTED = Color.rgb(169, 156, 142);
-    private static final int RED = Color.rgb(176, 58, 72);
+    private static final int BG = Color.rgb(24, 11, 20);
+    private static final int RAIL = Color.rgb(16, 7, 14);
+    private static final int CARD = Color.rgb(43, 20, 35);
+    private static final int EDGE = Color.rgb(91, 43, 65);
+    private static final int FOOT = Color.rgb(32, 13, 26);
+    private static final int GOLD = Color.rgb(245, 169, 193);
+    private static final int INK = Color.rgb(255, 244, 239);
+    private static final int MUTED = Color.rgb(211, 168, 185);
+    private static final int RED = Color.rgb(201, 79, 109);
     private static final String VERSION = "0.1";
     private static final String[] PAGES = { "Play", "Install", "Settings", "Support", "About" };
 
@@ -59,6 +67,8 @@ public class LauncherActivity extends Activity {
     private TextView heading;
     private TextView subheading;
     private LinearLayout content;
+    private LinearLayout railView;
+    private LinearLayout mainView;
     private final List<TextView> nav = new ArrayList<>();
     private String page = "Play";
 
@@ -95,6 +105,19 @@ public class LauncherActivity extends Activity {
         return v;
     }
 
+    private Drawable petals(int baseColor) {
+        Drawable base = new ColorDrawable(baseColor);
+        if (!"1".equals(pref("petals", "1"))) return base;
+        Bitmap art = asset("sakura_petals.png");
+        if (art == null) return base;
+        int density = getResources().getDisplayMetrics().densityDpi;
+        art.setDensity(density);
+        BitmapDrawable tile = new BitmapDrawable(getResources(), art);
+        tile.setTargetDensity(density);
+        tile.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        return new LayerDrawable(new Drawable[] { base, tile });
+    }
+
     private GradientDrawable box(int color, int stroke, float radius) {
         GradientDrawable d = new GradientDrawable();
         d.setColor(color);
@@ -107,7 +130,7 @@ public class LauncherActivity extends Activity {
         TextView b = label(text, 14, true, INK);
         b.setGravity(Gravity.CENTER);
         b.setPadding(dp(18), dp(10), dp(18), dp(10));
-        b.setBackground(box(primary ? RED : EDGE, primary ? 0 : EDGE, 9));
+        b.setBackground(box(primary ? RED : CARD, primary ? 0 : EDGE, 9));
         b.setOnClickListener(click);
         return b;
     }
@@ -146,13 +169,26 @@ public class LauncherActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.HORIZONTAL);
         root.setBackgroundColor(BG);
+        root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+            @Override public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+                if (Build.VERSION.SDK_INT >= 30) {
+                    Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
+                    v.setPadding(0, bars.top, 0, bars.bottom);
+                } else {
+                    v.setPadding(0, insets.getSystemWindowInsetTop(), 0,
+                            insets.getSystemWindowInsetBottom());
+                }
+                return insets;
+            }
+        });
 
         float widthDp = getResources().getDisplayMetrics().widthPixels
                 / getResources().getDisplayMetrics().density;
         int railWidth = dp(widthDp < 800 ? 126 : 160);
         LinearLayout rail = new LinearLayout(this);
         rail.setOrientation(LinearLayout.VERTICAL);
-        rail.setBackgroundColor(RAIL);
+        rail.setBackground(petals(RAIL));
+        railView = rail;
         rail.setPadding(dp(9), dp(16), dp(9), dp(8));
         root.addView(rail, new LinearLayout.LayoutParams(railWidth, LinearLayout.LayoutParams.MATCH_PARENT));
 
@@ -188,7 +224,7 @@ public class LauncherActivity extends Activity {
             TextView b = label(target, 14, true, MUTED);
             b.setGravity(Gravity.CENTER_VERTICAL);
             b.setPadding(dp(10), 0, dp(10), 0);
-            b.setBackground(box(RAIL, 0, 9));
+            b.setBackground(box(CARD, EDGE, 9));
             b.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) { show(target); }
             });
@@ -201,7 +237,8 @@ public class LauncherActivity extends Activity {
 
         LinearLayout main = new LinearLayout(this);
         main.setOrientation(LinearLayout.VERTICAL);
-        main.setBackgroundColor(BG);
+        main.setBackground(petals(BG));
+        mainView = main;
         main.setPadding(dp(22), dp(18), dp(22), 0);
         root.addView(main, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1));
 
@@ -232,10 +269,15 @@ public class LauncherActivity extends Activity {
 
     private void show(String target) {
         page = target;
+        if (railView != null) railView.setBackground(petals(RAIL));
+        if (mainView != null) mainView.setBackground(petals(BG));
+        boolean playPage = "Play".equals(target);
+        if (heading != null) heading.setVisibility(playPage ? View.GONE : View.VISIBLE);
+        if (subheading != null) subheading.setVisibility(playPage ? View.GONE : View.VISIBLE);
         for (int i = 0; i < nav.size(); i++) {
             boolean on = PAGES[i].equals(target);
-            nav.get(i).setTextColor(on ? GOLD : MUTED);
-            nav.get(i).setBackground(box(on ? CARD : RAIL, on ? EDGE : 0, 8));
+            nav.get(i).setTextColor(on ? INK : MUTED);
+            nav.get(i).setBackground(box(on ? RED : CARD, on ? 0 : EDGE, 9));
         }
         content.removeAllViews();
         if ("Play".equals(target)) pagePlay();
@@ -254,23 +296,27 @@ public class LauncherActivity extends Activity {
     private void pagePlay() {
         String disc = findDisc();
         boolean has = disc != null;
-        head("Play", "Your own discs, recompiled for this device. Nothing is uploaded.");
         Bitmap heroArt = asset("hero.jpg");
         if (heroArt != null) {
             ImageView hero = new ImageView(this);
             hero.setImageBitmap(heroArt);
-            hero.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            hero.setScaleType(ImageView.ScaleType.CENTER_CROP);
             int heroH = Math.max(dp(120), Math.min(dp(180),
                     getResources().getDisplayMetrics().heightPixels - dp(180)));
             hero.setPadding(0, 0, 0, dp(12));
             content.addView(hero, new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, heroH));
         }
-        LinearLayout discCard = card();
-        discCard.addView(label("DISC", 9, true, MUTED));
-        discCard.addView(label(has ? new File(disc).getName() : "No disc imported yet", 16, true, INK));
-        discCard.addView(label(has ? ("jp".equals(pref("language", "en")) ? "Japanese voices (Disc 2)" : "English voices (Disc 1)")
-                : "Import your own Disc 1 ISO to begin.", 11, false, MUTED));
+        TextView title = label("Sakura Wars V: So Long, My Love", 24, true, INK);
+        title.setPadding(0, dp(6), 0, 0);
+        content.addView(title);
+        content.addView(label(has ? "READY  /  ANDROID ARM64" : "NO DISC  /  ANDROID ARM64",
+                9, true, GOLD));
+        content.addView(label(has ? ("jp".equals(pref("language", "en"))
+                        ? "Japanese voices (Disc 2)." : "English voices (Disc 1).")
+                        : "Import your own Disc 1 ISO to begin.",
+                13, false, MUTED));
+
         TextView play = button(has ? "Play" : "Import", true, new View.OnClickListener() {
             @Override public void onClick(View v) { play(); }
         });
@@ -278,8 +324,17 @@ public class LauncherActivity extends Activity {
             @Override public void onClick(View v) { chooseDisc(); }
         });
         LinearLayout actions = row();
-        addButtonRow(discCard, play, imp);
-        content.addView(discCard);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        actions.addView(play, lp);
+        LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(0,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        ip.leftMargin = dp(10);
+        actions.addView(imp, ip);
+        actions.setPadding(0, dp(12), 0, dp(4));
+        content.addView(actions);
+
+        if (has) content.addView(label(new File(disc).getName(), 10, false, MUTED));
 
         LinearLayout voiceCard = card();
         voiceCard.addView(label("VOICE LANGUAGE", 9, true, MUTED));
@@ -341,6 +396,8 @@ public class LauncherActivity extends Activity {
                 new String[] { "16:9", "4:3", "fill" }, "16:9");
         choiceRow(display, "Internal resolution", "scale", new String[] { "1x (native)", "2x", "3x" },
                 new String[] { "1", "2", "3" }, "3");
+        choiceRow(display, "Sakura petals", "petals", new String[] { "On", "Off" },
+                new String[] { "1", "0" }, "1");
         content.addView(display);
 
         LinearLayout graphics = card();
@@ -357,8 +414,8 @@ public class LauncherActivity extends Activity {
         choiceRow(controls, "On-screen controls", "touch", new String[] { "On", "Off" },
                 new String[] { "1", "0" }, "1");
         choiceRow(controls, "Touch color", "touch_color",
-                new String[] { "Gold", "Sky", "Rose", "Mint", "White" },
-                new String[] { "#E8C46A", "#7CC7FF", "#FF8FA3", "#8FE3C0", "#F2ECE4" }, "#E8C46A");
+                new String[] { "Sakura", "Gold", "Sky", "Rose", "Mint", "White" },
+                new String[] { "#F5A9C1", "#E8C46A", "#7CC7FF", "#FF8FA3", "#8FE3C0", "#F2ECE4" }, "#F5A9C1");
         choiceRow(controls, "Touch opacity", "touch_opacity",
                 new String[] { "35%", "45%", "55%", "70%", "85%", "100%" },
                 new String[] { "0.35", "0.45", "0.55", "0.7", "0.85", "1" }, "0.7");
@@ -632,7 +689,7 @@ public class LauncherActivity extends Activity {
             i.putExtra("tap", pref("tap_advance", "1"));
             i.putExtra("haptics", pref("haptics", "1"));
             i.putExtra("stick_haptics", pref("stick_haptics", "1"));
-            i.putExtra("touch_color", pref("touch_color", "#E8C46A"));
+            i.putExtra("touch_color", pref("touch_color", "#F5A9C1"));
             i.putExtra("touch_opacity", pref("touch_opacity", "0.7"));
             i.putExtra("shader", shader.getAbsolutePath());
             startActivity(i);

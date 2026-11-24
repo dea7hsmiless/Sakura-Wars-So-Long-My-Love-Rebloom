@@ -1,5 +1,5 @@
 Rebloom 0.1 - release assets
-Prepared 2026-11-23 (controls, mobile touch pads, AppImage, Windows/Linux/iOS/Android builds)
+Prepared 2026-11-23; mobile refreshed 2026-11-24 (sakura palette, petals toggle, edge-to-edge insets)
 
 In this folder:
   Rebloom-0.1-Windows-x86_64.zip       44,777,948 B  sha256 397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f
@@ -15,14 +15,15 @@ In this folder:
   screenshots\                         launcher.png and game.png for the release page
 
 Mobile builds:
-  mobile\android\dist\Rebloom-0.1-android-arm64.apk   49,983,792 B  sha256 aba6b0133f74748bcc03555b0dfbbf98cef0cae7aa8d9c5c5e7d9b9d2bf4253e
-  mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa        20,916,299 B  sha256 1681a278ecdaad3f13fff58a5b2adaa473a4b7b7691de7ef6a0f75b73a3ee832
+  mobile\android\dist\Rebloom-0.1-android-arm64.apk   49,751,786 B  sha256 a0a85227ca6b65fd544c43f5bec32c15c3b5f4a747023cf9789031e7f3fe54ca
+  mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa        20,663,984 B  sha256 338dbc067082503e459844605f677dcb99f1b995fe6772beaecc82c6f42b916c
 
 The Android APK is debug-signed and installs by sideloading. The iOS IPA is
 unsigned and needs the user's own signing (Sideloadly, AltStore, or Xcode).
 Both mobile builds have an on-screen pad, a "Tap to advance" switch, and use
 Bluetooth controllers through SDL beside the pad. The Windows build does not
-include the tap-to-advance feature.
+include the tap-to-advance feature. The mobile launchers use the sakura palette
+and have an optional "Sakura petals" background under Settings -> Display.
 
 Inside the Windows zip:
   Rebloom Launcher.exe                 the launcher

@@ -33,7 +33,7 @@ public class TouchOverlay extends View {
     private static final int UP = 12, DOWN = 13, LEFT = 14, RIGHT = 15;
     private static final int STICK = -1;
 
-    private static final int DEFAULT_ACCENT = Color.rgb(232, 196, 106);
+    private static final int DEFAULT_ACCENT = Color.rgb(245, 169, 193);
     private static final int INK = Color.rgb(242, 236, 228);
     private static final int RED = Color.rgb(176, 58, 72);
 

@@ -20,8 +20,8 @@ disc reads and module loading are answered by the runtime.
 | Rebloom-0.1-Windows-x86_64.zip | 44.8 MB | Windows 10/11 x64, Direct3D 12 or Vulkan, your own disc image |
 | Rebloom-0.1-Linux-x86_64.tar.gz | 33.6 MB | Linux x86-64, glibc 2.39+, Vulkan 1.1, X11 or Wayland |
 | Rebloom-0.1-x86_64.AppImage | 32.8 MB | Linux x86-64, FUSE 2 (or `--appimage-extract-and-run`), Vulkan 1.1 |
-| Rebloom-0.1-android-arm64.apk | 50.0 MB | Android 9+ arm64, Vulkan GPU with 7+ storage buffers; debug-signed sideload |
-| Rebloom-0.1-ios-unsigned.ipa | 20.9 MB | iOS 16.4+ arm64; unsigned, needs your own signing |
+| Rebloom-0.1-android-arm64.apk | 49.8 MB | Android 9+ arm64, Vulkan GPU with 7+ storage buffers; debug-signed sideload |
+| Rebloom-0.1-ios-unsigned.ipa | 20.7 MB | iOS 16.4+ arm64; unsigned, needs your own signing |
 
 SHA-256:
 
@@ -29,8 +29,8 @@ SHA-256:
 397d94fbdaf0984f72947793ea01dcfee120b3563d6b6aafd1184a0193e38b0f  Rebloom-0.1-Windows-x86_64.zip
 cbf14569e28ea40cdbb4464c3cf34be23887b48f8230b17a55360198804c44e8  Rebloom-0.1-Linux-x86_64.tar.gz
 fa98a18db8412aa19ef3f81287f63a0fc169da0b3f1d4ef848f344cc8ffd1973  Rebloom-0.1-x86_64.AppImage
-aba6b0133f74748bcc03555b0dfbbf98cef0cae7aa8d9c5c5e7d9b9d2bf4253e  Rebloom-0.1-android-arm64.apk
-1681a278ecdaad3f13fff58a5b2adaa473a4b7b7691de7ef6a0f75b73a3ee832  Rebloom-0.1-ios-unsigned.ipa
+a0a85227ca6b65fd544c43f5bec32c15c3b5f4a747023cf9789031e7f3fe54ca  Rebloom-0.1-android-arm64.apk
+338dbc067082503e459844605f677dcb99f1b995fe6772beaecc82c6f42b916c  Rebloom-0.1-ios-unsigned.ipa
 ```
 
 `SHA256SUMS.txt` and the launcher source inside the Windows zip are also in the release.
@@ -45,6 +45,7 @@ aba6b0133f74748bcc03555b0dfbbf98cef0cae7aa8d9c5c5e7d9b9d2bf4253e  Rebloom-0.1-an
 - Keyboard and gamepad bindings edited in the launcher; both files are re-read within a second
 - Android/iOS: real analog stick with stick/button haptics, configurable touch colour and opacity, on-screen controls On/Off, optional tap-to-advance, and Bluetooth controllers beside it
 - Android/iOS display modes: 16:9 (fit), 4:3 (original), Fill (stretch)
+- Android/iOS launchers: sakura palette, full-width key art, and an optional **Sakura petals** background (Settings -> Display, default On)
 - Linux: Windows-style 1200x800 launcher with the key-art hero banner and rail logo
 - iOS: the same hero banner and rail logo, with opaque app icons
 
@@ -94,6 +95,7 @@ The Linux game links against the system Vulkan loader and SDL2 is bundled.
 3. Press **Play**. The on-screen pad is on by default; **Settings -> Controls** turns it off or on,
    and **Tap to advance** sends Cross on a short tap. Pair a Bluetooth controller in Android's
    Bluetooth settings to use it beside the pad. Import Disc 2 for Japanese voices.
+   **Settings -> Display -> Sakura petals** turns the optional launcher petals On/Off.
 
 ### iOS
 
@@ -101,7 +103,8 @@ The Linux game links against the system Vulkan loader and SDL2 is bundled.
    and install it.
 2. Open **Rebloom**, import Disc 1 through the Files picker, and press **Play**.
 3. The on-screen pad and **Tap to advance** are under **Settings -> Controls**. Pair a Bluetooth
-   controller in iOS Settings > Bluetooth to use it beside the pad.
+   controller in iOS Settings > Bluetooth to use it beside the pad. **Settings -> Display ->
+   Sakura petals** turns the optional launcher petals On/Off.
 
 ## Settings
 

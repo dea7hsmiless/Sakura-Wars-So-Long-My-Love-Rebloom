@@ -2,8 +2,8 @@ Rebloom 0.1 - iOS arm64 (unsigned)
 ==================================
 
 File:  Rebloom-0.1-ios-unsigned.ipa
-Size:  20,916,299 B
-SHA-256: 1681a278ecdaad3f13fff58a5b2adaa473a4b7b7691de7ef6a0f75b73a3ee832
+Size:  20,663,984 B
+SHA-256: 338dbc067082503e459844605f677dcb99f1b995fe6772beaecc82c6f42b916c
 
 Requirements
 ------------
@@ -20,6 +20,8 @@ Install
    change its colour and opacity, enable button/stick haptics, and set the display
    to 16:9, 4:3 or Fill. "Tap to advance" sends Cross on a short tap. A Bluetooth
    controller can be paired in iOS Settings > Bluetooth and works beside the pad.
+   Settings -> Display -> Sakura petals turns the optional launcher petal layer
+   On/Off.
 4. If an older Rebloom is installed, delete it before installing this build;
    iOS can otherwise keep the old blank icon or cache.
 

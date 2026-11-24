@@ -58,7 +58,7 @@ static UIColor *RBColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     _buttonHaptics = !haptics || strcmp(haptics, "0") != 0;
     const char *stickHaptics = getenv("REBLOOM_TOUCH_STICK_HAPTICS");
     _stickHaptics = !stickHaptics || strcmp(stickHaptics, "0") != 0;
-    _accentR = 232; _accentG = 196; _accentB = 106;
+    _accentR = 245; _accentG = 169; _accentB = 193;
     const char *color = getenv("REBLOOM_TOUCH_COLOR");
     if (color && color[0] == '#') {
         unsigned int rgb = 0;
