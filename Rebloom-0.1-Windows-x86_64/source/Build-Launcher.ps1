@@ -45,10 +45,10 @@ if (-not $ShortcutsOnly) {
 
 if (-not $NoShortcut) {
     $shell = New-Object -ComObject WScript.Shell
-    $link = $shell.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) 'Rebloom Launcher.lnk'))
+    $link = $shell.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) 'Sakura Wars V - Rebloom.lnk'))
     $link.TargetPath = $exe
     $link.WorkingDirectory = Split-Path -Parent $exe
-    $link.Description = 'Sakura Wars V: So Long, My Love - Rebloom Launcher'
+    $link.Description = 'Sakura Wars V: So Long, My Love - Rebloom'
     $link.Save()
 }
 

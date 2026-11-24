@@ -1228,6 +1228,7 @@ namespace SakuraLauncher
             category = cat;
             string help = cat == "Game" ? "Language, the memory card and where things live."
                         : cat == "Advanced" ? "Diagnostics. Change these only when something is wrong."
+                        : cat == "Display" ? "Display-side options. Borderless full screen is the safe default; Exclusive changes the display mode."
                         : "Display-side options. The game's own picture is not modified.";
             Panel p = Standard("Settings", "Settings", help);
 
@@ -1263,11 +1264,8 @@ namespace SakuraLauncher
                     new string[] { "1", "2", "3", "4" }, "2");
                 Choice(card, ref y, "Internal resolution", "scale", new string[] { "Game's own", "1x", "2x", "3x", "4x" },
                     new string[] { "", "1", "2", "3", "4" }, "");
-                Label fsNote = LabelAt("Borderless keeps the desktop mode and is the safe default; Exclusive changes the display mode and may alt-tab worse.", 9.5f, false);
-                fsNote.ForeColor = Palette.Muted;
-                fsNote.SetBounds(24, 400, Math.Max(380, card.Width - 48), 40);
-                fsNote.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-                card.Controls.Add(fsNote);
+                Choice(card, ref y, "Deinterlace", "deinterlace", new string[] { "Blend (smooth)", "Off (sharper)" },
+                    new string[] { "blend", "off" }, "blend");
             }
             else if (cat == "Graphics")
             {
@@ -1392,19 +1390,18 @@ namespace SakuraLauncher
         void ShowSupport()
         {
             Panel p = Standard("Support", "Support & activity", "What the launcher did, and where things are. Nothing is uploaded.");
-            ButtonAt(p, "Open toolkit folder", 36, 140, 190, delegate { OpenPath(Root); }, false);
-            ButtonAt(p, "Open game folder", 240, 140, 180, delegate { OpenPath(GameDir); }, false);
-            ButtonAt(p, "Open logs", 434, 140, 150, delegate
+            ButtonAt(p, "Open game folder", 36, 140, 190, delegate { OpenPath(GameDir); }, false);
+            ButtonAt(p, "Open logs", 240, 140, 150, delegate
             {
                 string logs = Path.Combine(GameDir, "logs");
                 if (Directory.Exists(logs)) OpenPath(logs);
                 else { Append("no game logs yet"); OpenPath(GameDir); }
             }, false);
-            ButtonAt(p, "Check build", 598, 140, 150, delegate { VerifyBuild(); }, false);
+            ButtonAt(p, "Check build", 404, 140, 150, delegate { VerifyBuild(); }, false);
+            ButtonAt(p, "Open cache", 568, 140, 140, delegate { OpenPath(CacheDir); }, false);
             ButtonAt(p, "Copy diagnostics", 36, 190, 200, delegate { CopyDiagnostics(); }, false);
             ButtonAt(p, "Clear log", 250, 190, 130, delegate { log.Clear(); }, false);
             ButtonAt(p, "Clear cache", 394, 190, 150, delegate { ClearCache(); }, false);
-            ButtonAt(p, "Open cache", 558, 190, 140, delegate { OpenPath(CacheDir); }, false);
 
             Label cache = LabelAt("Code and VU caches: " + (CacheBytes() >> 20).ToString("N0") + " MB. Clearing them is safe; the first run afterwards is slower.", 9.5f, false);
             cache.ForeColor = Palette.Muted;
@@ -1560,14 +1557,14 @@ namespace SakuraLauncher
             {
                 string exe = Application.ExecutablePath;
                 string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string link = Path.Combine(desktop, "Rebloom Launcher.lnk");
+                string link = Path.Combine(desktop, "Sakura Wars V - Rebloom.lnk");
                 // Remove the pre-rename shortcut if this folder was upgraded in place.
-                string oldLink = Path.Combine(desktop, "Sakura Wars V - Rebloom.lnk");
+                string oldLink = Path.Combine(desktop, "Rebloom Launcher.lnk");
                 if (File.Exists(oldLink)) File.Delete(oldLink);
                 string script = "$s=(New-Object -ComObject WScript.Shell).CreateShortcut('" + link.Replace("'", "''") + "');" +
                                 "$s.TargetPath='" + exe.Replace("'", "''") + "';" +
                                 "$s.WorkingDirectory='" + Path.GetDirectoryName(exe).Replace("'", "''") + "';" +
-                                "$s.Description='Sakura Wars V: So Long, My Love - Rebloom Launcher';$s.Save()";
+                                "$s.Description='Sakura Wars V: So Long, My Love - Rebloom';$s.Save()";
                 Process.Start(new ProcessStartInfo("powershell.exe",
                     "-NoProfile -ExecutionPolicy Bypass -Command \"" + script + "\"") { UseShellExecute = false, CreateNoWindow = true });
                 Append("shortcut: " + link);
@@ -1620,6 +1617,7 @@ namespace SakuraLauncher
             }
             psi.EnvironmentVariables["PS2_ASPECT"] = Get("aspect", "4:3");
             psi.EnvironmentVariables["PS2_EXCLUSIVE_FULLSCREEN"] = Get("fs_mode", "borderless") == "exclusive" ? "1" : "0";
+            if (Get("deinterlace", "blend") == "off") psi.EnvironmentVariables["PS2_NO_DEINTERLACE"] = "1";
             psi.EnvironmentVariables["PS2_PRESENT_MODE"] = Get("vsync", "fifo");
             psi.EnvironmentVariables["PS2_FRAME_LATENCY"] = Get("latency", "2");
             psi.EnvironmentVariables["PS2_WINDOW_TITLE"] = "Sakura Wars V: So Long, My Love \u2014 Rebloom";
