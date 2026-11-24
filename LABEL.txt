@@ -28,7 +28,7 @@ under Settings -> Display.
 
 Inside the Windows player zip (21 files):
   Rebloom Launcher.exe                 the launcher
-  recomplauncher.json                  RecompLauncher profile (also inside the AppImage)
+  recomplauncher.json                  RecompLauncher profile (also in the AppImage and Linux tar)
   game\SakuraWarsV.exe                 the recompiled game (56 MB) and its DLLs
   game\SDL2.dll, dxcompiler.dll, dxil.dll
   game\blit-dedither.wgsl             temporal de-dither shader

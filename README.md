@@ -6,6 +6,8 @@ PlayStation 2 code translated to native C++ — no emulator, no BIOS — for Win
 
 <p align="center"><a href="https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases">Releases</a> · <a href="RELEASE-HANDOFF.md">Test notes</a> · <a href="#build-from-source">Build from source</a></p>
 
+<p align="center"><a href="https://recomplauncher.com"><picture><source media="(prefers-color-scheme: dark)" srcset="https://recomplauncher.com/assets/press/launcher/badge-light.svg"><img alt="Get it on RecompLauncher" src="https://recomplauncher.com/assets/press/launcher/badge-dark.svg" height="48"></picture></a></p>
+
 # Sakura Wars: So Long, My Love — Rebloom
 
 A native recompilation of **Sakura Wars: So Long, My Love** (PlayStation 2) for Windows,
@@ -39,7 +41,11 @@ Get the latest packages from [Releases](https://github.com/dea7hsmiless/Sakura-W
 | iOS | [Rebloom-0.1-ios-unsigned.ipa](https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases/latest/download/Rebloom-0.1-ios-unsigned.ipa) | iOS 16.4+ arm64; unsigned — sign with your own certificate |
 
 [SHA256SUMS.txt](https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases/latest/download/SHA256SUMS.txt)
-is attached to every release. The Windows zip also contains the full rebuild source.
+is attached to every release. The source code is in the GitHub repository.
+
+[RecompLauncher](https://recomplauncher.com) can install the release, check your discs and start
+the game directly from its library; `recomplauncher.json` is included in the Windows zip and the
+AppImage.
 
 ## Quick start
 
@@ -92,6 +98,8 @@ tap-to-advance switch live under **Settings → Controls**.
 
 Settings live in `launcher.ini` beside the launcher (Windows/Linux) or `rebloom.ini` in the app's
 Documents folder (Android/iOS). Game bindings are in `game/data/keys.ini` and `gamepad.ini`.
+Under RecompLauncher, settings and memory cards live in the game's `recompdata` folder, and its
+game page exposes voices, internal resolution, window, aspect, V-Sync and de-dither.
 
 Windows/Linux defaults: fullscreen + exclusive, 16:9, 3× internal resolution, Crisp + edges,
 deinterlace off, VSync fifo, frame latency 2, Direct3D 12, temporal de-dither on.
@@ -116,7 +124,7 @@ Android/iOS default to **1× internal resolution**.
 
 ## Build from source
 
-The Windows package contains the translated C++ and full rebuild notes:
+The repository contains the translated C++ and full rebuild notes:
 `Rebloom-0.1-Windows-x86_64/source/`. The launcher is a single C# file compiled by the .NET
 Framework 4 `csc.exe` that ships with Windows.
 

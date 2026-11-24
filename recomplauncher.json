@@ -1,0 +1,125 @@
+{
+  "$schema": "https://recomplauncher.com/schema/recomplauncher.json",
+  "format": 1,
+  "repo": "dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom",
+  "name": "Sakura Wars: So Long, My Love — Rebloom",
+  "inputs": [
+    {
+      "id": "disc1",
+      "label": "Disc 1 (SLUS-21927, English voices)",
+      "role": "disc",
+      "formats": [{ "type": "file", "extensions": ["iso"] }],
+      "check": { "iso9660": "SLUS_219.27" }
+    },
+    {
+      "id": "disc2",
+      "label": "Disc 2 (SLUS-21930, Japanese voices) — optional",
+      "role": "disc",
+      "optional": true,
+      "formats": [{ "type": "file", "extensions": ["iso"] }],
+      "check": { "iso9660": "SLUS_219.30" }
+    }
+  ],
+  "start": {
+    "program": ["Rebloom-0.1-x86_64.AppImage", "Rebloom Launcher", "Rebloom Launcher.exe"],
+    "args": ["--direct", "--disc1={input:disc1}", "--disc2={input:disc2}", "--data={data}"]
+  },
+  "config": [
+    {
+      "id": "main",
+      "format": "ini",
+      "file": [{ "path": "{data}/launcher.ini" }],
+      "new": {
+        "language": "en",
+        "fullscreen": "1",
+        "aspect": "16:9",
+        "scale": "1",
+        "dedither": "1",
+        "vsync": "fifo"
+      }
+    }
+  ],
+  "settings": [
+    {
+      "id": "voices",
+      "label": "Voices",
+      "help": "Disc 1 has the English voice track; Disc 2 has the Japanese one.",
+      "in": "args",
+      "choices": [
+        { "label": "English (Disc 1)", "args": [] },
+        { "label": "Japanese (Disc 2)", "args": ["--lang=jp"] }
+      ]
+    },
+    {
+      "id": "scale",
+      "label": "Internal resolution",
+      "group": "Display",
+      "help": "1× is the console's own resolution and gives the cleanest fades in 0.1.",
+      "choices": [
+        { "label": "1× (native)", "set": { "scale": "1" } },
+        { "label": "2×", "set": { "scale": "2" } },
+        { "label": "3×", "set": { "scale": "3" } }
+      ],
+      "defaults": { "scale": "1" }
+    },
+    {
+      "id": "window",
+      "label": "Window",
+      "group": "Display",
+      "choices": [
+        { "label": "Fullscreen", "set": { "fullscreen": "1" } },
+        { "label": "Windowed", "set": { "fullscreen": "0" } }
+      ],
+      "defaults": { "fullscreen": "1" }
+    },
+    {
+      "id": "aspect",
+      "label": "Aspect ratio",
+      "group": "Display",
+      "choices": [
+        { "label": "16:9", "set": { "aspect": "16:9" } },
+        { "label": "4:3", "set": { "aspect": "4:3" } },
+        { "label": "Fill", "set": { "aspect": "fill" } }
+      ],
+      "defaults": { "aspect": "16:9" }
+    },
+    {
+      "id": "vsync",
+      "label": "V-Sync",
+      "group": "Display",
+      "choices": [
+        { "label": "On", "set": { "vsync": "fifo" } },
+        { "label": "Off", "set": { "vsync": "immediate" } }
+      ],
+      "defaults": { "vsync": "fifo" }
+    },
+    {
+      "id": "dedither",
+      "label": "De-dither",
+      "group": "Display",
+      "help": "Softens the game's dithered fades and video.",
+      "choices": [
+        { "label": "On", "set": { "dedither": "1" } },
+        { "label": "Off", "set": { "dedither": "0" } }
+      ],
+      "defaults": { "dedither": "1" }
+    }
+  ],
+  "folders": {
+    "game": [{ "path": "{install}/game" }],
+    "saves": [{ "path": "{data}/game/data" }],
+    "logs": [
+      { "path": "{data}/game/data/logs" },
+      { "path": "{install}/game/data/logs" }
+    ]
+  },
+  "exit_codes": {
+    "2": "The selected disc image is missing. Pick it again on the game's page.",
+    "3": "The game could not start. Check that the disc image is a plain .iso and try again."
+  },
+  "saves": ["{data}/game/data/play-*.ps2"],
+  "system": {
+    "windows": { "version": "10", "graphics": { "d3d12": "12_0" } },
+    "linux": { "glibc": "2.39", "graphics": { "vulkan": "1.1" } }
+  }
+}
