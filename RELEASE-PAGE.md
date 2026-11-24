@@ -30,7 +30,7 @@ SHA-256:
 cbf14569e28ea40cdbb4464c3cf34be23887b48f8230b17a55360198804c44e8  Rebloom-0.1-Linux-x86_64.tar.gz
 fa98a18db8412aa19ef3f81287f63a0fc169da0b3f1d4ef848f344cc8ffd1973  Rebloom-0.1-x86_64.AppImage
 098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832  Rebloom-0.1-android-arm64.apk
-a3b63b5b32dee5b9c1c5fb9e0d564efc5ba9686a1cdaec508c91c73127c43248  Rebloom-0.1-ios-unsigned.ipa
+baba39d3deeaf1899f724a2f51e9426e1a2c73cf6a65b48351747dd8f3419c0c  Rebloom-0.1-ios-unsigned.ipa
 ```
 
 `SHA256SUMS.txt` and the launcher source inside the Windows zip are also in the release.

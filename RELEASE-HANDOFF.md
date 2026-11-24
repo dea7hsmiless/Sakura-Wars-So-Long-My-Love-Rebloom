@@ -12,7 +12,7 @@ Prepared 2026-11-23. **Nothing has been published.**
 | Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,608,332 B |
 | Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,807,416 B |
 | Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,283,577 B |
-| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 22,286,180 B |
+| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 22,286,335 B |
 
 Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that is present.
 
@@ -20,7 +20,7 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - Linux: `cbf14569e28ea40cdbb4464c3cf34be23887b48f8230b17a55360198804c44e8`
 - AppImage: `fa98a18db8412aa19ef3f81287f63a0fc169da0b3f1d4ef848f344cc8ffd1973`
 - Android: `098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832`
-- iOS: `a3b63b5b32dee5b9c1c5fb9e0d564efc5ba9686a1cdaec508c91c73127c43248`
+- iOS: `baba39d3deeaf1899f724a2f51e9426e1a2c73cf6a65b48351747dd8f3419c0c`
 
 ## What was verified for this package
 
@@ -101,6 +101,10 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
   The runtime now asks for eight storage buffers (capped at the adapter's limit) on Apple and logs
   both values (change in `C:\recomp\ps2-native-recomp\runtime\src\gs\gpu\gpu.cpp`). The IPA
   was rebuilt with that fix; a new device run must confirm it.
+- The next launcher build then crashed at startup with `-[UIView currentTitle]`: the flexible
+  nav spacer is a plain UIView, but `render` treated every arranged subview as a button. `render`
+  now skips non-UIButton views; the IPA was rebuilt. The attached log contains both the earlier
+  storage-limit crash and the repeated nav-spacer crashes from the test builds.
 - A constructor writes `[ios] process start` to `Documents/rebloom.log` before
   UIApplicationMain, and uncaught exceptions are logged, for the current "does not open" report.
 - The previous signed build ran on an iPhone (A18 Pro); the current IPA is unsigned and has not

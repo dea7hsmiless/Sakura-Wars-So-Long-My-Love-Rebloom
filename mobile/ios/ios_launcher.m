@@ -386,7 +386,9 @@ void ios_launcher_receive_url(void *nsurl) {
     self.language = nil;
     self.progress = nil;
 
-    for (UIButton *b in self.navStack.arrangedSubviews) {
+    for (UIView *view in self.navStack.arrangedSubviews) {
+        if (![view isKindOfClass:UIButton.class]) continue;  // the flexible spacer is not a nav button
+        UIButton *b = (UIButton *)view;
         BOOL on = [b.currentTitle isEqual:self.page];
         b.backgroundColor = on ? RGB(0x221914) : UIColor.clearColor;
         b.layer.borderWidth = on ? 1 : 0;
