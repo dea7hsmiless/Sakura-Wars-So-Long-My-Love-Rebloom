@@ -16,7 +16,7 @@ In this folder:
 
 Mobile builds:
   mobile\android\dist\Rebloom-0.1-android-arm64.apk   49,283,577 B  sha256 098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832
-  mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa        20,485,248 B  sha256 788596dc58c0fe3aad983e2bb977901db47d27ba60a9a049d2be0a76408a2ed6
+  mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa        20,485,183 B  sha256 2dad7730d755ca9e8713349c00d49166c1451dc0b5aa91bc8697d718463b4d0f
 
 The Android APK is debug-signed and installs by sideloading. The iOS IPA is
 unsigned and needs the user's own signing (Sideloadly, AltStore, or Xcode).

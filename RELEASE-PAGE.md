@@ -30,7 +30,7 @@ SHA-256:
 e01930fb124fa41d2386d92aef432a7978192a02d4299543cd89cd7109f56dc0  Rebloom-0.1-Linux-x86_64.tar.gz
 4b538a6c224b410409d0d4242dc99e9afd4da03949538d8d1a89fc08c4941306  Rebloom-0.1-x86_64.AppImage
 098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832  Rebloom-0.1-android-arm64.apk
-788596dc58c0fe3aad983e2bb977901db47d27ba60a9a049d2be0a76408a2ed6  Rebloom-0.1-ios-unsigned.ipa
+2dad7730d755ca9e8713349c00d49166c1451dc0b5aa91bc8697d718463b4d0f  Rebloom-0.1-ios-unsigned.ipa
 ```
 
 `SHA256SUMS.txt` and the launcher source inside the Windows zip are also in the release.
@@ -56,9 +56,12 @@ e01930fb124fa41d2386d92aef432a7978192a02d4299543cd89cd7109f56dc0  Rebloom-0.1-Li
 - Texture filtering/AA in the launcher covers the runtime's Crisp/Soft/Sharp looks and smooth-edge
   AA; no separate MSAA/anisotropic path yet.
 - HD texture overrides are supported, but no texture pack is included.
-- **Android and iOS have not been run on a phone.** The Android game was run on an emulator with a host RTX 3070; the SwiftShader emulator cannot run its 7-storage-buffer compute pass. iOS still needs a signed device test. The APK and IPA build and package, but neither has
-  been run on a phone; the touch overlay and Bluetooth controller path are untested on hardware.
-  Unseen code cannot be translated on iOS, so some later scenes may not run there.
+- **Android has not been run on a phone; iOS was launched on an iPhone but crashed at the Metal
+  storage-buffer limit.** The Android game was run on an emulator with a host RTX 3070; the
+  SwiftShader emulator cannot run its 7-storage-buffer compute pass. The first iOS device log
+  found the limit; the current IPA raises it to the adapter's value, but still needs a device
+  retest. The touch overlay and Bluetooth controller path are untested on hardware. Unseen code
+  cannot be translated on iOS, so some later scenes may not run there.
 
 ## Install
 

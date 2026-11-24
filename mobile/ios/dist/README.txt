@@ -2,8 +2,8 @@ Rebloom 0.1 - iOS arm64 (unsigned)
 ==================================
 
 File:  Rebloom-0.1-ios-unsigned.ipa
-Size:  20,485,248 B
-SHA-256: 788596dc58c0fe3aad983e2bb977901db47d27ba60a9a049d2be0a76408a2ed6
+Size:  20,485,183 B
+SHA-256: 2dad7730d755ca9e8713349c00d49166c1451dc0b5aa91bc8697d718463b4d0f
 
 Requirements
 ------------
@@ -20,9 +20,12 @@ Install
    and "Tap to advance" sends Cross on a short tap. A Bluetooth controller can
    be paired in iOS Settings > Bluetooth and works beside the pad.
 
-This build has not been signed or run on a device. iOS has no JIT and no C++
-compiler, so code the build did not precompile cannot be translated on the
-device; later scenes may stop.
+This build has not been signed or run on a device. The previous device run
+aborted because Metal was capped at four storage buffers per stage; this build
+requests the adapter's real limit (the GS compute pass needs seven). If it still
+exits, send Documents/rebloom.log from the app container.
+iOS has no JIT and no C++ compiler, so code the build did not precompile cannot
+be translated on the device; later scenes may stop.
 
 Rebuild
 -------

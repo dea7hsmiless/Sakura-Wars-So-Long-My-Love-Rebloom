@@ -12,7 +12,7 @@ Prepared 2026-11-23. **Nothing has been published.**
 | Linux tar.gz | `Desktop\Rebloom-0.1-release\Rebloom-0.1-Linux-x86_64.tar.gz` | 33,089,075 B |
 | Linux AppImage | `Desktop\Rebloom-0.1-release\Rebloom-0.1-x86_64.AppImage` | 32,279,032 B |
 | Android APK | `Desktop\Rebloom-0.1-release\mobile\android\dist\Rebloom-0.1-android-arm64.apk` | 49,283,577 B |
-| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,485,248 B |
+| iOS IPA | `Desktop\Rebloom-0.1-release\mobile\ios\dist\Rebloom-0.1-ios-unsigned.ipa` | 20,485,183 B |
 
 Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that is present.
 
@@ -20,7 +20,7 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - Linux: `e01930fb124fa41d2386d92aef432a7978192a02d4299543cd89cd7109f56dc0`
 - AppImage: `4b538a6c224b410409d0d4242dc99e9afd4da03949538d8d1a89fc08c4941306`
 - Android: `098817ecca9a8712f88fe26a1547cc00e9b79aa8f19011a18c6802ba6c356832`
-- iOS: `788596dc58c0fe3aad983e2bb977901db47d27ba60a9a049d2be0a76408a2ed6`
+- iOS: `2dad7730d755ca9e8713349c00d49166c1451dc0b5aa91bc8697d718463b4d0f`
 
 ## What was verified for this package
 
@@ -89,6 +89,11 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 - IPA contains 14 entries and nine app icons; `GCSupportedGameControllers` and
   `GCSupportsControllerUserInteraction` are set for Bluetooth pads.
 - The rail uses 126 pt below 800 pt wide and 160 pt above, matching the Android launcher.
+- The first device log showed the crash: `wgpuDeviceCreateBindGroupLayout` rejected the GS pass
+  because Metal was requested with four storage buffers per stage while the pass binds seven.
+  The runtime now asks for the adapter's `maxStorageBuffersPerShaderStage` on Apple and logs
+  both values (change in `C:\recomp\ps2-native-recomp\runtime\src\gs\gpu\gpu.cpp`). The IPA
+  was rebuilt with that fix; a new device run must confirm it.
 - Unsigned, not signed or installed on a device; no iOS hardware test.
 
 ## What is NOT verified
@@ -102,7 +107,7 @@ Hashes are in `SHA256SUMS.txt`; `Verify-Rebloom.ps1` checks every download that 
 | Second machine / clean Windows account | not tested |
 | Disc 2 past boot | boots and detects layer 1; rest unplayed |
 | Android on a device | emulator with host GPU only; overlay, tap and Bluetooth pad not run on a phone |
-| iOS on a device | unsigned; signing/install and overlay/tap not run on hardware |
+| iOS on a device | signed and launched on an iPhone (A18 Pro); crashed in the Metal storage-buffer limit before the first frame; fixed in the current IPA, not yet retested |
 | Linux on a clean distro | WSLg only; AppImage run with --appimage-extract-and-run |
 
 ## Before publishing
