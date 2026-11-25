@@ -6,7 +6,7 @@ PlayStation 2 code translated to native C++ — no emulator, no BIOS — for Win
 
 <p align="center"><a href="https://github.com/dea7hsmiless/Sakura-Wars-So-Long-My-Love-Rebloom/releases">Releases</a> · <a href="RELEASE-HANDOFF.md">Test notes</a> · <a href="#build-from-source">Build from source</a></p>
 
-<p align="center"><a href="https://recomplauncher.com"><picture><source media="(prefers-color-scheme: dark)" srcset="https://recomplauncher.com/assets/press/launcher/badge-light.svg"><img alt="Get it on RecompLauncher" src="https://recomplauncher.com/assets/press/launcher/badge-dark.svg" height="48"></picture></a></p>
+<p align="center"><a href="https://recomplauncher.com/game/sakura-wars-so-long-my-love-rebloom"><picture><source media="(prefers-color-scheme: dark)" srcset="https://recomplauncher.com/assets/press/launcher/badge-light.svg"><img alt="Get it on RecompLauncher" src="https://recomplauncher.com/assets/press/launcher/badge-dark.svg" height="48"></picture></a></p>
 
 # Sakura Wars: So Long, My Love — Rebloom
 
